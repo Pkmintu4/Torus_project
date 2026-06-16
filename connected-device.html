@@ -897,6 +897,12 @@
       position: relative;
     }
 
+    .bottom-panel.has-share-link {
+      height: auto !important;
+      min-height: 14.5em !important;
+      padding: 1em 0.5em !important;
+    }
+
     .video-stream {
       position: absolute;
       inset: 0;
@@ -2903,6 +2909,18 @@
               style="height:2.6em;padding:0 0.75em;font-size:1rem;">Resend</button>
           </div>
           <div>Waiting...</div>
+          <!-- Patient share link container -->
+          <div id="initialShareContainer" class="patient-link-share" style="display:none; flex-direction:column; gap:6px; align-items:center; margin-top:10px; width:100%; max-width:400px; padding:0 10px;">
+            <span style="font-size:0.85rem; color:rgba(255,255,255,0.6); font-weight:500;">Share consultation link with patient:</span>
+            <div style="display:flex; width:100%; gap:8px; align-items:center;">
+              <input type="text" id="patientLinkInputInitial" readonly value="" 
+                style="flex:1; background:rgba(16, 23, 40, 0.88); border:1px solid rgba(117, 130, 172, 0.45); border-radius:6px; color:#00d7ff; padding:6px 10px; font-size:0.85rem; outline:none; text-overflow:ellipsis; min-width:0;" />
+              <button id="copyLinkBtnInitial" style="height:2.4em; padding:0 12px; font-size:0.85rem; border-radius:6px; cursor:pointer; font-weight:600; white-space:nowrap; background:#6f2cff; border:1px solid rgba(127, 55, 255, 0.95); color:#ffffff; box-shadow:0 0 8px rgba(111, 44, 255, 0.35); transition:all 0.2s;" onmouseover="this.style.background='#7f37ff'" onmouseout="this.style.background='#6f2cff'">
+                Copy
+              </button>
+            </div>
+            <span id="copySuccessMsgInitial" style="font-size:0.8rem; color:#08ec88; display:none; font-weight:500;">✓ Link copied!</span>
+          </div>
         </div>
       </section>
 
@@ -2954,6 +2972,50 @@
           }
         } catch (e) {
           console.warn('Patient UI adjustments failed', e);
+        }
+      } else {
+        // Doctor initial setup for share link
+        try {
+          const roomId = new URLSearchParams(window.location.search).get('room') || '';
+          const initialShareContainer = document.getElementById('initialShareContainer');
+          const patientLinkInputInitial = document.getElementById('patientLinkInputInitial');
+          const copyLinkBtnInitial = document.getElementById('copyLinkBtnInitial');
+          const callStatePanel = document.getElementById('callStatePanel');
+
+          if (initialShareContainer && patientLinkInputInitial && callStatePanel) {
+            const patientLink = `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(roomId)}&role=patient`;
+            patientLinkInputInitial.value = patientLink;
+            initialShareContainer.style.display = 'flex';
+            callStatePanel.classList.add('has-share-link');
+          }
+
+          if (copyLinkBtnInitial) {
+            copyLinkBtnInitial.addEventListener('click', () => {
+              if (patientLinkInputInitial) {
+                navigator.clipboard.writeText(patientLinkInputInitial.value).then(() => {
+                  const successMsg = document.getElementById('copySuccessMsgInitial');
+                  if (successMsg) {
+                    successMsg.style.display = 'block';
+                    setTimeout(() => { successMsg.style.display = 'none'; }, 2000);
+                  }
+                  copyLinkBtnInitial.textContent = 'Copied!';
+                  copyLinkBtnInitial.style.background = '#08ec88';
+                  copyLinkBtnInitial.style.borderColor = '#08ec88';
+                  copyLinkBtnInitial.style.color = '#08331f';
+                  setTimeout(() => {
+                    copyLinkBtnInitial.textContent = 'Copy';
+                    copyLinkBtnInitial.style.background = '#6f2cff';
+                    copyLinkBtnInitial.style.borderColor = 'rgba(127, 55, 255, 0.95)';
+                    copyLinkBtnInitial.style.color = '#ffffff';
+                  }, 2000);
+                }).catch(err => {
+                  console.error('Failed to copy initial: ', err);
+                });
+              }
+            });
+          }
+        } catch (e) {
+          console.warn('Initial doctor setup failed', e);
         }
       }
     </script>

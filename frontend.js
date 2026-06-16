@@ -1106,6 +1106,7 @@
     setSessionDetailsVisibility(true);
 
     if (dom.callStatePanel) {
+      dom.callStatePanel.classList.remove("has-share-link");
       dom.callStatePanel.innerHTML = "";
     }
 
@@ -1197,6 +1198,27 @@
 
     const showDoctorActions = state.role === "doctor";
 
+    let shareLinkHtml = "";
+    if (showDoctorActions) {
+      dom.callStatePanel.classList.add("has-share-link");
+      const patientLink = `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(state.roomId)}&role=patient`;
+      shareLinkHtml = `
+        <div class="patient-link-share" style="display:flex; flex-direction:column; gap:6px; align-items:center; margin-top:10px; width:100%; max-width:400px; padding:0 10px;">
+          <span style="font-size:0.85rem; color:rgba(255,255,255,0.6); font-weight:500;">Share consultation link with patient:</span>
+          <div style="display:flex; width:100%; gap:8px; align-items:center;">
+            <input type="text" id="patientLinkInput" readonly value="${patientLink}" 
+              style="flex:1; background:rgba(16, 23, 40, 0.88); border:1px solid rgba(117, 130, 172, 0.45); border-radius:6px; color:#00d7ff; padding:6px 10px; font-size:0.85rem; outline:none; text-overflow:ellipsis; min-width:0;" />
+            <button id="copyLinkBtn" style="height:2.4em; padding:0 12px; font-size:0.85rem; border-radius:6px; cursor:pointer; font-weight:600; white-space:nowrap; background:#6f2cff; border:1px solid rgba(127, 55, 255, 0.95); color:#ffffff; box-shadow:0 0 8px rgba(111, 44, 255, 0.35); transition:all 0.2s;" onmouseover="this.style.background='#7f37ff'" onmouseout="this.style.background='#6f2cff'">
+              Copy
+            </button>
+          </div>
+          <span id="copySuccessMsg" style="font-size:0.8rem; color:#08ec88; display:none; font-weight:500;">✓ Link copied!</span>
+        </div>
+      `;
+    } else {
+      dom.callStatePanel.classList.remove("has-share-link");
+    }
+
     dom.callStatePanel.innerHTML = `
       <div class="call-status-panel" style="display:flex;flex-direction:column;align-items:center;gap:6px;">
         <div class="spinner" aria-hidden="true"></div>
@@ -1206,6 +1228,7 @@
           <button id="resendBtn" style="padding:6px 10px;font-size:0.9rem;border-radius:6px;border:1px solid #ddd;background:#fff;color:#333;">Resend</button>
         </div>` : ""}
         <div style="margin-top:4px;font-weight:600;color:inherit;">${message}</div>
+        ${shareLinkHtml}
       </div>
     `;
 
@@ -1217,6 +1240,8 @@
     try {
       const notify = document.getElementById('notifyBtn');
       const resend = document.getElementById('resendBtn');
+      const copyBtn = document.getElementById('copyLinkBtn');
+      
       if (notify) {
         notify.addEventListener('click', () => {
           console.log('Notify clicked (placeholder)');
@@ -1228,6 +1253,32 @@
           console.log('Resend clicked (placeholder)');
         });
       }
+      if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+          const input = document.getElementById('patientLinkInput');
+          if (input) {
+            navigator.clipboard.writeText(input.value).then(() => {
+              const successMsg = document.getElementById('copySuccessMsg');
+              if (successMsg) {
+                successMsg.style.display = 'block';
+                setTimeout(() => { successMsg.style.display = 'none'; }, 2000);
+              }
+              copyBtn.textContent = 'Copied!';
+              copyBtn.style.background = '#08ec88';
+              copyBtn.style.borderColor = '#08ec88';
+              copyBtn.style.color = '#08331f';
+              setTimeout(() => {
+                copyBtn.textContent = 'Copy';
+                copyBtn.style.background = '#6f2cff';
+                copyBtn.style.borderColor = 'rgba(127, 55, 255, 0.95)';
+                copyBtn.style.color = '#ffffff';
+              }, 2000);
+            }).catch(err => {
+              console.error('Failed to copy: ', err);
+            });
+          }
+        });
+      }
     } catch (e) {
       // ignore binding errors
     }
@@ -1236,6 +1287,7 @@
   function renderControlsState() {
     if (!dom.callStatePanel) return;
 
+    dom.callStatePanel.classList.remove("has-share-link");
     dom.callStatePanel.style.display = "flex";
     dom.callStatePanel.style.alignItems = "center";
     dom.callStatePanel.style.justifyContent = "center";

@@ -4,7 +4,11 @@ const usePostgres = Boolean(process.env.DATABASE_URL);
 
 function convertSqlPlaceholders(sql) {
   let index = 0;
-  return sql.replace(/\?/g, () => `$${++index}`);
+  let translated = sql.replace(/\?/g, () => `$${++index}`);
+  if (!usePostgres) {
+    translated = translated.replace(/::int\b/gi, "");
+  }
+  return translated;
 }
 
 function createSqliteAdapter(sqliteDatabase) {
