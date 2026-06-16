@@ -1,0 +1,472 @@
+{
+  "backend/models/Doctor.js": {
+    "mtime": 1781517441.4258485,
+    "ast_hash": "b5498b23d0ac6e3071257cbf6ac2b83e",
+    "semantic_hash": ""
+  },
+  "backend/package.json": {
+    "mtime": 1781517441.3367708,
+    "ast_hash": "155f02c199f51c76841f219fc85ad57c",
+    "semantic_hash": ""
+  },
+  "backend/routes/auth.js": {
+    "mtime": 1781517524.3816516,
+    "ast_hash": "d51828d231c99d74ce9a8615f46c653e",
+    "semantic_hash": ""
+  },
+  "backend/server.js": {
+    "mtime": 1781517441.3607678,
+    "ast_hash": "a66707bd54a80278619b0a4c9963923a",
+    "semantic_hash": ""
+  },
+  "backend/test-ws.js": {
+    "mtime": 1781517441.3787723,
+    "ast_hash": "0123e4b5d616f5285b402ff70bb795b1",
+    "semantic_hash": ""
+  },
+  "biometric_server.py": {
+    "mtime": 1781517438.7426703,
+    "ast_hash": "f1152311b497d74237a5a048cbecc887",
+    "semantic_hash": ""
+  },
+  "config.js": {
+    "mtime": 1781592388.742646,
+    "ast_hash": "2fa4a1188915e6e5a3f8c49825982a6a",
+    "semantic_hash": ""
+  },
+  "database.js": {
+    "mtime": 1781597528.2232306,
+    "ast_hash": "c0207425799b0f21f1fe07b69be5b035",
+    "semantic_hash": ""
+  },
+  "doctor_launcher.py": {
+    "mtime": 1781517439.4895425,
+    "ast_hash": "a982367f2bf4b7e98f55c42c51d87589",
+    "semantic_hash": ""
+  },
+  "fix.js": {
+    "mtime": 1781517439.6022964,
+    "ast_hash": "c5be3454c87c30eca47fe7e4d9c31bc8",
+    "semantic_hash": ""
+  },
+  "fix_css.ps1": {
+    "mtime": 1781517439.622285,
+    "ast_hash": "a18b98f753b1b3e680de57e4913b1720",
+    "semantic_hash": ""
+  },
+  "frontend.js": {
+    "mtime": 1781517439.7094865,
+    "ast_hash": "d754bbd602094961025f098badc8352f",
+    "semantic_hash": ""
+  },
+  "frontend/package.json": {
+    "mtime": 1781517524.4856482,
+    "ast_hash": "09c43344e4efaa113546b7d244b1fcba",
+    "semantic_hash": ""
+  },
+  "frontend/src/App.jsx": {
+    "mtime": 1781517716.9055812,
+    "ast_hash": "cb067bddc95249daa77f7aa936e48cc4",
+    "semantic_hash": ""
+  },
+  "frontend/src/main.jsx": {
+    "mtime": 1781517716.9645863,
+    "ast_hash": "54a301507dcdfccf4e5565754374b5dc",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/ForgotPassword.jsx": {
+    "mtime": 1781517716.9955792,
+    "ast_hash": "f17932b7f230738f8ba9a165f4951312",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/Landing.jsx": {
+    "mtime": 1781517717.0225742,
+    "ast_hash": "51370280d9b02d91a54d85230c0ae1f8",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/Login.jsx": {
+    "mtime": 1781517717.041572,
+    "ast_hash": "82e2c8b53b6e453d4aa5abdedf5b6c5b",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/ResetPassword.jsx": {
+    "mtime": 1781517717.0605583,
+    "ast_hash": "8830af5b1e2859044a4951873700f76e",
+    "semantic_hash": ""
+  },
+  "frontend/vite.config.js": {
+    "mtime": 1781517524.5280967,
+    "ast_hash": "ac605e4b540846227ec125e13f24f3e2",
+    "semantic_hash": ""
+  },
+  "package.json": {
+    "mtime": 1781597528.1944678,
+    "ast_hash": "6641182f8bf022324b0f8d0c4a997611",
+    "semantic_hash": ""
+  },
+  "script.js": {
+    "mtime": 1781592388.742646,
+    "ast_hash": "486e6e1ba11a2874fa91b3898ca51bd5",
+    "semantic_hash": ""
+  },
+  "server.js": {
+    "mtime": 1781597528.1956952,
+    "ast_hash": "8fe7bc8f0838ee17a1ab73b86c0c255f",
+    "semantic_hash": ""
+  },
+  "test-api-full.js": {
+    "mtime": 1781517440.902137,
+    "ast_hash": "85ecc9fed87a0c3a86a82f8f1ed2b70c",
+    "semantic_hash": ""
+  },
+  "test-api.js": {
+    "mtime": 1781517440.9321284,
+    "ast_hash": "8162a1ee057eff1728ea6f4d30efaebc",
+    "semantic_hash": ""
+  },
+  "test_parse.py": {
+    "mtime": 1781517441.0131314,
+    "ast_hash": "3a0cab0d7edac50e749ac8f7114926c7",
+    "semantic_hash": ""
+  },
+  "test_serial_init.py": {
+    "mtime": 1781517441.0471222,
+    "ast_hash": "6ad7a5d65927bd9191ccf45e2255e517",
+    "semantic_hash": ""
+  },
+  "00-START-HERE.md": {
+    "mtime": 1781517438.474257,
+    "ast_hash": "0730ae8f0dd59e805a1f26985419ecb7",
+    "semantic_hash": ""
+  },
+  "BIOMETRIC-COMPLETE-SUMMARY.md": {
+    "mtime": 1781517438.548674,
+    "ast_hash": "42b2d280631ab698f7706c689431f39b",
+    "semantic_hash": ""
+  },
+  "BIOMETRIC-IMPLEMENTATION.md": {
+    "mtime": 1781517438.570676,
+    "ast_hash": "c0bff8b1984b554b6e4c816898e154c0",
+    "semantic_hash": ""
+  },
+  "BIOMETRIC-QUICK-REFERENCE.md": {
+    "mtime": 1781517438.5926704,
+    "ast_hash": "9504815b26b52e95f556204c06f0ac28",
+    "semantic_hash": ""
+  },
+  "BIOMETRIC-QUICK-START.md": {
+    "mtime": 1781517438.60767,
+    "ast_hash": "e6cf6a66d4b34a6c72abe993fa5bc56f",
+    "semantic_hash": ""
+  },
+  "BIOMETRIC-REAL-BACKEND-DEBUG.md": {
+    "mtime": 1781517438.6226697,
+    "ast_hash": "6442bbfa542cf5999cc682fb6ae6cb78",
+    "semantic_hash": ""
+  },
+  "BIOMETRIC-REGISTER-FIX-SUMMARY.md": {
+    "mtime": 1781517438.6396692,
+    "ast_hash": "3b4f13e717b862b2c45da94675cf3e27",
+    "semantic_hash": ""
+  },
+  "BIOMETRIC-SETUP-GUIDE.md": {
+    "mtime": 1781517438.6866698,
+    "ast_hash": "67d76ee0982816cd995f3354ffd3c429",
+    "semantic_hash": ""
+  },
+  "BIOMETRIC-TROUBLESHOOTING.md": {
+    "mtime": 1781517438.7046733,
+    "ast_hash": "00b7571ea0fd62d70cfd7d9be82c83ea",
+    "semantic_hash": ""
+  },
+  "BIOMETRIC-VISUAL-REFERENCE.md": {
+    "mtime": 1781517438.7196755,
+    "ast_hash": "8ed0d4437431cf83b22d1684391a5c04",
+    "semantic_hash": ""
+  },
+  "COMPLETION-SUMMARY.md": {
+    "mtime": 1781517438.7578962,
+    "ast_hash": "02288bf24f4bc064eba2be0b5d52ff1e",
+    "semantic_hash": ""
+  },
+  "CSS-IMPROVEMENTS.md": {
+    "mtime": 1781517438.80289,
+    "ast_hash": "91f8b18d67f82605de8dd226a6b57751",
+    "semantic_hash": ""
+  },
+  "DASHBOARD-TESTING-GUIDE.md": {
+    "mtime": 1781517438.8238897,
+    "ast_hash": "259c8b64e1f3743cc215558025b60e07",
+    "semantic_hash": ""
+  },
+  "DASHBOARD-UPDATES.md": {
+    "mtime": 1781517438.8448913,
+    "ast_hash": "d38ce0c656eeea36eaf1923c8836b871",
+    "semantic_hash": ""
+  },
+  "DEPLOYMENT-GUIDE.md": {
+    "mtime": 1781593256.3456712,
+    "ast_hash": "e32e61dcbde6e4b113e252285e80dc1f",
+    "semantic_hash": ""
+  },
+  "FINGERPRINT-STORAGE-GUIDE.md": {
+    "mtime": 1781517439.5345535,
+    "ast_hash": "9783f8c588fef1a25678b667659ecae5",
+    "semantic_hash": ""
+  },
+  "FONT-SIZE-UPDATES.md": {
+    "mtime": 1781517439.6544418,
+    "ast_hash": "0a5217f87ae34bad44b6ed09828e5a62",
+    "semantic_hash": ""
+  },
+  "GMAIL-QUICK-REFERENCE.md": {
+    "mtime": 1781517439.7844398,
+    "ast_hash": "22597588e6a12a63fe40a421b6281df4",
+    "semantic_hash": ""
+  },
+  "GMAIL-SMTP-SETUP.md": {
+    "mtime": 1781517439.801441,
+    "ast_hash": "6a705dd3d15f91129905b71f4dcf6457",
+    "semantic_hash": ""
+  },
+  "HAPTIC-FINAL-DIAGNOSIS.md": {
+    "mtime": 1781517439.8257644,
+    "ast_hash": "bc9c563edf474591eb7d69d039b7fd37",
+    "semantic_hash": ""
+  },
+  "HAPTIC-ROOT-CAUSE-DIAGNOSTIC.md": {
+    "mtime": 1781517439.8496106,
+    "ast_hash": "117e79d2dacfe7cad0d5c6b77fb01402",
+    "semantic_hash": ""
+  },
+  "IMPLEMENTATION-CHANGES.md": {
+    "mtime": 1781592764.7875166,
+    "ast_hash": "d77ded16f50ba20fd5c822f7cf463b93",
+    "semantic_hash": ""
+  },
+  "OTP-AUTHENTICATION-README.md": {
+    "mtime": 1781517439.9645636,
+    "ast_hash": "8424b929700a28786ecd0c25f29bfb55",
+    "semantic_hash": ""
+  },
+  "PRODUCTION-READY-SUMMARY.md": {
+    "mtime": 1781517440.255879,
+    "ast_hash": "64a4dde562b22c63985333a1fedd6dbd",
+    "semantic_hash": ""
+  },
+  "PROJECT-STRUCTURE.md": {
+    "mtime": 1781517440.2798896,
+    "ast_hash": "cd6dcbfc2f88bc2c203bce05efd463ef",
+    "semantic_hash": ""
+  },
+  "QUICK-START.md": {
+    "mtime": 1781517440.2958891,
+    "ast_hash": "66be9053afd1f2a3c3391358aac9ab3c",
+    "semantic_hash": ""
+  },
+  "QUICK-TEST-5MINS.md": {
+    "mtime": 1781517440.3213634,
+    "ast_hash": "eea152d8026f60fb35fa7fc8da8bbe4d",
+    "semantic_hash": ""
+  },
+  "README-BIOMETRIC.md": {
+    "mtime": 1781517440.3394928,
+    "ast_hash": "84b412d452ddcd91c33c934d954f43ed",
+    "semantic_hash": ""
+  },
+  "SIGNALING-QUICK-TEST.md": {
+    "mtime": 1781517440.6061063,
+    "ast_hash": "0f0e5c91d813b0ab7dc83a59de4e02a4",
+    "semantic_hash": ""
+  },
+  "START-HERE-FIRST.txt": {
+    "mtime": 1781517440.7320907,
+    "ast_hash": "77a3ca2e53dde5d602d485199609d002",
+    "semantic_hash": ""
+  },
+  "WEBSOCKET-SIGNALING-FIX.md": {
+    "mtime": 1781517441.2061262,
+    "ast_hash": "71640055ce2bce440806f497b30a1f71",
+    "semantic_hash": ""
+  },
+  "biometric-admin.html": {
+    "mtime": 1781517438.4933221,
+    "ast_hash": "b7822bf12903d14d48cfe6a75003147e",
+    "semantic_hash": ""
+  },
+  "biometric-auth-fingerprint.html": {
+    "mtime": 1781517438.5113194,
+    "ast_hash": "20c84c5993533c37cc89ffc89dc171f6",
+    "semantic_hash": ""
+  },
+  "biometric-auth.html": {
+    "mtime": 1781517438.533672,
+    "ast_hash": "a21e8382b886d6468381d58671990b22",
+    "semantic_hash": ""
+  },
+  "biometric-register.html": {
+    "mtime": 1781517438.6636827,
+    "ast_hash": "f16da66427b7f607452c62781b4b9d46",
+    "semantic_hash": ""
+  },
+  "connected-device.html": {
+    "mtime": 1781517438.7879083,
+    "ast_hash": "184565394e0a8823292c87a7b771f104",
+    "semantic_hash": ""
+  },
+  "debug-register.html": {
+    "mtime": 1781517438.9119048,
+    "ast_hash": "44e9f9ddf0dd3fe60bc80bbc35a85068",
+    "semantic_hash": ""
+  },
+  "diagnostic-biometric-auth.html": {
+    "mtime": 1781517438.94389,
+    "ast_hash": "3e8c593918ab42355c5541a9cae54750",
+    "semantic_hash": ""
+  },
+  "diagnostic-center-bio-registration.html": {
+    "mtime": 1781517438.9809024,
+    "ast_hash": "731bdef06a9a19c0245c0da0f4c7f68a",
+    "semantic_hash": ""
+  },
+  "diagnostic-center-signup.html": {
+    "mtime": 1781517439.0248914,
+    "ast_hash": "005a7a4567044a440ce2535fbc47bda3",
+    "semantic_hash": ""
+  },
+  "diagnostic-center.html": {
+    "mtime": 1781592388.7436442,
+    "ast_hash": "63f190f521e5d528d2a333ff158198ed",
+    "semantic_hash": ""
+  },
+  "diagnostic-dashboard.html": {
+    "mtime": 1781517439.1038938,
+    "ast_hash": "431e3c0a1404782017acd1484c6f4fa7",
+    "semantic_hash": ""
+  },
+  "diagnostic-schedule-base.html": {
+    "mtime": 1781517439.270563,
+    "ast_hash": "37c126f0840438423671c2b1f45ed166",
+    "semantic_hash": ""
+  },
+  "diagnostic-schedule.html": {
+    "mtime": 1781517439.3325562,
+    "ast_hash": "b88ccf01102cfc6e5986ff63b4d5f28f",
+    "semantic_hash": ""
+  },
+  "diagnostic-verify-otp.html": {
+    "mtime": 1781592388.7436442,
+    "ast_hash": "e1976277a584172b3851d7b6a04db91c",
+    "semantic_hash": ""
+  },
+  "doctor-dashboard.html": {
+    "mtime": 1781517439.411569,
+    "ast_hash": "0e7193fcdc6d8b0bc0967dc2b42844cd",
+    "semantic_hash": ""
+  },
+  "doctor-portal.html": {
+    "mtime": 1781592388.7436442,
+    "ast_hash": "7460d8325be84ca8e6781391f0855774",
+    "semantic_hash": ""
+  },
+  "frontend/index.html": {
+    "mtime": 1781517524.439655,
+    "ast_hash": "0ac318cf36517c2fb044a547202f01f5",
+    "semantic_hash": ""
+  },
+  "generate-report.html": {
+    "mtime": 1781517439.7634437,
+    "ast_hash": "e2b18741811f57265b059525ece54d01",
+    "semantic_hash": ""
+  },
+  "index.html": {
+    "mtime": 1781517439.9224617,
+    "ast_hash": "406d6d2eaeba23c6e974558b79f33e57",
+    "semantic_hash": ""
+  },
+  "patient-generate.html": {
+    "mtime": 1781517440.0458722,
+    "ast_hash": "15ddea65e64edead44e43313e3b12a32",
+    "semantic_hash": ""
+  },
+  "patient-records.html": {
+    "mtime": 1781517440.086938,
+    "ast_hash": "4b486da63ef05c5e53ea5b2e311b02e1",
+    "semantic_hash": ""
+  },
+  "patient-registration.html": {
+    "mtime": 1781517440.1314502,
+    "ast_hash": "d8b79fd2a2ecbcda35c45160d52f1fcc",
+    "semantic_hash": ""
+  },
+  "patient-report.html": {
+    "mtime": 1781517440.1856654,
+    "ast_hash": "4e4926edc588d9687e83498b980ef10f",
+    "semantic_hash": ""
+  },
+  "patient-reports.html": {
+    "mtime": 1781517440.2286594,
+    "ast_hash": "38f777c343901d72c1ea49764c8f6e09",
+    "semantic_hash": ""
+  },
+  "report-generation.html": {
+    "mtime": 1781517440.3714466,
+    "ast_hash": "ac24a6b22b084312e3ed44060c9e1baf",
+    "semantic_hash": ""
+  },
+  "requirements.txt": {
+    "mtime": 1781517440.402449,
+    "ast_hash": "0d99c46993078e453dd413d1c29632fa",
+    "semantic_hash": ""
+  },
+  "server_log.txt": {
+    "mtime": 1781517440.558851,
+    "ast_hash": "db3cce5002ee5d93c83aa446cb690676",
+    "semantic_hash": ""
+  },
+  "signup.html": {
+    "mtime": 1781517440.666087,
+    "ast_hash": "f616f059de10779954e764520b102003",
+    "semantic_hash": ""
+  },
+  "slave_ip.txt": {
+    "mtime": 1781517440.698091,
+    "ast_hash": "469adc5ca61ab1099c4c0c094796b09d",
+    "semantic_hash": ""
+  },
+  "test-signaling.html": {
+    "mtime": 1781517440.9851248,
+    "ast_hash": "524de83614e3903ed2d1653e6d63c4a9",
+    "semantic_hash": ""
+  },
+  "tools/MIGRATE_SQLITE_TO_POSTGRES.md": {
+    "mtime": 1781592388.7436442,
+    "ast_hash": "706125f92559ad1238d77527ba29b6b1",
+    "semantic_hash": ""
+  },
+  "ultrasound-scanning.html": {
+    "mtime": 1781517441.1121297,
+    "ast_hash": "b642494439aa118c1b4b07c1439a0c2b",
+    "semantic_hash": ""
+  },
+  "verify-otp.html": {
+    "mtime": 1781592388.7897875,
+    "ast_hash": "89c78db8be22b2117713a80470748679",
+    "semantic_hash": ""
+  },
+  "diagnostic-icon.png": {
+    "mtime": 1781517439.2000647,
+    "ast_hash": "552cc840ffd609f8ef5e0a2aeb182314",
+    "semantic_hash": ""
+  },
+  "doctor-icon.png": {
+    "mtime": 1781517439.4395697,
+    "ast_hash": "fabaac6cf7bce9ba36d35f16f2521202",
+    "semantic_hash": ""
+  },
+  "logo.png": {
+    "mtime": 1781517439.9464602,
+    "ast_hash": "9bcd913f8fce087e74efea825eda2605",
+    "semantic_hash": ""
+  }
+}
