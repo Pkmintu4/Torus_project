@@ -11,7 +11,15 @@
   window.__API_BASE__ = window.__API_BASE__ || (isLocal ? 'http://127.0.0.1:5002' : window.location.origin);
 
   // Secondary auth/haptic API (legacy pages used 5000/5001) — keep for compatibility
-  window.__AUTH_API_BASE__ = window.__AUTH_API_BASE__ || (isLocal ? 'http://127.0.0.1:5000' : window.location.origin);
+  let defaultAuthBase = window.location.origin;
+  if (!isLocal) {
+    if (host.includes('torus-main-server')) {
+      defaultAuthBase = 'https://torus-auth-backend.onrender.com';
+    } else if (host.endsWith('.onrender.com')) {
+      defaultAuthBase = window.location.origin.replace('torus-main-server', 'torus-auth-backend');
+    }
+  }
+  window.__AUTH_API_BASE__ = window.__AUTH_API_BASE__ || (isLocal ? 'http://127.0.0.1:5000' : defaultAuthBase);
 
   // Signaling server base (WebSocket/http) — default to API base
   window.__SIGNALING_BASE__ = window.__SIGNALING_BASE__ || window.__API_BASE__;
