@@ -12,7 +12,7 @@ const bcrypt = require('bcryptjs');
 
 #### 2. **Configuration Management**
 ```javascript
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey123';
+const JWT_SECRET = process.env.JWT_SECRET || 'replace_with_strong_random_secret';
 const RATE_LIMIT_OTP = { requests: 5, windowMs: 60 * 60 * 1000 };
 const OTP_EXPIRY_MS = 5 * 60 * 1000;
 const SENDER_EMAIL = process.env.SENDER_EMAIL || 'no-reply@myapp.com';
