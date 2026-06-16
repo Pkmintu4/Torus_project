@@ -2,128 +2,14 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const { WebSocketServer } = require("ws");
-const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
+const { createDatabase } = require("./database");
 
-const dbPath = path.join(__dirname, 'torus_database.sqlite');
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error("Error opening database " + err.message);
-  } else {
-    console.log("Connected to the SQLite database.");
-    db.run(`CREATE TABLE IF NOT EXISTS patients (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      patient_id TEXT UNIQUE,
-      full_name TEXT,
-      age INTEGER,
-      gender TEXT,
-      mobile_number TEXT,
-      email TEXT,
-      blood_group TEXT,
-      scan_type TEXT,
-      appointment_date TEXT,
-      registration_date TEXT,
-      registration_time TEXT,
-      status TEXT DEFAULT 'Registered'
-    )`, (err) => {
-      if (!err) {
-        db.get("SELECT COUNT(*) AS count FROM patients", (err, row) => {
-          if (!err && row.count === 0) {
-            const stmt = db.prepare(`INSERT INTO patients (
-              patient_id, full_name, age, gender, mobile_number, email, blood_group, scan_type, appointment_date, registration_date, registration_time, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-            stmt.run("TORUS-7401", "Patient A", 28, "Male", "8342281062", "patienta@gmail.com", "B+", "Abdominal Ultrasound", "06-06-2026", "06-06-2026", "10:30:00", "Registered");
-            stmt.run("TORUS-7402", "Patient B", 32, "Female", "8342281063", "patientb@gmail.com", "O+", "Cardiac Ultrasound", "06-06-2026", "06-06-2026", "11:00:00", "Registered");
-            stmt.run("TORUS-7403", "Patient C", 45, "Other", "8342281064", "patientc@gmail.com", "A-", "Pelvic Ultrasound", "06-06-2026", "06-06-2026", "11:30:00", "Registered");
-            stmt.run("TORUS-1001", "John Doe", 29, "Male", "8342281065", "john.doe@gmail.com", "O-", "Abdominal Ultrasound", "07-06-2026", "06-06-2026", "12:00:00", "Registered");
-            stmt.run("TORUS-1002", "Jane Smith", 34, "Female", "8342281066", "jane.smith@gmail.com", "AB+", "Cardiac Ultrasound", "07-06-2026", "06-06-2026", "12:30:00", "Registered");
-            stmt.run("TORUS-1003", "Robert Brown", 50, "Male", "8342281067", "robert.b@gmail.com", "B-", "Pelvic Ultrasound", "07-06-2026", "06-06-2026", "13:00:00", "Registered");
-            stmt.finalize();
-          }
-        });
-      }
-    });
-    db.run(`CREATE TABLE IF NOT EXISTS reports (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      report_id TEXT UNIQUE,
-      patient_id TEXT,
-      patient_name TEXT,
-      scan_type TEXT,
-      generated_date TEXT,
-      status TEXT DEFAULT 'Generated'
-    )`);
-    db.run(`CREATE TABLE IF NOT EXISTS activity_logs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      date_time TEXT,
-      activity TEXT,
-      patient_id TEXT,
-      patient_name TEXT,
-      status TEXT
-    )`);
-    db.run(`CREATE TABLE IF NOT EXISTS doctors (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      doctor_id TEXT UNIQUE,
-      full_name TEXT,
-      specialization TEXT
-    )`, (err) => {
-      if (!err) {
-        // Seed dummy doctors
-        db.get("SELECT COUNT(*) AS count FROM doctors", (err, row) => {
-          if (!err && row.count === 0) {
-            const stmt = db.prepare("INSERT INTO doctors (doctor_id, full_name, specialization) VALUES (?, ?, ?)");
-            stmt.run("DOC-001", "Dr. Sarah Jenkins", "Radiologist");
-            stmt.run("DOC-002", "Dr. Michael Chen", "Cardiologist");
-            stmt.run("DOC-003", "Dr. Emily Wong", "Neurologist");
-            stmt.finalize();
-          }
-        });
-      }
-    });
-    db.run(`CREATE TABLE IF NOT EXISTS scheduled_scans (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      schedule_id TEXT UNIQUE,
-      patient_id TEXT,
-      patient_name TEXT,
-      scan_type TEXT,
-      doctor_id TEXT,
-      doctor_name TEXT,
-      appointment_date TEXT,
-      appointment_time TEXT,
-      status TEXT DEFAULT 'Scheduled'
-    )`, (err) => {
-      if (!err) {
-        db.get("SELECT COUNT(*) AS count FROM scheduled_scans", (err, row) => {
-          if (!err && row.count === 0) {
-            const stmt = db.prepare(`INSERT INTO scheduled_scans (
-              schedule_id, patient_id, patient_name, scan_type, doctor_id, doctor_name, appointment_date, appointment_time, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-            
-            // Seed Active Sessions
-            stmt.run("SCH-0001", "TORUS-7401", "Patient A", "Abdominal Ultrasound", "DOC-001", "Dr. Sarah Jenkins", "06-06-2026", "10:30 AM", "In Progress");
-            stmt.run("SCH-0002", "TORUS-7402", "Patient B", "Cardiac Ultrasound", "DOC-002", "Dr. Michael Chen", "06-06-2026", "12:00 PM", "Waiting");
-            stmt.run("SCH-0003", "TORUS-7403", "Patient C", "Pelvic Ultrasound", "DOC-003", "Dr. Emily Wong", "06-06-2026", "02:15 PM", "Waiting");
-            
-            // Seed Upcoming Sessions
-            stmt.run("SCH-0004", "TORUS-1001", "John Doe", "Abdominal Ultrasound", "DOC-001", "Dr. Sarah Jenkins", "07-06-2026", "10:30 AM", "Scheduled");
-            stmt.run("SCH-0005", "TORUS-1002", "Jane Smith", "Cardiac Ultrasound", "DOC-002", "Dr. Michael Chen", "07-06-2026", "12:00 PM", "Scheduled");
-            stmt.run("SCH-0006", "TORUS-1003", "Robert Brown", "Pelvic Ultrasound", "DOC-003", "Dr. Emily Wong", "07-06-2026", "02:15 PM", "Scheduled");
-            
-            // Seed 12 Completed Today Sessions
-            const todayStr = "06-06-2026";
-            for (let i = 1; i <= 12; i++) {
-              stmt.run(`SCH-COMP-${i}`, `TORUS-90${i}`, `Completed Patient ${i}`, "Abdominal Ultrasound", "DOC-001", "Dr. Sarah Jenkins", todayStr, "09:00 AM", "Completed");
-            }
-            stmt.finalize();
-          }
-        });
-      }
-    });
-  }
-});
+let db;
 
 const app = express();
 const server = http.createServer(app);
-const HOST = process.env.HOST || "127.0.0.1";
+const HOST = process.env.HOST || "0.0.0.0";
 const PORT = Number(process.env.PORT || 5002);
 
 app.use(express.json());
@@ -801,6 +687,14 @@ app.put("/api/schedule/:schedule_id/reschedule", (req, res) => {
   );
 });
 
-server.listen(PORT, HOST, () => {
-  console.log(`Server running on http://${HOST}:${PORT}`);
-});
+createDatabase()
+  .then((database) => {
+    db = database;
+    server.listen(PORT, HOST, () => {
+      console.log(`Server running on http://${HOST}:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Failed to initialize database:", err);
+    process.exit(1);
+  });
