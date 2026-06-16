@@ -1,0 +1,3322 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Consultation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg-main: #ffffff;
+      --bg-card: #151a2b;
+      --bg-card-2: #14192a;
+      --line: rgba(76, 87, 130, 0.34);
+      --text-main: #ffffff;
+      --text-muted: #7f8aa8;
+      --teal: #00ff85;
+      --cyan: #00d7ff;
+      --purple: #6f2cff;
+      --purple-soft: #7f37ff;
+      --red: #ff5353;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-main);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-main);
+      overflow-x: auto;
+      overflow-y: auto;
+    }
+
+    html {
+      font-size: 10.72px;
+    }
+
+    .app-shell {
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background:
+        #ffffff;
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      background: rgba(5, 8, 22, 0.66);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+    }
+
+    .sidebar-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 22.25em;
+      z-index: 50;
+      transform: translateX(-104%);
+      transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+      background: linear-gradient(180deg, rgba(17, 19, 28, 0.98) 0%, rgba(10, 12, 20, 0.98) 100%);
+      border-right: 0.0625em solid rgba(106, 0, 255, 0.2);
+      box-shadow: 1.125em 0 2.75em rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar.open {
+      transform: translateX(0);
+    }
+
+    /* Ensure fullscreen panel header icons appear above the sidebar when open */
+    .panel-header .fs-menu-btn,
+    .panel-header .panel-actions .icon-btn {
+      position: relative;
+      z-index: 60;
+    }
+
+    /* Slight left spacing for the fullscreen hamburger */
+    .panel-header .fs-menu-btn {
+      margin-right: 0.75em;
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.75em;
+      height: 2.75em;
+    }
+
+    .sidebar-header {
+      height: 6.5em;
+      padding: 1.375em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 0.0625em solid rgba(106, 0, 255, 0.16);
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 1.125em;
+    }
+
+    .sidebar-brand .brand-logo-wrap {
+      width: 3.5em;
+      height: 3.5em;
+      margin: 0;
+      border: 0.0625em solid rgba(106, 0, 255, 0.14);
+      border-radius: 0.875em;
+      display: grid;
+      place-items: center;
+    }
+
+    .sidebar-brand .brand-logo {
+      width: 2em;
+      height: 2em;
+      object-fit: contain;
+      filter: contrast(1.2) saturate(1.1);
+    }
+
+    .sidebar-brand .brand-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1875em;
+    }
+
+    .sidebar-brand .brand-copy strong {
+      font-size: 1.5em;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .sidebar-brand .brand-copy span {
+      font-size: 1.125em;
+      color: #9ca3b9;
+      line-height: 1.2;
+    }
+
+    .close-sidebar {
+      width: 2.375em;
+      height: 2.375em;
+      border-radius: 0.75em;
+      border: 0.0625em solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.02);
+      color: #9ca3b9;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .sidebar-nav {
+      padding: 1.125em;
+      display: grid;
+      gap: 0.875em;
+      flex: 1;
+    }
+
+    .sidebar-link {
+      width: 100%;
+      min-height: 4em;
+      padding: 0 1.25em;
+      border: 0.0625em solid rgba(106, 0, 255, 0.18);
+      background: rgba(15, 17, 23, 0.94);
+      border-radius: 0.875em;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 1em;
+      cursor: pointer;
+      text-align: left;
+      position: relative;
+      font-size: 1.25em;
+      font-weight: 700;
+      transition: all 0.22s ease;
+    }
+
+    .sidebar-link:hover {
+      border-color: rgba(106, 0, 255, 0.34);
+      background: rgba(22, 24, 34, 0.98);
+      box-shadow: 0 0 0 0.0625em rgba(106, 0, 255, 0.18), 0 0 1.5em rgba(106, 0, 255, 0.1);
+    }
+
+    .sidebar-link.active {
+      background: rgba(19, 22, 33, 0.98);
+      border-color: rgba(106, 0, 255, 0.5);
+      box-shadow: 0 0 0 0.0625em rgba(106, 0, 255, 0.2), 0 0 1.125em rgba(106, 0, 255, 0.12);
+    }
+
+    .sidebar-link.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.625em;
+      bottom: 0.625em;
+      width: 0.1875em;
+      border-radius: 62.4375em;
+      background: linear-gradient(180deg, #a855f7, #6a00ff);
+    }
+
+    .sidebar-link .link-icon {
+      width: 1.75em;
+      height: 1.75em;
+      color: #8b2cff;
+      flex: 0 0 auto;
+    }
+
+    .sidebar-link.logout .link-icon {
+      color: #f87171;
+    }
+
+    .sidebar-spacer {
+      flex: 1;
+    }
+
+    .sidebar-footer {
+      padding: 1.25em;
+      border-top: 0.0625em solid rgba(106, 0, 255, 0.12);
+    }
+
+    .user-summary {
+      background: rgba(255, 255, 255, 0.03);
+      border: 0.0625em solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.875em;
+      padding: 1.125em;
+      display: grid;
+      gap: 0.5em;
+    }
+
+    .user-summary strong {
+      font-size: 1.1875em;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .user-summary span {
+      font-size: 1.0625em;
+      color: #9ca3b9;
+      line-height: 1.5;
+      font-weight: 500;
+      word-break: break-word;
+    }
+
+    .topbar {
+      height: 4.625em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25em;
+      border-bottom: 0.0625em solid rgba(97, 59, 196, 0.22);
+      background: linear-gradient(180deg, rgba(10, 14, 32, 0.96) 0%, rgba(6, 10, 24, 0.96) 100%);
+      flex-shrink: 0;
+    }
+
+    .topbar-left,
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75em;
+    }
+
+
+    .net-badge {
+      height: 2.125em;
+      border-radius: 0.625em;
+      padding: 0 0.75em;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5em;
+      background: rgba(13, 20, 35, 0.96);
+      border: 0.0625em solid rgba(54, 66, 103, 0.5);
+      color: #e9edf9;
+      font-size: 0.875em;
+      font-weight: 500;
+    }
+
+    .net-badge .wifi {
+      color: var(--teal);
+      display: inline-flex;
+      align-items: center;
+      width: 1.0625em;
+      height: 1.0625em;
+    }
+
+    .net-badge .wifi svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .icon-btn {
+      width: 2.75em;
+      height: 2.75em;
+      border-radius: 62.4375em;
+      border: 0.0625em solid rgba(140, 152, 190, 0.24);
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, rgba(21, 28, 48, 0.88) 0%, rgba(15, 22, 40, 0.9) 100%);
+      color: #d8e3ff;
+      padding: 0;
+      cursor: pointer;
+      position: relative;
+      box-shadow: inset 0 0.0625em 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .icon-btn svg {
+      width: 1.375em;
+      height: 1.375em;
+    }
+
+    .icon-btn .dot {
+      position: absolute;
+      top: 0.625em;
+      right: 0.625em;
+      width: 0.375em;
+      height: 0.375em;
+      border-radius: 62.4375em;
+      background: #ff3b30;
+      box-shadow: 0 0 0 0.125em rgba(5, 8, 22, 0.95);
+    }
+
+    .profile-pill {
+      width: 2.75em;
+      height: 2.75em;
+      border-radius: 62.4375em;
+      border: 0.125em solid rgba(127, 55, 255, 0.96);
+      box-shadow: 0 0 0 0.0625em rgba(127, 55, 255, 0.3), 0 0 0.875em rgba(127, 55, 255, 0.38);
+      color: #d2b4ff;
+      background: radial-gradient(circle at 35% 20%, rgba(53, 34, 96, 0.86), rgba(22, 14, 48, 0.95));
+      display: grid;
+      place-items: center;
+      font-size: 1.375em;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+    }
+
+    .main {
+      height: 100vh;
+      /* 🔥 full screen */
+      padding: 1.25em;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 1em;
+      overflow-y: auto;
+      overflow-x: hidden;
+      flex: 1;
+      margin-top: 0;
+      padding-bottom: 1em !important;
+    }
+
+    .main-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .content-wrapper,
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .video-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .heading-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5em;
+      flex-wrap: wrap;
+    }
+
+    .title-wrap {
+      flex: 1;
+      min-width: 12.5em;
+    }
+
+    .title-wrap h1 {
+      font-size: 2.25em !important;
+      /* BIG */
+      font-weight: 700;
+      margin: 0;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+
+    .title-wrap p {
+      margin: 0.25em 0 0;
+      font-size: 1.125em;
+      line-height: 1.4;
+      color: #7C3AED;
+      font-weight: 500;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75em;
+      flex-wrap: nowrap;
+    }
+
+    .session-details-slot {
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+      flex-shrink: 0;
+      display: block;
+    }
+
+
+    .patient-details-card {
+      grid-auto-rows: min-content !important;
+      /* 🔥 FIX HEIGHT */
+      align-items: start !important;
+      /* 🔥 top align */
+      width: 100%;
+      border: 0.0625em solid rgba(0, 215, 255, 0.18);
+      background: linear-gradient(180deg, rgba(27, 33, 52, 0.65) 0%, rgba(22, 28, 45, 0.65) 100%);
+      display: grid;
+      grid-template-columns: repeat(6, 1fr) !important;
+      /* 🔥 6 equal columns */
+      padding: 0.625em 1em !important;
+      /* 🔥 clean spacing */
+      column-gap: 24px !important;
+      /* 🔥 horizontal spacing */
+      row-gap: 6px !important;
+      position: relative;
+      border-radius: 0.5em;
+      line-height: 1.1 !important;
+      grid-template-rows: auto auto;
+      /* 🔥 2 rows */
+      padding-top: 0.5em !important;
+      padding-bottom: 0.5em !important;
+    }
+
+    /* Title */
+    .patient-details-title {
+      grid-column: 1 / 4;
+      /* 🔥 left side */
+      grid-row: 1;
+      margin: 0;
+
+      font-size: 1.625em;
+      /* 🔥 reduce size */
+      font-weight: 600;
+
+      display: inline-flex;
+      /* 🔥 KEY FIX */
+      align-items: center;
+
+      width: fit-content;
+      /* 🔥 IMPORTANT */
+      white-space: nowrap;
+      /* 🔥 prevent stretching */
+      padding: 0;
+    }
+
+    /* Label */
+    .patient-details-item .label {
+      color: #7C3AED !important;
+      font-weight: 700 !important;
+      font-size: 1.1em !important;
+      text-align: left !important;
+    }
+
+    .patient-details-item .value {
+      color: #111827 !important;
+      font-weight: 700 !important;
+      font-size: 1.25em !important;
+      text-align: left !important;
+      margin-left: 24px !important;
+      /* 18px icon + 6px gap */
+    }
+
+    .patient-details-card.is-hidden {
+      display: none;
+    }
+
+    .patient-details-item {
+      grid-row: 2;
+      text-align: left !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 6px !important;
+    }
+
+    .patient-item-top {
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+    }
+
+    .patient-icon-wrap {
+      width: 18px !important;
+      height: 18px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .patient-icon-wrap i,
+    .patient-icon-wrap svg {
+      width: 18px !important;
+      height: 18px !important;
+      display: block !important;
+      color: #7C3AED !important;
+      stroke: #7C3AED !important;
+      stroke-width: 2 !important;
+      fill: none !important;
+    }
+
+    .patient-details {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr) !important;
+      align-items: start !important;
+    }
+
+    .patient-header {
+      grid-column: 1 / 4;
+      grid-row: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.6em;
+    }
+
+    .patient-header .patient-details-title {
+      margin: 0;
+    }
+
+    .patient-header-icon {
+      width: 2.2em;
+      height: 2.2em;
+      border-radius: 50%;
+      background: rgba(124, 58, 237, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .patient-header-icon i {
+      width: 1.1em;
+      height: 1.1em;
+      color: #7C3AED;
+    }
+
+    .history-btn svg {
+      width: 1.125em;
+      height: 1.125em;
+    }
+
+    .history-btn i {
+      width: 1em;
+      height: 1em;
+    }
+
+
+    .history-btn {
+      grid-column: 6 / 7;
+      /* 🔥 right end */
+      grid-row: 1;
+      justify-self: end;
+
+      justify-self: end;
+      height: 2.25em;
+      padding: 0 0.875em;
+      font-size: 0.875em;
+
+      height: 3em;
+      /* 🔥 bigger */
+      padding: 0 1.5em;
+      /* 🔥 more width */
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      border-radius: 1.625em;
+      border: 0.0625em solid rgba(0, 215, 255, 0.6);
+
+      background: linear-gradient(135deg,
+          rgba(0, 215, 255, 0.25),
+          rgba(0, 215, 255, 0.08));
+
+      color: #00e5ff;
+      font-size: 1em;
+      /* 🔥 bigger text */
+      font-weight: 700;
+
+      cursor: pointer;
+      transition: all 0.25s ease;
+
+      box-shadow: 0 0 1.125em rgba(0, 215, 255, 0.25);
+      /* 🔥 glow */
+    }
+
+    .history-btn:hover {
+
+      box-shadow: 0 0 1.75em rgba(0, 215, 255, 0.6);
+      background: rgba(0, 215, 255, 0.35);
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+    }
+
+    .history-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+    }
+
+    .connected-pill {
+      font-size: 1.175em !important;
+      /* 🔥 increase */
+      height: 3em !important;
+      padding: 0 1.125em !important;
+      border-radius: 1.25em;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5em;
+      font-weight: 700;
+      color: var(--teal);
+      border: 0.0625em solid rgba(0, 255, 133, 0.23);
+      background: rgba(0, 255, 133, 0.08);
+      white-space: nowrap;
+    }
+
+    .connected-pill.is-waiting {
+      color: #1ec8e2;
+      border-color: rgba(30, 200, 226, 0.22);
+      background: rgba(30, 200, 226, 0.08);
+    }
+
+    .connected-pill.is-waiting .dot {
+      width: 0.625em;
+      height: 0.625em;
+      border: 0.125em solid currentColor;
+      border-top-color: transparent;
+      border-radius: 62.4375em;
+      background: transparent;
+      animation: spin 0.9s linear infinite;
+      box-shadow: none;
+    }
+
+    .connected-pill .dot {
+      width: 0.5em;
+      height: 0.5em;
+      border-radius: 62.4375em;
+      background: var(--teal);
+      box-shadow: 0 0 0.5em rgba(0, 255, 133, 0.4);
+      flex-shrink: 0;
+    }
+
+    .back-btn {
+      font-size: 1.125em !important;
+      /* 🔥 increase */
+      height: 3em !important;
+      padding: 0 1.625em !important;
+      border-radius: 1.25em;
+      border: 0.0625em solid rgba(111, 44, 255, 0.55);
+      background: rgba(13, 18, 33, 0.86);
+      color: #8e9abb;
+      font-size: 0.875em;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .feeds-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1em;
+      flex: 1;
+      /* 🔥 takes ALL available space */
+      display: flex;
+      gap: 1em;
+      margin-bottom: 0.75em !important;
+      /* 👈 SAME GAP AS TOP */
+
+
+      height: 48vh !important;
+      /* 🔥 ADD THIS */
+      flex: 1;
+      align-items: stretch;
+      margin: 0;
+      min-height: 0;
+    }
+
+    .feed-card {
+      position: relative;
+      border-radius: 12px;
+      border: 1px solid #E5E7EB;
+      background: #F9FAFB !important;
+      /* light clean bg */
+      overflow: hidden;
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      padding: 0.625em !important;
+      /* 🔥 reduce */
+      height: 100% !important;
+      /* 🔥 IMPORTANT */
+    }
+
+    .feed-card.left {
+      border-color: rgba(111, 44, 255, 0.36);
+    }
+
+    .feed-card.right {
+      border-color: rgba(0, 215, 255, 0.28);
+    }
+
+    .feed-center {
+      font-size: 1.75em !important;
+      /* 🔥 BIG */
+      font-weight: 600;
+      text-align: center;
+      color: #6D28D9;
+      line-height: 1.4;
+    }
+
+    .feed-center svg {
+      width: 3.5em;
+      height: 3.5em;
+      margin-bottom: 1em;
+      opacity: 0.85;
+    }
+
+    .feed-card.left .feed-center svg {
+      color: var(--purple-soft);
+    }
+
+    .feed-card.right .feed-center svg {
+      color: #00b7e6;
+    }
+
+    .feed-label {
+      font-size: 1.25em !important;
+      /* 🔥 increase */
+      font-weight: 600;
+      font-size: 1em !important;
+      /* increase */
+      position: absolute;
+      left: 1.25em;
+      bottom: 1em;
+      color: #6D28D9;
+    }
+
+    .quality-tags {
+      position: absolute;
+      top: 0.75em;
+      right: 0.75em;
+      display: flex;
+      gap: 0.375em;
+    }
+
+    .tag {
+      font-size: 1em !important;
+      /* 🔥 increase */
+      padding: 0.5em 0.875em !important;
+      height: 1.625em;
+      border-radius: 0.3125em;
+      display: inline-flex;
+      align-items: center;
+      font-weight: 600;
+      color: #b8eeff;
+      background: rgba(0, 123, 189, 0.45);
+    }
+
+    .tag.green {
+      color: #1fff9b;
+      background: rgba(0, 124, 72, 0.5);
+    }
+
+    .doctor-tile {
+      width: 280px !important;
+      height: 180px !important;
+      border-radius: 12px;
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      z-index: 10;
+      font-size: 0.875em;
+      border: 2px solid #A78BFA;
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+      background: linear-gradient(135deg, #7C3AED, #8B5CF6) !important;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.375em;
+      color: #f5f7ff;
+      font-weight: 500;
+      object-fit: cover !important;
+    }
+
+    .doctor-tile svg {
+      width: 1.5em;
+      height: 1.5em;
+    }
+
+    .doctor-tile .name {
+      font-size: 0.8125em;
+      line-height: 1;
+    }
+
+    .doctor-tile .overlay-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 0.75em;
+    }
+
+    /* Increase patient tile specifically to be larger and better proportioned */
+    #patientVideoTile {
+      width: 280px !important;
+      height: 180px !important;
+      right: 12px;
+      bottom: 12px;
+      border-radius: 12px;
+      padding: 0.375em 0.5em;
+      gap: 0.375em;
+    }
+
+    #patientVideoTile svg {
+      width: 1.5em;
+      height: 1.5em;
+    }
+
+    #patientVideoTile .name {
+      font-size: 0.8125em;
+      font-weight: 600;
+    }
+
+    .bottom-panel {
+      margin-top: 0 !important;
+      /* 🔥 PUSH DOWN */
+      border-radius: 1em;
+      border: 0.0625em solid rgba(111, 44, 255, 0.2);
+      background: linear-gradient(180deg, rgba(27, 33, 52, 0.7) 0%, rgba(22, 28, 45, 0.7) 100%);
+      flex-shrink: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.75em !important;
+      height: 5.625em !important;
+      /* 🔥 increase height */
+      min-height: 5.625em !important;
+      /* 🔥 remove conflict */
+      padding: 0.75em 0 !important;
+      /* 🔥 give breathing space */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      position: relative;
+    }
+
+    .video-stream {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: transparent !important;
+      /* 🔥 NO BLACK */
+      z-index: 2;
+    }
+
+    .feed-card .feed-center.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .call-status-panel {
+      width: 100%;
+      min-height: 4.25em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: 0.625em;
+      color: #ba81ff;
+      font-size: 1.25em;
+      font-weight: 600;
+    }
+
+    .waiting-container,
+    .call-status-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+    }
+
+    .call-status-panel .spinner {
+      width: 2.875em;
+      height: 2.875em;
+      border: 0.25em solid rgba(186, 129, 255, 0.22);
+      border-top-color: #ba81ff;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    .call-controls {
+      width: 100%;
+      min-height: 4.25em;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.75em;
+      position: static !important;
+      margin: 0 auto;
+      z-index: 3;
+    }
+
+    .control-btn {
+      width: 4em;
+      /* 🔥 increased */
+      height: 4em;
+      /* 🔥 increased */
+      border-radius: 50%;
+      border: 0.0625em solid rgba(117, 130, 172, 0.45);
+      background: rgba(16, 23, 40, 0.88);
+      color: #00d7ff;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .control-btn.active {
+      color: #ffffff;
+      background: #6f2cff;
+      border-color: rgba(127, 55, 255, 0.95);
+      box-shadow: 0 0 0.875em rgba(111, 44, 255, 0.35);
+    }
+
+    .control-btn.off {
+      color: #ff8f8f;
+      border-color: rgba(255, 83, 83, 0.58);
+      background: rgba(42, 15, 20, 0.88);
+    }
+
+    .control-btn:hover {
+
+      box-shadow: 0 0 1em rgba(111, 44, 255, 0.4);
+    }
+
+    .control-btn svg,
+    .control-btn i {
+      width: 1.75em;
+      /* 🔥 bigger icon */
+      height: 1.75em;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .actions-row {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      gap: 0.625em !important;
+      padding-left: 0.625em;
+      flex-shrink: 0;
+      padding-top: 0.25em !important;
+      position: relative !important;
+      /* 🔥 remove fixed */
+      margin-top: 0.5em !important;
+      /* small equal gap */
+    }
+
+    .btn-primary,
+    .btn-danger {
+      border-radius: 0.75em;
+      border: 0.0625em solid transparent;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      height: 2.5em !important;
+      /* 🔥 reduce height */
+      font-size: 1.2em !important;
+      /* optional small text */
+    }
+
+    .btn-primary {
+      width: 75% !important;
+      /* 🔥 slightly increase */
+      height: 4.375em !important;
+      background: #08ec88;
+      border-color: rgba(8, 236, 136, 0.85);
+      color: #08331f;
+    }
+
+    .btn-primary.active-ultrasound,
+    .btn-primary.is-connected {
+      background: #1ec8e2;
+      border-color: rgba(30, 200, 226, 0.85);
+      color: #032736;
+    }
+
+    .btn-primary.is-waiting {
+      background: #08ec88;
+      border-color: rgba(8, 236, 136, 0.85);
+      color: #08331f;
+    }
+
+    .btn-danger {
+      width: 23% !important;
+      /* 🔥 balance */
+      height: 4.375em !important;
+      background: rgba(23, 14, 20, 0.94);
+      border-color: rgba(255, 83, 83, 0.8);
+      color: #ff5d5d;
+      padding: 0 1.25em;
+    }
+
+    /* HARD OVERRIDES - FORCE APPLY */
+    html,
+    body {
+      width: 100% !important;
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow-x: auto !important;
+      overflow-y: auto !important;
+    }
+
+    html {
+      font-size: 10.72px;
+    }
+
+    body {
+      font-size: 1em !important;
+    }
+
+    .app-shell,
+    .main-container,
+    .page-container,
+    .wrapper {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    .app-shell,
+    .main-container {
+      min-height: 100vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+
+    #root,
+    .app,
+    .main-container {
+      min-height: 100vh !important;
+    }
+
+    .content-wrapper,
+    .main {
+      flex: 1 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-start !important;
+      min-height: 0 !important;
+    }
+
+    .page-container,
+    .main {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-start !important;
+      flex: 1 !important;
+      min-height: 0 !important;
+      padding: 1em 1.25em 1em !important;
+      /* 🔥 SAME AS TOP */
+      gap: 1em !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      margin-top: 0 !important;
+    }
+
+    .page-title,
+    .title-wrap h1 {
+      font-size: 2.25em !important;
+      font-weight: 700 !important;
+    }
+
+    .page-subtitle,
+    .title-wrap p {
+      font-size: 1em !important;
+      opacity: 1 !important;
+      color: #7C3AED !important;
+      font-weight: 500 !important;
+    }
+
+    .brand-wordmark {
+      font-size: 3em !important;
+      /* 🔥 increase */
+      font-weight: 800 !important;
+    }
+
+    .menu-icon-btn,
+    .notification-icon,
+    .icon-btn,
+    .profile-circle,
+    .profile-pill {
+      width: 2.75em !important;
+      height: 2.75em !important;
+    }
+
+    .menu-icon-btn svg,
+    .notification-icon svg,
+    .icon-btn svg {
+      width: 1.375em !important;
+      height: 1.375em !important;
+    }
+
+    .profile-circle,
+    .profile-pill {
+      font-size: 1.125em !important;
+      font-weight: 700 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 50% !important;
+    }
+
+    .video-grid,
+    .feeds-row {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 1.25em !important;
+      width: 100% !important;
+      align-items: stretch !important;
+      min-height: auto !important;
+      /* 🔥 REMOVE FOR SCROLL FIX */
+    }
+
+    .video-card,
+    .feed-card {
+      height: auto !important;
+      min-height: 0 !important;
+      flex: 1 1 auto !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 1.5em !important;
+      border-radius: 1.125em !important;
+    }
+
+    .feed-card .feed-label {
+      font-size: 1.25em !important;
+    }
+
+    .video-card .bottom-text,
+    .bottom-text,
+    .feed-label {
+      font-size: 1em !important;
+    }
+
+    .badge,
+    .tag {
+      font-size: 0.875em !important;
+      padding: 0.375em 0.625em !important;
+      border-radius: 0.375em !important;
+    }
+
+    .middle-card,
+    .bottom-panel {
+      height: auto !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      min-height: 3.75em !important;
+      /* 🔥 reduce height */
+      min-height: unset !important;
+      padding: 0 !important;
+    }
+
+    .bottom-actions,
+    .actions-row {
+      display: flex !important;
+      justify-content: flex-start !important;
+      align-items: center !important;
+      gap: 0.625em !important;
+      position: relative !important;
+      left: auto !important;
+      right: auto !important;
+      bottom: auto !important;
+      width: 100% !important;
+      padding: 0.625em 1.25em !important;
+      margin: 0 !important;
+      z-index: 2 !important;
+      border-top: 0.0625em solid rgba(106, 0, 255, 0.2) !important;
+      background: #ffffff;
+    }
+
+    .primary-btn,
+    .btn-primary {
+      height: 5em !important;
+      font-size: 1.85em !important;
+      font-weight: 600 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      line-height: 1.2 !important;
+    }
+
+    .primary-btn.active-ultrasound,
+    .btn-primary.active-ultrasound,
+    .btn-primary.is-connected {
+      background: #1ec8e2 !important;
+      border-color: rgba(30, 200, 226, 0.85) !important;
+      color: #032736 !important;
+    }
+
+    .btn-primary.is-waiting {
+      background: #08ec88 !important;
+      border-color: rgba(8, 236, 136, 0.85) !important;
+      color: #08331f !important;
+    }
+
+    .danger-btn,
+    .btn-danger {
+      height: 5em !important;
+      font-size: 1.65em !important;
+      font-weight: 600 !important;
+      width: 15em !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      line-height: 1.2 !important;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    #settingsModal.modal {
+      position: fixed !important;
+      inset: 0 !important;
+      display: none;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 1.5em;
+      z-index: 10000 !important;
+    }
+
+    #settingsModal.modal:not(.hidden) {
+      display: flex;
+    }
+
+    #settingsModal .modal-content {
+      width: min(35em, 92vw);
+      max-height: 80vh;
+      overflow: auto;
+      box-shadow: 0 1.5em 3.75em rgba(0, 0, 0, 0.45);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .modal-content {
+      width: 25em;
+      background: #1A1C25;
+      border-radius: 1em;
+      padding: 1.25em;
+      border: 0.0625em solid rgba(0, 229, 255, 0.3);
+    }
+
+    .modal-content.large {
+      width: 45em;
+      max-width: 92%;
+    }
+
+    .doctor-joined-modal .modal-content {
+      width: min(30em, 92vw);
+      text-align: center;
+      box-shadow: 0 1.5em 3.75em rgba(0, 0, 0, 0.45);
+    }
+
+    .doctor-joined-modal .modal-header {
+      justify-content: center;
+    }
+
+    .doctor-joined-modal .modal-header h2 {
+      width: 100%;
+    }
+
+    .doctor-joined-message {
+      margin: 0.5em 0 1.5em;
+      font-size: 1.125em;
+      line-height: 1.5;
+      color: #d7def3;
+    }
+
+    .doctor-joined-actions {
+      display: flex;
+      justify-content: center;
+    }
+
+    .doctor-joined-btn {
+      min-width: 7.25em;
+      height: 2.75em;
+      padding: 0 1.5em;
+      border: none;
+      border-radius: 0.75em;
+      background: linear-gradient(135deg, #00d7ff, #6f2cff);
+      color: #fff;
+      font-size: 1.0625em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      box-shadow: 0 0.75em 1.75em rgba(111, 44, 255, 0.24);
+    }
+
+    .doctor-joined-btn:hover {
+      transform: translateY(-0.0625em);
+      box-shadow: 0 0.9em 2em rgba(111, 44, 255, 0.3);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1em;
+    }
+
+    .modal-header h2 {
+      font-size: 1.625em;
+      font-weight: 700;
+    }
+
+    .close-btn {
+      background: rgba(255, 59, 59, 0.15);
+      border: none;
+      color: #ff4d4d;
+      width: 2.375em;
+      height: 2.375em;
+      border-radius: 0.625em;
+      font-size: 1.125em;
+      display: grid;
+      place-items: center;
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 59, 59, 0.3);
+
+    }
+
+    .close-btn.red {
+      background: rgba(255, 59, 59, 0.2);
+      color: #ff3b3b;
+    }
+
+    .history-card {
+      padding: 1.375em;
+      border-radius: 0.875em;
+      width: 100%;
+      background: #0F1117;
+      border: 0.0625em solid rgba(0, 229, 255, 0.2);
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.125em;
+    }
+
+    .history-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .status {
+      background: rgba(0, 255, 133, 0.15);
+      color: #00ff85;
+      padding: 0.375em 0.875em;
+      border-radius: 62.4375em;
+      font-size: 0.8125em;
+      font-weight: 600;
+    }
+
+    .history-card .title {
+      font-size: 1.125em;
+      font-weight: 600;
+    }
+
+    .history-card .date {
+      font-size: 0.875em;
+      color: #9CA3AF;
+    }
+
+    .history-card .doctor {
+      font-size: 0.875em;
+      color: #9CA3AF;
+    }
+
+    .history-card .result {
+      font-size: 0.9375em;
+      margin-top: 0.375em;
+    }
+
+    .settings-section {
+      margin-bottom: 0.875em;
+      color: #9CA3AF;
+    }
+
+    /* Final light-theme lock (colors only) */
+    html,
+    body,
+    .app-shell,
+    .main,
+    .page-container,
+    .bottom-actions,
+    .actions-row {
+      background: #FFFFFF !important;
+    }
+
+    .topbar {
+      background: #FFFFFF !important;
+      border-bottom: 0.0625em solid #E9D5FF !important;
+    }
+
+    .page-title,
+    .title-wrap h1,
+    .brand-wordmark {
+      color: #111827 !important;
+    }
+
+    .page-subtitle,
+    .title-wrap p {
+      color: #7C3AED !important;
+      font-weight: 500 !important;
+      opacity: 1 !important;
+    }
+
+    .back-btn,
+    .icon-btn,
+    .menu-icon-btn,
+    .profile-pill,
+    .profile-circle,
+    .brand-logo-wrap {
+      color: #7C3AED !important;
+      border-color: #C4B5FD !important;
+    }
+
+    .menu-icon-btn,
+    .icon-btn,
+    .profile-pill,
+    .profile-circle,
+    .back-btn,
+    .brand-logo-wrap {
+      background: #FFFFFF !important;
+      box-shadow: none !important;
+    }
+
+    .back-btn {
+      border: 0.0625em solid #C4B5FD !important;
+      color: #7C3AED !important;
+    }
+
+    .connected-pill {
+      color: #10B981 !important;
+      border: 0.0625em solid #D1FAE5 !important;
+      background: #ECFDF5 !important;
+    }
+
+    .connected-pill.is-waiting {
+      color: #1ec8e2 !important;
+      border-color: rgba(30, 200, 226, 0.22) !important;
+      background: rgba(30, 200, 226, 0.08) !important;
+    }
+
+    .connected-pill.is-waiting .dot {
+      width: 0.625em !important;
+      height: 0.625em !important;
+      border: 0.125em solid currentColor !important;
+      border-top-color: transparent !important;
+      border-radius: 62.4375em !important;
+      background: transparent !important;
+      animation: spin 0.9s linear infinite !important;
+      box-shadow: none !important;
+    }
+
+    .connected-pill .dot {
+      background: #10B981 !important;
+      box-shadow: 0 0 0.5em rgba(16, 185, 129, 0.35) !important;
+    }
+
+    .patient-details-card {
+      background: #F5F3FF !important;
+      border: 0.0625em solid #E5E7EB !important;
+    }
+
+    .patient-details-title {
+      color: #6D28D9 !important;
+    }
+
+    .patient-details-item .label {
+      color: #7C3AED !important;
+      /* 🔥 purple */
+      font-weight: 500 !important;
+      font-size: 0.8125em;
+    }
+
+    .patient-details-item .value {
+      color: #111827 !important;
+      font-weight: 600 !important;
+      font-size: 1em;
+    }
+
+    .history-btn {
+      background: transparent !important;
+      border: 0.0625em solid #C4B5FD !important;
+      color: #7C3AED !important;
+      box-shadow: none !important;
+    }
+
+    .history-btn:hover {
+      background: #EDE9FE !important;
+    }
+
+    .feed-card,
+    .feed-card.left,
+    .feed-card.right {
+      background: #F9FAFB !important;
+      border: 0.0625em solid #E5E7EB !important;
+    }
+
+    .feed-card.left .feed-center {
+      color: #4C1D95 !important;
+    }
+
+    .feed-card.left .feed-center svg {
+      color: #7C3AED !important;
+    }
+
+    .feed-card.left .feed-label {
+      color: #6B7280 !important;
+    }
+
+    .feed-card.right .feed-center,
+    .feed-card.right .feed-label {
+      color: #6D28D9 !important;
+    }
+
+    .feed-card.right .feed-center svg {
+      color: #7C3AED !important;
+    }
+
+    .doctor-tile {
+      background: linear-gradient(135deg, #7C3AED, #8B5CF6) !important;
+      color: #FFFFFF !important;
+      border: 2px solid #A78BFA !important;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .doctor-tile:active {
+      transform: scale(0.95);
+    }
+
+    #localVideo {
+      background: linear-gradient(135deg, #7C3AED, #8B5CF6) !important;
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4) !important;
+      display: none;
+      object-fit: cover !important;
+      z-index: 11;
+    }
+
+    .patient-tile-placeholder {
+      background: linear-gradient(135deg, #7C3AED, #8B5CF6) !important;
+      color: #FFFFFF !important;
+      border: 0.0625em solid #A78BFA !important;
+    }
+
+    .bottom-panel,
+    .middle-card {
+      background: #F3F4F6 !important;
+      border: 0.0625em solid #E5E7EB !important;
+    }
+
+    body.patient-view .control-btn {
+      width: 4em !important;
+      height: 4em !important;
+      border-radius: 50% !important;
+      display: grid !important;
+      place-items: center !important;
+      background: #FFFFFF !important;
+      color: #7C3AED !important;
+      border: 0.0625em solid #C4B5FD !important;
+    }
+
+    body.patient-view .control-btn.active {
+      background: #FFFFFF !important;
+      color: #7C3AED !important;
+      border-color: #C4B5FD !important;
+      box-shadow: 0 0 0.625em rgba(124, 58, 237, 0.18) !important;
+    }
+
+    body.patient-view .control-btn.off {
+      background: #FEF2F2 !important;
+      color: #EF4444 !important;
+      border-color: #FCA5A5 !important;
+      box-shadow: none !important;
+    }
+
+    body.patient-view .control-btn svg,
+    body.patient-view .control-btn i {
+      width: 1.75em !important;
+      height: 1.75em !important;
+    }
+
+    .btn-primary,
+    .btn-danger,
+    .primary-btn,
+    .danger-btn {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.35s ease;
+      transform: translateY(0);
+    }
+
+    .btn-primary:disabled,
+    .primary-btn:disabled {
+      cursor: default !important;
+      pointer-events: none !important;
+      opacity: 0.88 !important;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.18) !important;
+      filter: saturate(0.9) brightness(0.98) !important;
+    }
+
+    body:not(.patient-view) #testingBtn:disabled,
+    body:not(.patient-view) #testingBtn[disabled] {
+      cursor: not-allowed !important;
+      pointer-events: auto !important;
+    }
+
+    .ripple {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      animation: rippleAnim 0.6s linear;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    @keyframes rippleAnim {
+      to {
+        transform: translate(-50%, -50%) scale(3);
+        opacity: 0;
+      }
+    }
+
+    .btn-primary:hover,
+    .btn-danger:hover,
+    .primary-btn:hover,
+    .danger-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary,
+    .btn-primary.active-ultrasound,
+    .btn-primary.is-connected,
+    .btn-primary.is-waiting,
+    .primary-btn,
+    .primary-btn.active-ultrasound {
+      background: linear-gradient(270deg, #7C3AED, #8B5CF6, #6366F1) !important;
+      background-size: 400% 400% !important;
+      animation: gradientMove 6s ease infinite;
+      color: #ffffff !important;
+      border: 2px solid transparent !important;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+    }
+
+    @keyframes gradientMove {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .btn-primary:hover,
+    .primary-btn:hover {
+      background: #ffffff !important;
+      color: #7C3AED !important;
+      border: 2px solid #7C3AED !important;
+      box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);
+      filter: brightness(1.1);
+    }
+
+    .btn-primary:active,
+    .primary-btn:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-danger,
+    .danger-btn {
+      width: 53.125em !important;
+      background: #ffffff !important;
+      color: #EF4444 !important;
+      border: 2px solid #EF4444 !important;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+    }
+
+    .btn-danger::after,
+    .danger-btn::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      border: 2px solid #EF4444;
+      animation: pulse 1.8s infinite;
+      pointer-events: none;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 0.6;
+      }
+
+      70% {
+        transform: scale(1.08);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 0;
+      }
+    }
+
+    .btn-danger:hover,
+    .danger-btn:hover {
+      background: #EF4444 !important;
+      color: #ffffff !important;
+      box-shadow: 0 6px 18px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-danger:active,
+    .danger-btn:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-primary::before,
+    .btn-danger::before,
+    .primary-btn::before,
+    .danger-btn::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -75%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+      transform: skewX(-20deg);
+      pointer-events: none;
+    }
+
+    .btn-primary:hover::before,
+    .btn-danger:hover::before,
+    .primary-btn:hover::before,
+    .danger-btn:hover::before {
+      animation: buttonShine 0.8s forwards;
+    }
+
+    @keyframes buttonShine {
+      100% {
+        left: 130%;
+      }
+    }
+
+    .purple {
+      color: #a855f7;
+    }
+
+    .cyan {
+      color: #00e5ff;
+    }
+
+    .green {
+      color: #00ff85;
+    }
+
+    /* Final layout sizing and spacing pass (no color/font/structure changes) */
+    .video-grid,
+    .feeds-row {
+      min-height: clamp(31.25em, 62vh, 46.25em) !important;
+      align-items: stretch !important;
+    }
+
+    .video-card,
+    .feed-card {
+      height: 100% !important;
+      min-height: clamp(31.25em, 62vh, 46.25em) !important;
+    }
+
+    #callStatePanel.bottom-panel,
+    .bottom-panel.middle-card,
+    .middle-card.bottom-panel {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin-top: 0.625em !important;
+      margin-bottom: 0.625em !important;
+      padding-top: 0.75em !important;
+      padding-bottom: 0.75em !important;
+    }
+
+    #callStatePanel .call-controls,
+    #callStatePanel .call-status-panel {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      height: 100% !important;
+    }
+
+    .bottom-actions,
+    .actions-row {
+      position: relative !important;
+      bottom: auto !important;
+    }
+
+    .status-panel,
+    .waiting-container {
+      min-height: 3em !important;
+      padding: 0.4em 1em !important;
+    }
+
+    .actions-row .btn-primary,
+    .actions-row .primary-btn {
+      height: 4.2em !important;
+      font-size: 1.85em !important;
+      width: 65% !important;
+    }
+
+    .actions-row .btn-danger,
+    .actions-row .danger-btn {
+      height: 4.2em !important;
+      font-size: 1.65em !important;
+      width: 35% !important;
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 1em;
+    }
+
+    /* Header spacing and visibility reset */
+    .page-header,
+    .heading-row {
+      margin-top: 1em;
+      margin-bottom: 0.75em;
+    }
+
+    .video-title,
+    .page-title,
+    .title-wrap h1 {
+      display: block;
+      font-size: inherit;
+      margin-bottom: 0.25em;
+    }
+
+    .video-subtitle,
+    .page-subtitle,
+    .title-wrap p {
+      display: block;
+      font-size: inherit;
+      opacity: 1;
+      margin-bottom: 0.75em;
+    }
+
+    .main-content,
+    .main.page-container {
+      padding-top: 4.375em !important;
+    }
+
+    .menu-icon-btn {
+      width: 2.75em !important;
+      height: 2.75em !important;
+      border-radius: 0.625em !important;
+      display: grid;
+      place-items: center;
+      padding: 0 !important;
+      margin: 0 !important;
+      cursor: pointer;
+    }
+
+    .brand-inline {
+      display: flex;
+      align-items: center;
+      gap: 0.75em !important;
+      margin: 0;
+      padding: 0;
+    }
+
+    .topbar .brand-inline .brand-logo-wrap {
+      width: 2.75em !important;
+      height: 2.75em !important;
+      border-radius: 0.75em;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      place-items: center;
+    }
+
+    .topbar .brand-inline .brand-logo {
+      width: 1.375em !important;
+      height: 1.375em !important;
+    }
+
+    .brand-wordmark {
+      font-size: 1.75em !important;
+      font-weight: 800 !important;
+      line-height: 1;
+      margin: 0;
+      padding: 0;
+    }
+
+    .topbar .brand-wordmark {
+      font-size: 2em !important;
+      font-weight: 800;
+    }
+
+    /* Targeted compact layout tuning for waiting panel and action buttons */
+    #callStatePanel.bottom-panel,
+    .bottom-panel.middle-card,
+    .middle-card.bottom-panel {
+      margin-top: 0.4em !important;
+      margin-bottom: 0.4em !important;
+      padding-top: 0.35em !important;
+      padding-bottom: 0.35em !important;
+      min-height: 3.2em !important;
+    }
+
+    #callStatePanel .call-status-panel,
+    #callStatePanel .status-panel,
+    #callStatePanel .waiting-container {
+      min-height: 2.6em !important;
+      padding: 0.2em 0.75em !important;
+      gap: 0.35em !important;
+    }
+
+    #callStatePanel .call-status-panel .spinner {
+      width: 2.2em !important;
+      height: 2.2em !important;
+    }
+
+    .actions-row.bottom-actions,
+    .bottom-actions.actions-row {
+      display: flex !important;
+      align-items: stretch !important;
+      justify-content: space-between !important;
+      flex-wrap: nowrap !important;
+      gap: 0.875em !important;
+      width: 100% !important;
+      padding: 0.5em 1.25em 0.65em !important;
+    }
+
+    .actions-row .btn-primary,
+    .actions-row .primary-btn {
+      flex: 1.4 1 0 !important;
+      width: auto !important;
+      max-width: none !important;
+      min-width: 0 !important;
+      height: 4.9em !important;
+      font-size: 1.85em !important;
+    }
+
+    .actions-row .btn-danger,
+    .actions-row .danger-btn {
+      flex: 1 1 0 !important;
+      width: auto !important;
+      max-width: none !important;
+      min-width: 0 !important;
+      height: 4.9em !important;
+      font-size: 1.65em !important;
+      margin-left: 0 !important;
+    }
+
+    .doctor-tile video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: transparent;
+    }
+
+    #patientVideoPanel .panel-header {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    #patientVideoPanel .panel-actions {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    #patientVideoPanel .panel-title {
+      font-weight: 600;
+      color: #1e293b;
+      font-size: 14px;
+      margin: 0;
+      padding: 0;
+    }
+
+    #patientVideoPanel .panel-actions .icon-btn {
+      width: 30px !important;
+      height: 30px !important;
+      border-radius: 8px !important;
+      background: #F8FAFC !important;
+      border: 1px solid #E5E7EB !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+    }
+
+    #patientVideoPanel .panel-actions .icon-btn i,
+    #patientVideoPanel .panel-actions .icon-btn svg {
+      width: 16px !important;
+      height: 16px !important;
+      color: #64748b !important;
+      stroke-width: 2.5 !important;
+    }
+
+    .menu-dropdown {
+      position: absolute;
+      top: 45px;
+      right: 14px;
+      background: #ffffff;
+      border: 1px solid #E5E7EB;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 20;
+    }
+
+    .menu-dropdown.show {
+      display: flex;
+    }
+
+    .menu-dropdown button {
+      padding: 10px 14px;
+      border: none;
+      background: none;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .menu-dropdown button:hover {
+      background: #F3F4F6;
+    }
+
+    .actions-row.bottom-actions .btn-primary,
+    .actions-row.bottom-actions .btn-danger {
+      height: 50px !important;
+      min-height: 50px !important;
+      max-height: 50px !important;
+      box-sizing: border-box !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    /* ============================================================
+       PATIENT VIEW — White / Light Theme  (matches Doctor view reference)
+       Only affects role=patient. Zero JS / WebRTC changes.
+    ============================================================ */
+
+    /* ── Hide sections not shown in patient view ── */
+    body.patient-view .session-details-slot,
+    body.patient-view #patientDetailsSection {
+      display: none !important;
+    }
+
+    /* ── Hide the default doctor-style feeds row ── */
+    body.patient-view .video-grid,
+    body.patient-view .feeds-row {
+      display: none !important;
+    }
+
+    /* ── White body / shell ── */
+    body.patient-view,
+    body.patient-view .app-shell,
+    body.patient-view .main.page-container,
+    body.patient-view .page-container {
+      background: #ffffff !important;
+      color: #111827 !important;
+    }
+
+    /* ── Heading row title/subtitle: dark text ── */
+    body.patient-view .title-wrap h1,
+    body.patient-view .page-title {
+      color: #111827 !important;
+    }
+
+    body.patient-view .title-wrap p,
+    body.patient-view .page-subtitle {
+      color: #7C3AED !important;
+    }
+
+    /* ── Main page container layout ── */
+    body.patient-view .main.page-container {
+      display: flex !important;
+      flex-direction: column !important;
+      height: calc(100vh - 74px) !important;
+      max-height: calc(100vh - 74px) !important;
+      overflow: hidden !important;
+      padding: 0.75em 1em 0 !important;
+      gap: 0.625em !important;
+      justify-content: flex-start !important;
+      background: #ffffff !important;
+    }
+
+    body.patient-view .heading-row {
+      flex: 0 0 auto !important;
+      margin-bottom: 0 !important;
+      display: flex !important;
+    }
+
+    /* ── Two-column shell ── */
+    body.patient-view .patient-consultation-shell {
+      width: 100% !important;
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 0.75em !important;
+      flex: 1 1 auto !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+    }
+
+    /* ── LEFT PANEL — Ultrasound Feed ── */
+    body.patient-view .patient-ultrasound-panel {
+      flex: 0 0 calc(50% - 0.375em) !important;
+      position: relative !important;
+      border-radius: 12px !important;
+      background: #F9FAFB !important;
+      border: 1px solid #E5E7EB !important;
+      box-shadow: none !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      overflow: hidden !important;
+      min-height: 0 !important;
+    }
+
+    body.patient-view .patient-ultrasound-panel::before {
+      display: none !important;
+    }
+
+    body.patient-view .patient-ultrasound-placeholder {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 1rem !important;
+      text-align: center !important;
+      padding: 1.5rem !important;
+    }
+
+    body.patient-view .patient-ultrasound-placeholder svg {
+      width: 3.5em !important;
+      height: 3.5em !important;
+      color: #7C3AED !important;
+      opacity: 0.85 !important;
+    }
+
+    body.patient-view .patient-ultrasound-placeholder .feed-title {
+      font-size: 1.75em !important;
+      font-weight: 600 !important;
+      color: #6D28D9 !important;
+      line-height: 1.3 !important;
+    }
+
+    body.patient-view .patient-ultrasound-label {
+      position: absolute !important;
+      bottom: 1em !important;
+      left: 1.25em !important;
+      z-index: 10 !important;
+      font-size: 1em !important;
+      font-weight: 600 !important;
+      color: #6B7280 !important;
+      pointer-events: none !important;
+      text-shadow: none !important;
+    }
+
+    /* ── RIGHT PANEL — Doctor Video Feed ── */
+    body.patient-view .patient-consultation-card {
+      flex: 1 1 auto !important;
+      min-width: 0 !important;
+      width: auto !important;
+      position: relative !important;
+      display: flex !important;
+      flex-direction: column !important;
+      border-radius: 12px !important;
+      background: #F9FAFB !important;
+      border: 1px solid #E5E7EB !important;
+      box-shadow: none !important;
+      overflow: hidden !important;
+      padding: 0 !important;
+      gap: 0 !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      align-items: stretch !important;
+      justify-content: flex-start !important;
+    }
+
+    body.patient-view .patient-consultation-card::before {
+      display: none !important;
+    }
+
+    /* Card title bar */
+    body.patient-view .patient-consultation-title {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.5rem !important;
+      color: #111827 !important;
+      font-size: 0.95rem !important;
+      font-weight: 600 !important;
+      margin: 0 !important;
+      padding: 0.55rem 0.75rem 0.4rem !important;
+      flex-shrink: 0 !important;
+      position: relative !important;
+      z-index: 2 !important;
+      border-bottom: 1px solid #F3F4F6 !important;
+      background: transparent !important;
+    }
+
+    body.patient-view .patient-consultation-title .icon {
+      width: 1.5rem !important;
+      height: 1.5rem !important;
+      border-radius: 0.45rem !important;
+      display: grid !important;
+      place-items: center !important;
+      color: #7C3AED !important;
+      background: rgba(124, 58, 237, 0.08) !important;
+      flex-shrink: 0 !important;
+    }
+
+    body.patient-view .patient-consultation-title .icon svg,
+    body.patient-view .patient-consultation-title .icon i {
+      width: 0.85rem !important;
+      height: 0.85rem !important;
+    }
+
+    /* Video stage — fills remaining height */
+    body.patient-view .patient-consultation-stage {
+      position: relative !important;
+      flex: 1 1 auto !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+      border-radius: 0 0 12px 12px !important;
+      background: #F9FAFB !important;
+      border: none !important;
+      display: block !important;
+      width: 100% !important;
+    }
+
+    /* Panel header (fullscreen / menu buttons) */
+    body.patient-view .patient-consultation-stage .panel-header {
+      position: absolute !important;
+      top: 0.6rem !important;
+      left: 0.75rem !important;
+      right: 0.75rem !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-end !important;
+      z-index: 12 !important;
+      pointer-events: none !important;
+    }
+
+    body.patient-view .patient-consultation-stage .panel-title {
+      display: none !important;
+    }
+
+    body.patient-view .patient-consultation-stage .panel-actions,
+    body.patient-view .patient-consultation-stage .panel-actions .icon-btn {
+      pointer-events: auto !important;
+    }
+
+    body.patient-view .patient-consultation-stage .panel-actions {
+      display: flex !important;
+      gap: 0.4rem !important;
+    }
+
+    body.patient-view .patient-consultation-stage .panel-actions .icon-btn {
+      width: 30px !important;
+      height: 30px !important;
+      border-radius: 8px !important;
+      background: #F8FAFC !important;
+      border: 1px solid #E5E7EB !important;
+      color: #6B7280 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      box-shadow: none !important;
+    }
+
+    body.patient-view .patient-consultation-stage .panel-actions .icon-btn svg,
+    body.patient-view .patient-consultation-stage .panel-actions .icon-btn i {
+      width: 15px !important;
+      height: 15px !important;
+      stroke-width: 2 !important;
+    }
+
+    body.patient-view .patient-consultation-stage .menu-dropdown {
+      top: 2.5rem !important;
+      right: 0.75rem !important;
+      z-index: 18 !important;
+      background: #ffffff !important;
+      border: 1px solid #E5E7EB !important;
+      border-radius: 10px !important;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    body.patient-view .patient-consultation-stage .menu-dropdown button {
+      color: #374151 !important;
+      font-size: 14px !important;
+    }
+
+    body.patient-view .patient-consultation-stage .menu-dropdown button:hover {
+      background: #F3F4F6 !important;
+    }
+
+    /* Doctor video fills the stage */
+    body.patient-view .patient-main-video,
+    body.patient-view .patient-main-placeholder {
+      position: absolute !important;
+      inset: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    body.patient-view .patient-main-video {
+      object-fit: cover !important;
+      background: #E5E7EB !important;
+    }
+
+    body.patient-view .patient-main-placeholder {
+      display: grid !important;
+      place-items: center !important;
+      text-align: center !important;
+      padding: 1rem !important;
+      background: #F9FAFB !important;
+      z-index: 2 !important;
+      pointer-events: none !important;
+    }
+
+    body.patient-view .patient-main-placeholder svg {
+      width: 3.5em !important;
+      height: 3.5em !important;
+      color: #7C3AED !important;
+      margin-bottom: 0.75rem !important;
+      opacity: 0.85 !important;
+    }
+
+    body.patient-view .patient-main-placeholder>div {
+      font-size: 1.75em !important;
+      font-weight: 600 !important;
+      color: #6D28D9 !important;
+    }
+
+    /* ── Floating patient self-view card ── */
+    body.patient-view .patient-preview-panel {
+      position: absolute !important;
+      right: 12px !important;
+      bottom: 12px !important;
+      width: 200px !important;
+      height: 130px !important;
+      overflow: hidden !important;
+      border-radius: 10px !important;
+      background: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 55%, #6366F1 100%) !important;
+      border: 2px solid #A78BFA !important;
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.35) !important;
+      z-index: 15 !important;
+    }
+
+    @media (max-width: 768px) {
+      body.patient-view .patient-consultation-shell {
+        flex-direction: column !important;
+      }
+
+      body.patient-view .patient-preview-panel {
+        width: 140px !important;
+        height: 90px !important;
+      }
+    }
+
+    body.patient-view .patient-preview-panel>#localVideo,
+    body.patient-view .patient-preview-panel>video,
+    body.patient-view .patient-preview-panel>.doctor-tile,
+    body.patient-view .patient-preview-panel>#patientVideoTile,
+    body.patient-view .patient-preview-panel>.patient-tile-placeholder {
+      position: absolute !important;
+      inset: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      transform: none !important;
+      object-fit: cover !important;
+    }
+
+    body.patient-view .patient-preview-panel>#patientVideoTile,
+    body.patient-view .patient-preview-panel>.patient-tile-placeholder {
+      padding: 0 !important;
+      border-radius: 10px !important;
+    }
+
+    body.patient-view .patient-preview-panel .doctor-tile:active {
+      transform: none !important;
+    }
+
+    body.patient-view .patient-preview-panel .doctor-tile,
+    body.patient-view .patient-preview-panel .patient-tile-placeholder,
+    body.patient-view .patient-preview-panel video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      border: 0 !important;
+    }
+
+    body.patient-view .patient-preview-panel .patient-tile-placeholder {
+      display: grid !important;
+      place-items: center !important;
+      gap: 0.35rem !important;
+      color: #fff !important;
+      text-align: center !important;
+      background: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%) !important;
+    }
+
+    body.patient-view .patient-preview-panel .patient-tile-placeholder .name {
+      font-size: 0.8rem !important;
+      font-weight: 700 !important;
+    }
+
+    body.patient-view .patient-preview-panel .patient-tile-placeholder svg {
+      width: 1.4rem !important;
+      height: 1.4rem !important;
+    }
+
+    body.patient-view .patient-preview-label {
+      position: absolute !important;
+      left: 0.5rem !important;
+      bottom: 0.4rem !important;
+      z-index: 16 !important;
+      color: rgba(255, 255, 255, 0.85) !important;
+      font-size: 0.65rem !important;
+      font-weight: 600 !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.04em !important;
+      pointer-events: none !important;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    /* ── Bottom waiting status bar ── */
+    body.patient-view .bottom-panel,
+    body.patient-view #callStatePanel.bottom-panel {
+      background: #F9FAFB !important;
+      border: 1px solid #E5E7EB !important;
+      border-radius: 0.75em !important;
+      margin-top: 0.5em !important;
+      margin-bottom: 0 !important;
+      height: 3.25em !important;
+      min-height: 3.25em !important;
+      padding: 0 1em !important;
+      flex: 0 0 auto !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    body.patient-view #callStatePanel .call-status-panel {
+      color: #7C3AED !important;
+      font-size: 1em !important;
+    }
+
+    body.patient-view #callStatePanel .spinner {
+      width: 1.25em !important;
+      height: 1.25em !important;
+      border-color: rgba(124, 58, 237, 0.18) !important;
+      border-top-color: #7C3AED !important;
+    }
+
+    /* ── Bottom action row ── */
+    body.patient-view .actions-row.bottom-actions {
+      margin-top: 0 !important;
+      padding: 0.5em 0 0.6em !important;
+      border-top: 1px solid #E9D5FF !important;
+      background: #ffffff !important;
+      flex: 0 0 auto !important;
+    }
+
+    body.patient-view .actions-row.bottom-actions .btn-primary,
+    body.patient-view .actions-row.bottom-actions .btn-danger {
+      height: 50px !important;
+      border-radius: 0.75em !important;
+    }
+
+    body.patient-view .actions-row.bottom-actions .btn-primary[disabled] {
+      opacity: 0.9 !important;
+      cursor: default !important;
+    }
+
+    body.patient-view #testingBtn:disabled,
+    body.patient-view #testingBtn[disabled] {
+      cursor: not-allowed !important;
+      pointer-events: auto !important;
+    }
+
+    /* Hide unwanted elements */
+    body.patient-view .patient-consultation-card .feed-label,
+    body.patient-view .patient-consultation-card .quality-tags,
+    body.patient-view .patient-consultation-card .feed-center,
+    body.patient-view .patient-consultation-card .video-grid,
+    body.patient-view .patient-consultation-card .feeds-row {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+
+  <aside class="sidebar" id="sidebar" aria-label="Dashboard navigation">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="brand-logo-wrap">
+          <img src="logo.png" alt="TORUS Logo" class="brand-logo" />
+        </div>
+        <div class="brand-copy">
+          <strong>TORUS</strong>
+          <span>Doctor Portal</span>
+        </div>
+      </div>
+      <button class="close-sidebar" id="closeSidebar" type="button" aria-label="Close sidebar">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="sidebar-link active" type="button" data-nav-target="dashboard">
+        <i data-lucide="layout-dashboard" class="link-icon"></i>
+        <span>Dashboard</span>
+      </button>
+      <button class="sidebar-link" type="button" data-nav-target="doctor-profile">
+        <i data-lucide="users" class="link-icon"></i>
+        <span>Doctor Profile</span>
+      </button>
+      <button class="sidebar-link" type="button" data-nav-target="activity-log">
+        <i data-lucide="activity" class="link-icon"></i>
+        <span>Activity Log</span>
+      </button>
+      <button class="sidebar-link" type="button" data-nav-target="insights">
+        <i data-lucide="bar-chart-3" class="link-icon"></i>
+        <span>Insights</span>
+      </button>
+      <button class="sidebar-link" type="button" data-nav-target="patient-reports">
+        <i data-lucide="file-text" class="link-icon"></i>
+        <span>Patient Reports</span>
+      </button>
+      <button class="sidebar-link logout" type="button" data-action="logout">
+        <i data-lucide="log-out" class="link-icon"></i>
+        <span>Logout</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-footer">
+      <div class="user-summary">
+        <strong data-user-name>Dr. User</strong>
+        <span data-user-email>user@example.com</span>
+        <span>Role: <span data-user-role>doctor</span></span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="app-shell wrapper main-container">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-icon-btn" id="menuToggle" type="button">
+          <i data-lucide="menu"></i>
+        </button>
+        <div class="brand-inline">
+          <div class="brand-logo-wrap">
+            <img src="logo.png" alt="TORUS Logo" class="brand-logo" />
+          </div>
+          <div class="brand-wordmark">TORUS</div>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+
+        <button class="icon-btn" type="button" aria-label="Notifications">
+          <i data-lucide="bell"></i>
+        </button>
+
+        <div class="profile-pill profile-circle" id="profileInitial" aria-label="Profile Initial"></div>
+      </div>
+    </header>
+
+    <main class="main page-container">
+      <section class="heading-row">
+        <div class="title-wrap">
+          <h1 class="page-title">Video Consultation</h1>
+          <p class="page-subtitle" id="consultationSubtitle">Patient Video Consultation - TORUS-A12</p>
+        </div>
+
+        <div class="status-row">
+          <div class="connected-pill is-waiting"><span class="dot" aria-hidden="true"></span><span>Waiting</span></div>
+          <button class="back-btn" id="backToDashboardBtn" type="button">
+            <i data-lucide="arrow-left"></i>
+            Back
+          </button>
+        </div>
+      </section>
+
+      <section class="session-details-slot" id="patientDetailsSection" data-session-details>
+        <article class="patient-details-card patient-details" id="patientDetailsCard">
+
+          <div class="patient-header">
+            <div class="patient-header-icon">
+              <i data-lucide="user"></i>
+            </div>
+            <h2 class="patient-details-title">Patient Details</h2>
+          </div>
+          <button class="history-btn" id="openHistoryBtn">
+            <i data-lucide="clock"></i>
+            History
+          </button>
+          <div id="historyModal" class="modal hidden">
+            <div class="modal-content large">
+
+              <div class="modal-header">
+                <h2>Patient History</h2>
+                <button id="closeHistoryBtn" class="close-btn">✕</button>
+              </div>
+
+              <div class="history-list">
+
+                <div class="history-card">
+                  <div class="history-top">
+                    <div>
+                      <p class="title">Abdominal Ultrasound</p>
+
+                      <style>
+                        .topbar .back-btn svg {
+                          width: 0.85em !important;
+                          height: 0.85em !important;
+                        }
+
+                        .patient-header-icon svg {
+                          stroke: #7C3AED !important;
+                          color: #7C3AED !important;
+                        }
+                      </style>
+                      <p class="date">2026-02-15</p>
+                    </div>
+                    <span class="status">Completed</span>
+                  </div>
+                  <p class="doctor">Dr. Anderson • TORUS-A12</p>
+                  <p class="result">Results: Normal findings, no abnormalities detected.</p>
+                </div>
+
+                <div class="history-card">
+                  <div class="history-top">
+                    <div>
+                      <p class="title">Routine Check-up</p>
+                      <p class="date">2026-01-10</p>
+                    </div>
+                    <span class="status">Completed</span>
+                  </div>
+                  <p class="doctor">Dr. Anderson • TORUS-B08</p>
+                  <p class="result">Results: All vitals normal, patient healthy.</p>
+                </div>
+
+                <div class="history-card">
+                  <div class="history-top">
+                    <div>
+                      <p class="title">Cardiac Screening</p>
+                      <p class="date">2025-12-20</p>
+                    </div>
+                    <span class="status">Completed</span>
+                  </div>
+                  <p class="doctor">Dr. Smith • TORUS-C15</p>
+                  <p class="result">Results: Normal cardiac function, no concerns.</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 1 -->
+          <div class="patient-details-item">
+            <div class="patient-item-top">
+              <div class="patient-icon-wrap">
+                <i data-lucide="credit-card"></i>
+              </div>
+              <div class="label">Patient ID</div>
+            </div>
+            <div class="value">PAT-2026-001</div>
+          </div>
+
+          <div class="patient-details-item">
+            <div class="patient-item-top">
+              <div class="patient-icon-wrap">
+                <i data-lucide="user"></i>
+              </div>
+              <div class="label">Name</div>
+            </div>
+            <div class="value">John Stephen</div>
+          </div>
+
+          <div class="patient-details-item">
+            <div class="patient-item-top">
+              <div class="patient-icon-wrap">
+                <i data-lucide="activity"></i>
+              </div>
+              <div class="label">Age</div>
+            </div>
+            <div class="value">45 years</div>
+          </div>
+
+          <div class="patient-details-item">
+            <div class="patient-item-top">
+              <div class="patient-icon-wrap">
+                <i data-lucide="calendar"></i>
+              </div>
+              <div class="label">Last Scan</div>
+            </div>
+            <div class="value">2026-02-15</div>
+          </div>
+
+          <div class="patient-details-item">
+            <div class="patient-item-top">
+              <div class="patient-icon-wrap">
+                <i data-lucide="stethoscope"></i>
+              </div>
+              <div class="label">Scan Type</div>
+            </div>
+            <div class="value">Routine Check</div>
+          </div>
+
+          <div class="patient-details-item">
+            <div class="patient-item-top">
+              <div class="patient-icon-wrap">
+                <i data-lucide="file-text"></i>
+              </div>
+              <div class="label">Notes</div>
+            </div>
+            <div class="value">No complications</div>
+          </div>
+
+        </article>
+      </section>
+
+      <section class="feeds-row video-grid">
+        <article class="feed-card video-card left" id="doctorVideoPanel">
+          <div class="quality-tags">
+            <div class="tag badge">30 FPS</div>
+            <div class="tag badge green">1080p</div>
+          </div>
+          <div class="feed-center" id="doctorPlaceholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M2 12h4l2-6 4 12 2-6h8"></path>
+            </svg>
+            <div>Ultrasound Video Feed</div>
+          </div>
+          <div class="feed-label bottom-text">Ultrasound Feed</div>
+        </article>
+
+        <article class="feed-card video-card right" id="patientVideoPanel">
+          <div class="panel-header">
+            <span class="panel-title"></span>
+            <div class="panel-actions">
+              <button class="icon-btn" id="fullscreenBtn">
+                <i data-lucide="maximize"></i>
+              </button>
+              <button class="icon-btn" id="menuBtn">
+                <i data-lucide="more-vertical"></i>
+              </button>
+            </div>
+          </div>
+          <div class="menu-dropdown" id="menuDropdown">
+            <button onclick="switchCamera()">Switch Camera</button>
+            <button onclick="toggleMute()">Mute / Unmute</button>
+            <button onclick="endCall()">End Call</button>
+          </div>
+          <div class="feed-center" id="patientPlaceholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="2" y="7" width="14" height="10" rx="2" ry="2"></rect>
+              <path d="M16 10l6-3v10l-6-3z"></path>
+            </svg>
+            <div>Patient Video Feed</div>
+          </div>
+          <video id="remoteVideo" autoplay playsinline class="video-stream"></video>
+          <video id="localVideo" autoplay muted playsinline class="doctor-tile"></video>
+          <div class="doctor-tile patient-tile-placeholder" id="patientVideoTile">
+            <svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="#f1e8ff" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21a8 8 0 0 0-16 0"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <div class="name">Doctor</div>
+          </div>
+          <div class="feed-label bottom-text">Doctor Camera</div>
+        </article>
+      </section>
+
+      <section class="bottom-panel middle-card" id="callStatePanel" aria-live="polite">
+        <div class="call-status-panel" id="statusMessage">
+          <div class="spinner" aria-hidden="true"></div>
+          <div class="notify-resend" style="display:flex;gap:0.75em;margin-bottom:0.5em;">
+            <button id="notifyBtn" class="btn-primary"
+              style="height:2.6em;padding:0 0.75em;font-size:1rem;">Notify</button>
+            <button id="resendBtn" class="btn-primary"
+              style="height:2.6em;padding:0 0.75em;font-size:1rem;">Resend</button>
+          </div>
+          <div>Waiting...</div>
+        </div>
+      </section>
+
+      <section class="actions-row bottom-actions">
+        <button class="btn-primary primary-btn ultrasound-btn" id="testingBtn" type="button">Join Consultation</button>
+        <button class="btn-danger danger-btn" id="endConsultationBtn" type="button">End Consultation</button>
+      </section>
+    </main>
+
+    <style>
+      body[data-role="patient"] .notify-resend {
+        display: none !important;
+      }
+    </style>
+
+    <script>
+      const role = new URLSearchParams(window.location.search).get('role');
+
+      if (role === 'patient') {
+        document.body.setAttribute('data-role', 'patient');
+
+        const consultationSubtitle = document.getElementById('consultationSubtitle');
+        if (consultationSubtitle) {
+          const roomId = new URLSearchParams(window.location.search).get('room') || '';
+          consultationSubtitle.textContent = roomId ? `Patient Video Consultation - Room ${roomId}` : 'Patient Video Consultation';
+        }
+
+        const patientVideoTileName = document.querySelector('#patientVideoTile .name');
+        if (patientVideoTileName) patientVideoTileName.textContent = 'Patient';
+
+        const bottomTextLabels = document.querySelectorAll('.feed-card.right .feed-label.bottom-text');
+        if (bottomTextLabels.length > 0) {
+          bottomTextLabels[0].textContent = 'Doctor Camera';
+        }
+
+        try {
+          const statusMessage = document.getElementById('statusMessage');
+          if (statusMessage) {
+            const textDiv = Array.from(statusMessage.querySelectorAll('div')).find(d => !d.classList.contains('spinner') && !d.classList.contains('notify-resend'));
+            if (textDiv) textDiv.textContent = 'Waiting for Doctor';
+          }
+
+          const testingBtn = document.getElementById('testingBtn');
+          if (testingBtn) {
+            testingBtn.textContent = 'Ultra Sound in Progress';
+            testingBtn.disabled = false;
+            testingBtn.classList.add('ultrasound-ready');
+            testingBtn.classList.remove('is-waiting');
+          }
+        } catch (e) {
+          console.warn('Patient UI adjustments failed', e);
+        }
+      }
+    </script>
+
+    <script src="frontend.js?v=20260521_01" defer></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const menuToggle = document.getElementById("menuToggle");
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("sidebarOverlay");
+        const closeSidebarBtn = document.getElementById("closeSidebar");
+
+        const openSidebar = () => {
+          if (!sidebar || !overlay) return;
+          sidebar.classList.add("open");
+          overlay.classList.add("active");
+          if (menuToggle) menuToggle.setAttribute("aria-expanded", "true");
+        };
+
+        const closeSidebar = () => {
+          if (sidebar) sidebar.classList.remove("open");
+          if (overlay) overlay.classList.remove("active");
+          if (menuToggle) menuToggle.setAttribute("aria-expanded", "false");
+        };
+
+        // expose open/close for other UI (fullscreen panel) to reuse
+        window.openSidebar = openSidebar;
+        window.closeSidebar = closeSidebar;
+
+        if (menuToggle) menuToggle.addEventListener("click", openSidebar);
+        if (closeSidebarBtn) closeSidebarBtn.addEventListener("click", closeSidebar);
+        if (overlay) overlay.addEventListener("click", closeSidebar);
+
+        // fullscreen panel menu button should reuse the sidebar
+        const menuToggleFs = document.getElementById("menuToggleFs");
+        if (menuToggleFs) {
+          menuToggleFs.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (window.openSidebar) window.openSidebar();
+            // keep aria state in sync
+            if (menuToggle) menuToggle.setAttribute("aria-expanded", "true");
+          });
+        }
+
+        const parseSessionName = (raw) => {
+          if (!raw) return "";
+          try {
+            const parsed = JSON.parse(raw);
+            return parsed?.name || "";
+          } catch {
+            return "";
+          }
+        };
+
+        const getInitialsFromName = (name) => {
+          const raw = String(name || "").replace(/^Dr\.\s*/i, "").trim();
+          if (!raw) {
+            return "DA";
+          }
+
+          const initials = raw
+            .split(/\s+/)
+            .filter(Boolean)
+            .map((word) => word[0])
+            .join("")
+            .toUpperCase();
+
+          return initials || "DA";
+        };
+
+        const userEmail = localStorage.getItem("userEmail") || sessionStorage.getItem("userEmail") || "";
+        const userRole = localStorage.getItem("userRole") || sessionStorage.getItem("userRole") || "doctor";
+        const userName =
+          localStorage.getItem("userName") ||
+          sessionStorage.getItem("userName") ||
+          localStorage.getItem("name") ||
+          sessionStorage.getItem("name") ||
+          parseSessionName(localStorage.getItem("userSession")) ||
+          parseSessionName(sessionStorage.getItem("userSession")) ||
+          (userEmail ? `Dr. ${userEmail.split("@")[0]}` : "User");
+
+        const safeName = String(userName || "User").trim();
+        const initial = localStorage.getItem("userInitials") || sessionStorage.getItem("userInitials") || getInitialsFromName(safeName);
+        const el = document.getElementById("profileInitial");
+        if (el) el.innerText = initial;
+
+        document.querySelectorAll("[data-user-name]").forEach((node) => {
+          node.textContent = safeName;
+        });
+
+        document.querySelectorAll("[data-user-email]").forEach((node) => {
+          node.textContent = userEmail || "user@example.com";
+        });
+
+        document.querySelectorAll("[data-user-role]").forEach((node) => {
+          node.textContent = userRole;
+        });
+
+        document.querySelectorAll("[data-nav-target]").forEach((item) => {
+          item.addEventListener("click", () => {
+            const target = item.getAttribute("data-nav-target") || "dashboard";
+            localStorage.setItem("dashboardNavTarget", target);
+            window.location.href = "doctor-dashboard.html";
+          });
+        });
+
+        document.querySelectorAll('[data-action="logout"]').forEach((button) => {
+          button.addEventListener("click", () => {
+            localStorage.removeItem("userSession");
+            localStorage.removeItem("userEmail");
+            localStorage.removeItem("userName");
+            localStorage.removeItem("userInitials");
+            localStorage.removeItem("userRole");
+            localStorage.removeItem("token");
+            window.location.href = "doctor-portal.html";
+          });
+        });
+
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+
+      });
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+
+        const historyBtn = document.getElementById("openHistoryBtn");
+        const historyModal = document.getElementById("historyModal");
+        const closeHistoryBtn = document.getElementById("closeHistoryBtn");
+
+        const settingsBtn = document.querySelectorAll("#openSettingsBtn");
+
+        settingsBtn.forEach(btn => {
+          btn.onclick = () => settingsModal.classList.remove("hidden");
+        });
+        const settingsModal = document.getElementById("settingsModal");
+        const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+
+        // OPEN MODALS
+        if (historyBtn && historyModal) {
+          historyBtn.onclick = () => historyModal.classList.remove("hidden");
+        }
+
+        if (settingsBtn && settingsModal) {
+          settingsBtn.onclick = () => settingsModal.classList.remove("hidden");
+        }
+
+        // CLOSE MODALS
+        if (closeHistoryBtn && historyModal) {
+          closeHistoryBtn.onclick = () => historyModal.classList.add("hidden");
+        }
+
+        if (closeSettingsBtn && settingsModal) {
+          closeSettingsBtn.onclick = () => settingsModal.classList.add("hidden");
+        }
+
+        // CLICK OUTSIDE TO CLOSE
+        window.addEventListener("click", (e) => {
+          if (e.target === historyModal) historyModal.classList.add("hidden");
+          if (e.target === settingsModal) settingsModal.classList.add("hidden");
+        });
+
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+
+      });
+    </script>
+    <div id="settingsModal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Settings</h2>
+          <button id="closeSettingsBtn" class="close-btn red">✕</button>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="purple">Audio</h3>
+          <p>Microphone: Default</p>
+          <p>Speaker: Default</p>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="cyan">Video</h3>
+          <p>Camera: Built-in Camera</p>
+          <p>Resolution: 1080p HD</p>
+        </div>
+        <div class="settings-section">
+          <h3 class="green">General</h3>
+          <p>Notifications: Enabled</p>
+          <p>Connection: Stable (42ms)</p>
+        </div>
+
+      </div>
+    </div>
+
+    <script>
+    </script>
+
+    <script>
+      lucide.createIcons();
+    </script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const fullscreenBtn = document.getElementById("fullscreenBtn");
+        const panel = document.getElementById("patientVideoPanel");
+        const menuBtn = document.getElementById("menuBtn");
+        const menu = document.getElementById("menuDropdown");
+
+        if (fullscreenBtn && panel) {
+          fullscreenBtn.addEventListener("click", () => {
+            if (!document.fullscreenElement) {
+              if (panel.requestFullscreen) {
+                panel.requestFullscreen();
+              } else if (panel.webkitRequestFullscreen) {
+                panel.webkitRequestFullscreen();
+              } else if (panel.msRequestFullscreen) {
+                panel.msRequestFullscreen();
+              }
+            } else {
+              if (document.exitFullscreen) {
+                document.exitFullscreen();
+              }
+            }
+          });
+        }
+
+        if (menuBtn && menu) {
+          menuBtn.addEventListener("click", (e) => {
+            e.stopPropagation(); // prevent immediate close
+            menu.classList.toggle("show");
+          });
+
+          document.addEventListener("click", (e) => {
+            if (!menu.contains(e.target) && !menuBtn.contains(e.target)) {
+              menu.classList.remove("show");
+            }
+          });
+        }
+      });
+
+      let currentStream = null;
+      let useFrontCamera = true;
+      let activeVideoDeviceId = "";
+      let isMuted = false;
+
+      async function getCameraConstraints() {
+        const videoInputs = navigator.mediaDevices && navigator.mediaDevices.enumerateDevices
+          ? (await navigator.mediaDevices.enumerateDevices()).filter((device) => device.kind === "videoinput")
+          : [];
+
+        if (activeVideoDeviceId && videoInputs.some((device) => device.deviceId === activeVideoDeviceId)) {
+          return {
+            video: { deviceId: { exact: activeVideoDeviceId } },
+            audio: true
+          };
+        }
+
+        if (videoInputs.length > 1) {
+          const selectedDevice = videoInputs[useFrontCamera ? 0 : 1] || videoInputs[0];
+          if (selectedDevice) {
+            activeVideoDeviceId = selectedDevice.deviceId;
+            return {
+              video: { deviceId: { exact: selectedDevice.deviceId } },
+              audio: true
+            };
+          }
+        }
+
+        return {
+          video: { facingMode: useFrontCamera ? "user" : "environment" },
+          audio: true
+        };
+      }
+
+      async function startCamera() {
+        const localVideo = document.getElementById("localVideo");
+        const placeholderMini = document.getElementById("patientVideoTile");
+
+        try {
+          if (currentStream) {
+            currentStream.getTracks().forEach((track) => track.stop());
+            currentStream = null;
+          }
+
+          const constraints = await getCameraConstraints();
+          currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+          const videoTrack = currentStream.getVideoTracks()[0];
+          if (videoTrack && videoTrack.getSettings) {
+            const settings = videoTrack.getSettings();
+            activeVideoDeviceId = settings.deviceId || activeVideoDeviceId;
+          }
+
+          if (localVideo) {
+            localVideo.srcObject = currentStream;
+            localVideo.style.display = "block";
+          }
+
+          if (placeholderMini) {
+            placeholderMini.style.display = "none";
+          }
+
+          isMuted = false;
+        } catch (error) {
+          console.error("Unable to start camera:", error);
+          console.warn("Camera access is unavailable; continuing without local preview.");
+        }
+      }
+
+      async function switchCamera() {
+        useFrontCamera = !useFrontCamera;
+        await startCamera();
+      }
+
+      function toggleMute() {
+        if (!currentStream) return;
+
+        currentStream.getAudioTracks().forEach((track) => {
+          track.enabled = isMuted;
+        });
+
+        isMuted = !isMuted;
+        console.log(isMuted ? "Muted" : "Unmuted");
+      }
+
+      function endCall() {
+        if (currentStream) {
+          currentStream.getTracks().forEach((track) => track.stop());
+          currentStream = null;
+        }
+
+        const remoteVideo = document.getElementById("remoteVideo");
+        if (remoteVideo && remoteVideo.srcObject) {
+          remoteVideo.srcObject.getTracks().forEach((track) => track.stop());
+          remoteVideo.srcObject = null;
+        }
+
+        const localVideo = document.getElementById("localVideo");
+        if (localVideo) {
+          localVideo.srcObject = null;
+          localVideo.style.display = "none";
+        }
+
+        alert("Call Ended");
+        window.location.href = "index.html";
+      }
+
+      // No automatic bindings here. Event handlers are managed by frontend.js to
+      // ensure cameras are only started via explicit user actions (Testing/Join).
+    </script>
+
+    <script>
+      (() => {
+        const placeholder = document.getElementById('doctorPlaceholder');
+        if (placeholder) {
+          placeholder.style.display = 'block';
+          placeholder.style.padding = '';
+        }
+      })();
+    </script>
+
+</body>
+
+</html>

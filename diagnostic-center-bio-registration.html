@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Center Biometric Registration</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --text-white: #ffffff;
+            --text-muted: #94a3b8;
+            --cyan-neon: #22d3ee;
+            --card-bg: rgba(15, 23, 42, 0.62);
+            --card-border: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+        }
+
+        html {
+            font-size: 10.72px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050816;
+            background-image: radial-gradient(circle at top, #1a0033 0%, #050816 60%, #02030a 100%);
+            background-size: cover;
+            background-attachment: fixed;
+            color: var(--text-white);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1.25em;
+            position: relative;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            font-size: 1rem;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: -9.375em;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 75em;
+            height: 37.5em;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.16) 0%, transparent 70%);
+            filter: blur(3.75em);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 35em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5em;
+        }
+
+        .main-title {
+            font-size: 2.375em;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 0.9375em;
+            color: var(--text-muted);
+        }
+
+        .card {
+            width: 100%;
+            padding: 2.75em;
+            border-radius: 1.125em;
+            background: var(--card-bg);
+            border: 0.0625em solid var(--card-border);
+            backdrop-filter: blur(0.625em);
+            box-shadow: 0 0.625em 2.5em rgba(0, 0, 0, 0.4);
+        }
+
+        .fingerprint-box {
+            width: 100%;
+            background: #070911;
+            border: 0.0625em solid rgba(255, 255, 255, 0.05);
+            border-radius: 1em;
+            min-height: 20em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2em;
+            padding: 2em;
+        }
+
+        .fingerprint-circle {
+            width: 10.25em;
+            height: 10.25em;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 0.0625em solid rgba(34, 211, 238, 0.25);
+            box-shadow: 0 0 0.9375em rgba(34, 211, 238, 0.2);
+            margin-bottom: 1.5em;
+            position: relative;
+            transition: all 0.35s ease-in-out;
+            background: rgba(6, 10, 24, 0.9);
+            overflow: hidden;
+            user-select: none;
+            touch-action: none;
+            cursor: pointer;
+        }
+
+        .fingerprint-circle::before {
+            content: '';
+            position: absolute;
+            inset: -20%;
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.28) 0%, rgba(34, 211, 238, 0) 70%);
+            filter: blur(0.8em);
+            opacity: 0.35;
+            transform: scale(0.85);
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            pointer-events: none;
+        }
+
+        .fingerprint-circle.scanning {
+            border-color: rgba(34, 211, 238, 0.7);
+            box-shadow: 0 0 1.55em rgba(34, 211, 238, 0.5);
+            transform: scale(1.03);
+        }
+
+        .fingerprint-circle.scanning::before {
+            opacity: 0.85;
+            transform: scale(1);
+            animation: breathingGlow 0.95s ease-in-out infinite;
+        }
+
+        .fingerprint-circle.success {
+            border-color: rgba(74, 222, 128, 0.65);
+            box-shadow: 0 0 1.4em rgba(74, 222, 128, 0.45);
+            transform: scale(1.04);
+        }
+
+        .progress-ring {
+            position: absolute;
+            inset: 0.625em;
+            width: calc(100% - 1.25em);
+            height: calc(100% - 1.25em);
+            transform: rotate(-90deg);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .progress-track {
+            fill: none;
+            stroke: rgba(148, 163, 184, 0.22);
+            stroke-width: 5;
+        }
+
+        .progress-bar {
+            fill: none;
+            stroke: #22d3ee;
+            stroke-width: 5;
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 0.45em rgba(34, 211, 238, 0.72));
+            transition: stroke 0.25s ease-in-out;
+        }
+
+        .fingerprint-circle.success .progress-bar {
+            stroke: #4ade80;
+            filter: drop-shadow(0 0 0.45em rgba(74, 222, 128, 0.8));
+        }
+
+        .scan-line {
+            position: absolute;
+            left: 18%;
+            width: 64%;
+            height: 0.2em;
+            border-radius: 999px;
+            background: linear-gradient(90deg, rgba(34, 211, 238, 0) 0%, rgba(34, 211, 238, 0.92) 50%, rgba(34, 211, 238, 0) 100%);
+            opacity: 0;
+            z-index: 3;
+            pointer-events: none;
+            box-shadow: 0 0 0.8em rgba(34, 211, 238, 0.7);
+        }
+
+        .fingerprint-circle.scanning .scan-line {
+            opacity: 1;
+            animation: scanSweep 1s ease-in-out infinite;
+        }
+
+        .fingerprint-content {
+            position: relative;
+            z-index: 4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        @keyframes breathingGlow {
+            0% {
+                opacity: 0.55;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.55;
+            }
+        }
+
+        @keyframes scanSweep {
+            0% {
+                top: 24%;
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            50% {
+                top: 50%;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                top: 76%;
+                opacity: 0;
+            }
+        }
+
+        @keyframes successPop {
+            0% {
+                transform: scale(0.55);
+                opacity: 0;
+            }
+
+            70% {
+                transform: scale(1.15);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .fingerprint-icon {
+            width: 4.55em;
+            height: 4.55em;
+            color: #22d3ee;
+            stroke-width: 1.5;
+            fill: none;
+            transition: opacity 0.2s ease-in-out, transform 0.3s ease-in-out;
+        }
+
+        .fingerprint-circle.scanning .fingerprint-icon {
+            transform: scale(1.04);
+            opacity: 0.95;
+        }
+
+        .success-check {
+            position: absolute;
+            font-size: 3.2em;
+            font-weight: 700;
+            color: #4ade80;
+            line-height: 1;
+            opacity: 0;
+            transform: scale(0.6);
+            text-shadow: 0 0 0.7em rgba(74, 222, 128, 0.7);
+        }
+
+        .fingerprint-circle.success .success-check {
+            opacity: 1;
+            animation: successPop 0.35s ease-out;
+        }
+
+        .fingerprint-circle.success .fingerprint-icon {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        .fp-title {
+            font-size: 1.125em;
+            font-weight: 600;
+            margin-bottom: 0.75em;
+            text-align: center;
+        }
+
+        .fp-subtitle {
+            font-size: 0.9375em;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1.125em;
+            border: none;
+            border-radius: 0.75em;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            margin-bottom: 1em;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--cyan-neon), #06b6d4);
+            color: #071018;
+            box-shadow: 0 0.25em 0.9375em rgba(34, 211, 238, 0.3);
+            margin-bottom: 0;
+            margin-top: 0;
+        }
+
+        .btn-primary:disabled {
+            background: linear-gradient(90deg, rgba(100, 116, 139, 0.5), rgba(71, 85, 105, 0.5));
+            color: rgba(226, 232, 240, 0.85);
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.85;
+        }
+
+        .btn-primary.ready {
+            box-shadow: 0 0.4em 1.5em rgba(34, 211, 238, 0.6);
+            animation: btnGlow 1.2s ease-in-out infinite;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-0.0625em);
+            box-shadow: 0 0.375em 1.25em rgba(34, 211, 238, 0.5);
+        }
+
+        .btn-primary:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        @keyframes btnGlow {
+            0% {
+                box-shadow: 0 0.35em 1.2em rgba(34, 211, 238, 0.45);
+            }
+
+            50% {
+                box-shadow: 0 0.5em 1.8em rgba(34, 211, 238, 0.72);
+            }
+
+            100% {
+                box-shadow: 0 0.35em 1.2em rgba(34, 211, 238, 0.45);
+            }
+        }
+
+        .footer {
+            margin-top: 1.25em;
+            margin-bottom: 1.25em;
+            text-align: center;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .security-badge {
+            background: rgba(11, 15, 26, 0.6);
+            border: 0.0625em solid rgba(34, 211, 238, 0.15);
+            border-radius: 0.75em;
+            padding: 1.125em 1.75em;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.625em;
+            font-size: 0.875em;
+            color: #9ca3af;
+            margin-top: 1.5em;
+            width: 100%;
+            max-width: 35em;
+        }
+
+        .security-badge svg {
+            width: 1.125em;
+            height: 1.125em;
+            fill: #f59e0b;
+        }
+
+        .top-back-btn {
+            position: fixed;
+            top: 1.25em;
+            right: 1.25em;
+            background: rgba(255, 255, 255, 0.03);
+            border: 0.0625em solid var(--input-border, rgba(255, 255, 255, 0.12));
+            color: var(--text-muted);
+            border-radius: 999px;
+            width: 7.50em;
+            height: 3.59em;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            font-size: 1em;
+            font-weight: 600;
+            line-height: 1;
+            cursor: pointer;
+            z-index: 30;
+            box-shadow: 0 0 0.9em rgba(34, 211, 238, 0.12);
+            transition: all 0.25s ease;
+        }
+
+        .top-back-btn:hover {
+            color: var(--text-white);
+            border-color: rgba(34, 211, 238, 0.45);
+            background: rgba(34, 211, 238, 0.08);
+            box-shadow: 0 0 1.05em rgba(34, 211, 238, 0.25);
+            transform: translateY(-0.0625em);
+        }
+
+        @media (max-width: 40em) {
+            .card {
+                padding: 1.75em 1.375em;
+            }
+
+            .main-title {
+                font-size: 1.875em;
+            }
+
+            .fingerprint-box {
+                padding: 1.5em 1.125em;
+            }
+
+            .top-back-btn {
+                top: 1em;
+                right: 1em;
+                width: 5em;
+                height: 2.2em;
+                font-size: 0.95em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <button type="button" class="top-back-btn" id="topBackBtn" aria-label="Go back">Back</button>
+    <div class="container">
+        <div class="header">
+            <h1 class="main-title">Biometric Registration</h1>
+            <p class="subtitle">Scan your fingerprint to complete registration</p>
+        </div>
+
+        <div class="card">
+            <div class="fingerprint-box">
+                <div class="fingerprint-circle" id="fingerprintCircle" aria-label="Fingerprint scanner" role="button" tabindex="0">
+                    <svg class="progress-ring" viewBox="0 0 120 120" aria-hidden="true">
+                        <circle class="progress-track" cx="60" cy="60" r="52"></circle>
+                        <circle class="progress-bar" id="progressCircle" cx="60" cy="60" r="52"></circle>
+                    </svg>
+                    <div class="scan-line" aria-hidden="true"></div>
+                    <div class="fingerprint-content">
+                        <i data-lucide="fingerprint" class="fingerprint-icon" id="fingerprintIcon"></i>
+                        <span class="success-check" id="successCheck" aria-hidden="true">✓</span>
+                    </div>
+                </div>
+                <h3 class="fp-title" id="scanStatus">Place your finger on the scanner</h3>
+                <p class="fp-subtitle" id="scanHint">Click the scanner to start registration</p>
+            </div>
+
+            <button class="btn btn-primary" id="finishBtn" type="button" disabled>Register &amp; Finish</button>
+        </div>
+
+        <div class="footer">
+            <div class="security-badge">
+                <svg viewBox="0 0 24 24">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                Secure Biometric Registration
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('topBackBtn').addEventListener('click', () => {
+            window.location.href = 'diagnostic-center-signup.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("🎯 BIOMETRIC REGISTRATION PAGE LOADED");
+            console.log("⚙️  Backend API: http://127.0.0.1:5001");
+            console.log("📍 Scan Mode: Real biometric fingerprint registration with Arduino");
+            console.log("⏱️  Flow: click once, then follow Arduino prompts");
+            console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+
+            const REDIRECT_DELAY_MS = 1500;
+
+            const fingerprintCircle = document.getElementById('fingerprintCircle');
+            const progressCircle = document.getElementById('progressCircle');
+            const finishBtn = document.getElementById('finishBtn');
+            const statusText = document.getElementById('scanStatus');
+            const hintText = document.getElementById('scanHint');
+
+            const radius = Number(progressCircle.getAttribute('r'));
+            const circumference = 2 * Math.PI * radius;
+
+            let scanComplete = false;
+            let scanActive = false;
+            let redirectTimer = null;
+            let currentUserEmail = null;
+
+            progressCircle.style.strokeDasharray = `${circumference}`;
+            progressCircle.style.strokeDashoffset = `${circumference}`;
+
+            const setProgress = (ratio) => {
+                const boundedRatio = Math.min(Math.max(ratio, 0), 1);
+                const offset = circumference * (1 - boundedRatio);
+                progressCircle.style.strokeDashoffset = `${offset}`;
+            };
+
+            const safeVibrate = (pattern) => {
+                if (navigator.vibrate) {
+                    navigator.vibrate(pattern);
+                }
+            };
+
+            const resetScan = (message) => {
+                scanActive = false;
+
+                if (scanComplete) {
+                    return;
+                }
+
+                setProgress(0);
+                fingerprintCircle.classList.remove('scanning');
+                statusText.textContent = message;
+                hintText.textContent = 'Click the scanner to start registration';
+            };
+
+            const redirectToPortal = () => {
+                window.location.href = 'diagnostic-center.html';
+            };
+
+            const scanSuccessUI = () => {
+                console.log("🎉 SUCCESS! Fingerprint registered → Showing green checkmark");
+
+                scanActive = false;
+                scanComplete = true;
+
+                setProgress(1);
+                fingerprintCircle.classList.remove('scanning');
+                fingerprintCircle.classList.add('success');
+
+                statusText.textContent = 'Fingerprint registered successfully';
+                hintText.textContent = 'Registration complete. Redirecting...';
+
+                finishBtn.disabled = false;
+                finishBtn.classList.add('ready');
+
+                safeVibrate([35, 45, 35]);
+
+                console.log("⏳ Auto-redirecting to doctor-portal.html in", REDIRECT_DELAY_MS, "ms");
+                redirectTimer = window.setTimeout(() => {
+                    console.log("🚀 Redirecting now...");
+                    redirectToPortal();
+                }, REDIRECT_DELAY_MS);
+            };
+
+            const scanFailureUI = (message) => {
+                console.log("❌ SCAN FAILED:", message);
+
+                scanActive = false;
+                scanComplete = false;
+
+                setProgress(0);
+                fingerprintCircle.classList.remove('scanning', 'success');
+                statusText.textContent = message;
+                hintText.textContent = 'Click to try again';
+            };
+
+            const startRealRegistration = async () => {
+                try {
+                    // Get user email from localStorage or use simple default
+                    let userEmail = localStorage.getItem('userEmail');
+                    if (!userEmail || userEmail.trim() === '') {
+                        userEmail = 'newuser@example.com';  // Default email for testing
+                        localStorage.setItem('userEmail', userEmail);
+                    }
+                    userEmail = userEmail.trim().toLowerCase();
+                    
+                    console.log("🔵 PRESS → Calling backend /register endpoint");
+                    console.log("📧 Email:", userEmail);
+                    console.log("📤 Waiting for Arduino to complete full cycle...");
+                    statusText.textContent = 'Connecting to device...';
+                    hintText.textContent = 'Please wait...';
+
+                    const res = await fetch("http://127.0.0.1:5001/register", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({ email: userEmail, mode: "sync" })
+                    });
+
+                    console.log("📡 Backend response status:", res.status);
+                    const data = await res.json();
+                    console.log("📥 Backend response data:", data);
+                    
+                    if (data.fingerprint_id !== undefined) {
+                        console.log("📝 Fingerprint ID allocated:", data.fingerprint_id);
+                    }
+                    if (data.fingerprint_count !== undefined) {
+                        console.log("👤 Fingerprint count:", data.fingerprint_count);
+                    }
+
+                    if (!res.ok) {
+                        if (data.fingerprint_count !== undefined && data.max_fingerprints !== undefined) {
+                            hintText.textContent = `Registered ${data.fingerprint_count}/${data.max_fingerprints} fingers`;
+                        }
+                        scanFailureUI(data.message || 'Backend error: ' + res.status);
+                        return;
+                    }
+
+                    // Get the serial responses from Arduino
+                    const lines = data.responses || data.raw || [];
+                    console.log("📋 Arduino serial lines:", lines);
+
+                    if (!lines || lines.length === 0) {
+                        console.log("❌ No response lines from Arduino");
+                        scanFailureUI('No response from Arduino - check connection');
+                        return;
+                    }
+
+                    // Process each line and update UI accordingly
+                    let foundSuccess = false;
+                    for (let line of lines) {
+                        const lowerLine = String(line).toLowerCase();
+                        console.log("   Processing line:", line);
+
+                        if (lowerLine.includes('place finger')) {
+                            statusText.textContent = 'Place your finger';
+                            hintText.textContent = 'Put your finger on the sensor';
+                        }
+
+                        if (lowerLine.includes('remove finger')) {
+                            statusText.textContent = 'Remove your finger';
+                            hintText.textContent = 'Lift your finger from the sensor';
+                        }
+
+                        if (lowerLine.includes('place again') || lowerLine.includes('place same finger')) {
+                            statusText.textContent = 'Place again to confirm';
+                            hintText.textContent = 'Use the same finger again';
+                        }
+
+                        if (
+                            lowerLine.includes('saved') ||
+                            lowerLine.includes('stored') ||
+                            lowerLine.includes('enrolled') ||
+                            lowerLine.includes('registered')
+                        ) {
+                            console.log("✅ REGISTER SUCCESS response received from Arduino!");
+                            foundSuccess = true;
+                            if (data.fingerprint_count !== undefined && data.max_fingerprints !== undefined) {
+                                hintText.textContent = `Registered ${data.fingerprint_count}/${data.max_fingerprints} fingers`;
+                            }
+                            scanSuccessUI();
+                            return;
+                        }
+
+                        if (lowerLine.includes('fingerprints did not match')) {
+                            scanFailureUI('Use the SAME finger for both scans');
+                            return;
+                        }
+
+                        if (lowerLine.includes('not matched')) {
+                            console.log("❌ NOT MATCHED response from Arduino");
+                            scanFailureUI('Fingerprint not matched');
+                            return;
+                        }
+                    }
+
+                    // If we get here without "Saved", registration failed
+                    if (!foundSuccess) {
+                        console.log("❌ No final success from Arduino");
+                        scanFailureUI('Registration failed - fingerprint not saved');
+                    }
+
+                } catch (err) {
+                    console.error("❌ REGISTRATION ERROR:", err.message);
+                    console.error("   Stack:", err.stack);
+                    console.error("   Is server running? http://127.0.0.1:5001");
+                    console.error("   Is Arduino connected to COM6?");
+                    scanFailureUI("Backend connection failed: " + err.message);
+                }
+            };
+
+            const startRegistration = (event) => {
+                if (event && event.cancelable) {
+                    event.preventDefault();
+                }
+
+                if (scanActive || scanComplete) {
+                    return;
+                }
+
+                console.log("👆 FINGER PRESS → Starting real biometric registration");
+                scanActive = true;
+                fingerprintCircle.classList.add('scanning');
+                statusText.textContent = 'Starting registration...';
+                hintText.textContent = 'Arduino will guide the process';
+
+                safeVibrate(20);
+                startRealRegistration();
+            };
+
+            fingerprintCircle.addEventListener('mousedown', startRegistration);
+            fingerprintCircle.addEventListener('touchstart', startRegistration, { passive: false });
+            fingerprintCircle.addEventListener('click', startRegistration);
+            fingerprintCircle.addEventListener('keydown', (event) => {
+                if (event.code === 'Space' || event.code === 'Enter') {
+                    startRegistration(event);
+                }
+            });
+
+            finishBtn.addEventListener('click', () => {
+                if (!scanComplete) {
+                    return;
+                }
+
+                if (redirectTimer) {
+                    clearTimeout(redirectTimer);
+                }
+
+                redirectToPortal();
+            });
+        });
+    </script>
+</body>
+
+</html>

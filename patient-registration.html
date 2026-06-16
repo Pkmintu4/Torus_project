@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TORUS - Patient Registration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Premium Background Ambient Glow */
+    body.registration-page {
+      background-color: #02040a !important;
+      background-image: none !important;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3em 1.5em;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .registration-page::before,
+    .registration-page::after {
+      content: '';
+      position: fixed;
+      width: 800px;
+      height: 800px;
+      border-radius: 50%;
+      filter: blur(150px);
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.35;
+    }
+
+    .registration-page::before {
+      top: -20%;
+      left: 10%;
+      background: radial-gradient(circle, #00C8FF 0%, transparent 60%);
+    }
+
+    .registration-page::after {
+      bottom: -20%;
+      right: 10%;
+      background: radial-gradient(circle, #8A2EFF 0%, transparent 60%);
+    }
+
+    /* Premium Form Container */
+    .reg-container {
+      width: 90%;
+      max-width: 1200px;
+      background: linear-gradient(145deg, rgba(12, 18, 33, 0.7), rgba(5, 8, 15, 0.9));
+      backdrop-filter: blur(30px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1.5em;
+      padding: 3.5em;
+      box-shadow: 
+        0 25px 60px rgba(0, 0, 0, 0.6), 
+        0 0 40px rgba(0, 200, 255, 0.1), /* Ambient Cyan Glow */
+        inset 0 0 30px rgba(255, 255, 255, 0.03);
+      position: relative;
+    }
+
+    .reg-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2.5em;
+      padding-bottom: 1.5em;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .reg-title {
+      display: flex;
+      align-items: center;
+      gap: 1em;
+    }
+
+    .reg-title h2 {
+      margin: 0;
+      font-size: 1.8em;
+      font-weight: 700;
+      background: linear-gradient(90deg, #00E5FF, #00C8FF);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+    }
+
+    .reg-title i {
+      color: #00E5FF;
+      filter: drop-shadow(0 0 15px rgba(0, 229, 255, 0.8));
+      width: 32px;
+      height: 32px;
+    }
+
+    .back-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(0, 229, 255, 0.4);
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+      color: #fff;
+      padding: 0.6em 1.2em;
+      border-radius: 0.6em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.6em;
+      font-weight: 500;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .back-btn:hover {
+      background: rgba(0, 229, 255, 0.15);
+      border-color: #00E5FF;
+      box-shadow: 0 0 25px rgba(0, 229, 255, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .section-title {
+      font-size: 1.4em;
+      color: #b14eff;
+      margin: 2em 0 1.2em;
+      display: flex;
+      align-items: center;
+      gap: 0.6em;
+      font-weight: 700;
+      text-shadow: 0 0 25px rgba(177, 78, 255, 0.6);
+      letter-spacing: 0.02em;
+    }
+    .section-title i {
+      width: 26px !important;
+      height: 26px !important;
+      filter: drop-shadow(0 0 12px rgba(177, 78, 255, 0.9));
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2em 1.5em; /* more vertical spacing */
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6em;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 0.9em;
+      color: #e2e8f0;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
+
+    .required {
+      color: #ff4545;
+      margin-left: 0.3em;
+      text-shadow: 0 0 8px rgba(255,69,69,0.5);
+    }
+
+    /* Premium Inputs */
+    input, select, textarea {
+      background: rgba(2, 4, 10, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.8em;
+      padding: 1em 1.2em;
+      color: #fff;
+      font-family: inherit;
+      font-size: 1.05em;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.4); /* Inner shadow depth */
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: #64748b;
+      opacity: 1;
+    }
+
+    input:hover, select:hover, textarea:hover {
+      background: rgba(4, 8, 16, 0.6);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #00E5FF;
+      box-shadow: 
+        inset 0 2px 10px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(0, 229, 255, 0.3);
+      background: rgba(0, 229, 255, 0.05);
+      transform: translateY(-1px);
+    }
+
+    /* Custom Dropdowns */
+    select option {
+      background: #0b1121;
+      color: #ffffff;
+      padding: 1em;
+      font-size: 1em;
+    }
+
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300E5FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1.2em center;
+      background-size: 1.4em;
+      padding-right: 3em;
+      cursor: pointer;
+    }
+
+    /* Calendar Icon */
+    input[type="date"],
+    input[type="time"] {
+      color-scheme: dark;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      opacity: 1;
+      transform: scale(1.4);
+      filter: invert(0.8) sepia(1) saturate(10) hue-rotate(175deg) drop-shadow(0 0 5px #00E5FF);
+      transition: all 0.3s;
+      padding: 0.2em;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator:hover,
+    input[type="time"]::-webkit-calendar-picker-indicator:hover {
+      transform: scale(1.5);
+      filter: invert(0.8) sepia(1) saturate(10) hue-rotate(175deg) drop-shadow(0 0 12px #00E5FF);
+    }
+
+    /* Remove number arrows */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    /* Gender Toggle Group */
+    .gender-group {
+      display: flex;
+      gap: 1em;
+    }
+
+    .gender-btn {
+      flex: 1;
+      background: rgba(2, 4, 10, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 1em;
+      border-radius: 0.8em;
+      color: #94A3B8;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    .gender-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .gender-btn.active {
+      background: rgba(0, 229, 255, 0.1);
+      border-color: #00E5FF;
+      color: #00E5FF;
+      font-weight: 600;
+      box-shadow: 
+        inset 0 0 15px rgba(0, 229, 255, 0.1),
+        0 0 20px rgba(0, 229, 255, 0.2);
+    }
+
+    /* Action Buttons */
+    .action-row {
+      margin-top: 3.5em;
+      display: flex;
+      justify-content: flex-end;
+      gap: 1.5em;
+      padding-top: 2em;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 0.8em 2.5em;
+      border-radius: 0.8em;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1.05em;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00C8FF, #00E5FF, #8A2EFF);
+      background-size: 200% 200%;
+      border: none;
+      color: #000;
+      padding: 0.8em 3em;
+      border-radius: 0.8em;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 1.05em;
+      box-shadow: 0 10px 30px rgba(0, 229, 255, 0.4);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-position: right center;
+      box-shadow: 0 15px 40px rgba(0, 229, 255, 0.6), 0 0 20px rgba(138, 46, 255, 0.4);
+      transform: translateY(-3px) scale(1.02);
+    }
+
+    .btn-primary:disabled {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 229, 255, 0.15);
+      color: #64748b;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Success Modal Redesign */
+    .success-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(15px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .success-modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .success-modal {
+      background: linear-gradient(145deg, rgba(12, 18, 33, 0.95), rgba(5, 8, 15, 0.98));
+      border: 1px solid rgba(0, 229, 255, 0.4);
+      padding: 4em 5em;
+      border-radius: 2.5em;
+      text-align: center;
+      box-shadow: 
+        0 40px 100px rgba(0, 0, 0, 0.8),
+        0 0 80px rgba(0, 229, 255, 0.15), 
+        inset 0 0 30px rgba(0, 229, 255, 0.05);
+      transform: translateY(40px) scale(0.95);
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      min-width: 450px;
+    }
+
+    .success-modal::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 140%; height: 140%;
+      background: radial-gradient(circle, rgba(0,229,255,0.15) 0%, rgba(138,46,255,0.1) 40%, transparent 70%);
+      transform: translate(-50%, -50%);
+      z-index: -1;
+      pointer-events: none;
+      animation: pulseGlow 4s infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+      0% { opacity: 0.6; transform: translate(-50%, -50%) scale(0.95); }
+      100% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    }
+
+    .success-modal-overlay.active .success-modal {
+      transform: translateY(0) scale(1);
+    }
+
+    /* Animated Checkmark */
+    .success-icon {
+      width: 6em;
+      height: 6em;
+      background: rgba(0, 229, 255, 0.1);
+      color: #00E5FF;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 2em;
+      box-shadow: 0 0 50px rgba(0, 229, 255, 0.4), inset 0 0 20px rgba(0, 229, 255, 0.2);
+      animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      animation-delay: 0.2s;
+      opacity: 0;
+      transform: scale(0);
+    }
+
+    @keyframes popIn {
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .success-icon svg {
+      width: 3em;
+      height: 3em;
+      filter: drop-shadow(0 0 15px #00E5FF);
+    }
+
+    .success-modal h3 {
+      font-size: 2em;
+      font-weight: 700;
+      background: linear-gradient(90deg, #fff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0 0 0.5em;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    .success-modal p {
+      color: #94A3B8;
+      margin: 0 0 2.5em;
+      font-size: 1.15em;
+    }
+
+    /* Premium Patient Badge */
+    .modal-details {
+      text-align: left;
+      background: linear-gradient(180deg, rgba(2, 4, 10, 0.8), rgba(10, 15, 30, 0.6));
+      padding: 2em 2.5em;
+      border-radius: 1.5em;
+      border: 1px solid rgba(0, 229, 255, 0.2);
+      margin-bottom: 3em;
+      box-shadow: inset 0 5px 20px rgba(0,0,0,0.8), 0 10px 30px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .modal-details::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, #00E5FF, #8A2EFF, transparent);
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.2em;
+      font-size: 1.1em;
+      padding-bottom: 1.2em;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .detail-row:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .detail-label {
+      color: #cbd5e1;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    .detail-value {
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+    
+    .detail-value.generated-id {
+      color: #00E5FF;
+      font-size: 1.3em;
+      text-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+      background: rgba(0, 229, 255, 0.1);
+      padding: 0.3em 0.8em;
+      border-radius: 0.5em;
+      border: 1px solid rgba(0, 229, 255, 0.2);
+    }
+
+    .success-modal .btn-primary {
+      font-size: 1.2em;
+      padding: 1em 3em;
+      width: 100%;
+      letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .reg-container {
+        padding: 2em;
+        width: 95%;
+      }
+      
+      .success-modal {
+        padding: 3em 2em;
+        min-width: unset;
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+
+<body class="registration-page">
+  <div class="reg-container">
+    <div class="reg-header">
+      <div class="reg-title">
+        <i data-lucide="user-plus"></i>
+        <h2>Patient Registration</h2>
+      </div>
+      <button class="back-btn" type="button" onclick="window.location.href='diagnostic-dashboard.html'">
+        <i data-lucide="arrow-left" style="width:16px;height:16px;"></i> Back
+      </button>
+    </div>
+
+    <form id="registrationForm" onsubmit="handleRegistration(event)">
+      <div class="section-title"><i data-lucide="user"></i> Patient Information</div>
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>Full Name <span class="required">*</span></label>
+          <input type="text" id="fullName" required placeholder="Enter patient name" />
+        </div>
+        <div class="form-group">
+          <label>Age <span class="required">*</span></label>
+          <input type="number" id="age" required placeholder="Enter age" min="0" max="150" />
+        </div>
+        <div class="form-group">
+          <label>Gender <span class="required">*</span></label>
+          <div class="gender-group">
+            <div class="gender-btn active" onclick="selectGender(this)">Male</div>
+            <div class="gender-btn" onclick="selectGender(this)">Female</div>
+            <div class="gender-btn" onclick="selectGender(this)">Other</div>
+          </div>
+          <!-- Hidden input to track gender for validation if needed, though default is Male -->
+          <input type="hidden" id="gender" value="Male" required />
+        </div>
+        <div class="form-group">
+          <label>Mobile Number <span class="required">*</span></label>
+          <input type="tel" id="mobile" required placeholder="10-digit mobile number" pattern="\d{10}"
+            title="Must be exactly 10 digits" maxlength="10" />
+        </div>
+        <div class="form-group">
+          <label>Email Address (Optional)</label>
+          <input type="email" id="email" placeholder="patient@example.com" />
+        </div>
+      </div>
+
+      <div class="section-title"><i data-lucide="activity"></i> Scan Information</div>
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>Scan Type <span class="required">*</span></label>
+          <select id="scanType" required>
+            <option value="">Select Scan Type</option>
+            <option value="Abdominal Ultrasound">Abdominal Ultrasound</option>
+            <option value="Pelvic Ultrasound">Pelvic Ultrasound</option>
+            <option value="Cardiac Ultrasound">Cardiac Ultrasound</option>
+            <option value="Thyroid Scan">Thyroid Scan</option>
+            <option value="Vascular Scan">Vascular Scan</option>
+            <option value="Obstetric Scan">Obstetric Scan</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Appointment Date <span class="required">*</span></label>
+          <input type="date" required id="apptDate" />
+        </div>
+        <div class="form-group">
+          <label>Blood Group (Optional)</label>
+          <select id="bloodGroup">
+            <option value="">Select Blood Group</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button type="button" class="btn-secondary"
+          onclick="document.getElementById('registrationForm').reset(); resetGender(); checkValidity();">Clear
+          Form</button>
+        <button type="submit" class="btn-primary" id="submitBtn" disabled>Register Patient</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="success-modal-overlay" id="successModal">
+    <div class="success-modal">
+      <div class="success-icon"><i data-lucide="check"></i></div>
+      <h3>Registration Successful</h3>
+      <p>Patient has been securely added to the system.</p>
+
+      <div class="modal-details">
+        <div class="detail-row">
+          <span class="detail-label">Patient ID</span>
+          <span class="detail-value generated-id" id="displayPatientId">TORUS-0000</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Registration Date</span>
+          <span class="detail-value" id="displayRegDate">00-00-0000</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Registration Time</span>
+          <span class="detail-value" id="displayRegTime">00:00:00</span>
+        </div>
+      </div>
+
+      <div>
+        <button class="btn-primary" onclick="window.location.href='diagnostic-dashboard.html'">Return to
+          Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // Elements
+    const form = document.getElementById('registrationForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const apptDate = document.getElementById('apptDate');
+    const mobileInput = document.getElementById('mobile');
+    const ageInput = document.getElementById('age');
+
+    // Auto-fill today's date
+    const today = new Date();
+    apptDate.valueAsDate = today;
+    apptDate.min = today.toISOString().split('T')[0]; // Prevent past dates
+
+    function selectGender(element) {
+      document.querySelectorAll('.gender-btn').forEach(btn => btn.classList.remove('active'));
+      element.classList.add('active');
+      document.getElementById('gender').value = element.textContent.trim();
+      checkValidity();
+    }
+
+    function resetGender() {
+      document.querySelectorAll('.gender-btn').forEach(btn => btn.classList.remove('active'));
+      const firstBtn = document.querySelector('.gender-btn');
+      firstBtn.classList.add('active');
+      document.getElementById('gender').value = firstBtn.textContent.trim();
+    }
+
+    // Validation Logic
+    function checkValidity() {
+      // Basic HTML5 validation
+      let isValid = form.checkValidity();
+
+      // Custom Mobile Validation (exactly 10 digits)
+      const mobileVal = mobileInput.value;
+      if (!/^\d{10}$/.test(mobileVal)) {
+        isValid = false;
+      }
+
+      // Custom Age Validation
+      const ageVal = parseInt(ageInput.value, 10);
+      if (isNaN(ageVal) || ageVal < 0 || ageVal > 150) {
+        isValid = false;
+      }
+
+      // Toggle button state
+      submitBtn.disabled = !isValid;
+    }
+
+    // Attach validation listeners
+    form.addEventListener('input', checkValidity);
+    form.addEventListener('change', checkValidity);
+
+    async function handleRegistration(e) {
+      e.preventDefault();
+      if (submitBtn.disabled) return;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Registering...';
+
+      const payload = {
+        fullName: document.getElementById('fullName').value,
+        age: document.getElementById('age').value,
+        gender: document.getElementById('gender').value,
+        mobile: document.getElementById('mobile').value,
+        email: document.getElementById('email').value,
+        bloodGroup: document.getElementById('bloodGroup').value,
+        scanType: document.getElementById('scanType').value,
+        apptDate: document.getElementById('apptDate').value
+      };
+
+      try {
+        const response = await fetch('http://127.0.0.1:5002/api/patients', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Log activity
+          await fetch('http://127.0.0.1:5002/api/activities', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              activity: 'Patient Registered',
+              patientId: data.patientId,
+              patientName: payload.fullName,
+              status: 'Completed'
+            })
+          });
+
+          document.getElementById('displayPatientId').textContent = data.patientId;
+          document.getElementById('displayRegDate').textContent = data.registrationDate;
+          document.getElementById('displayRegTime').textContent = data.registrationTime;
+          document.getElementById('successModal').classList.add('active');
+        } else {
+          alert('Error registering patient: ' + data.error);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Network error. Please make sure the server is running.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Register Patient';
+      }
+    }
+  </script>
+</body>
+
+</html>

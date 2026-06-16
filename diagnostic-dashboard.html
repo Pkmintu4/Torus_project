@@ -1,0 +1,2446 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>TORUS - Diagnostic Center Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="script.js?v=20260521_01" defer></script>
+  <style>
+    /* Extreme Premium Futuristic Background Ambient Glow */
+    body.dashboard-page {
+      background-color: #02040a !important;
+      background-image: none !important;
+    }
+
+
+    /* Premium Background Ambient Glow */
+    .dashboard-page::before,
+    .dashboard-page::after {
+      content: '';
+      position: fixed;
+      width: 800px;
+      height: 800px;
+      border-radius: 50%;
+      filter: blur(150px);
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.35;
+    }
+
+    .dashboard-page::before {
+      top: -20%;
+      left: 10%;
+      background: radial-gradient(circle, #00C8FF 0%, transparent 60%);
+    }
+
+    .dashboard-page::after {
+      bottom: -20%;
+      right: 10%;
+      background: radial-gradient(circle, #8A2EFF 0%, transparent 60%);
+    }
+
+    .dash-top-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2em;
+      margin-bottom: 2.5em;
+    }
+
+    .dash-card {
+      background: linear-gradient(145deg, rgba(10, 15, 30, 0.4), rgba(5, 8, 15, 0.6));
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1.5em;
+      padding: 2em 2.5em;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 1.5em;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dash-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      background: linear-gradient(180deg, rgba(138, 46, 255, 0.05) 0%, rgba(0, 229, 255, 0.02) 100%);
+      pointer-events: none;
+    }
+
+    .dash-card:hover {
+      transform: translateY(-8px) scale(1.02);
+    }
+
+    /* Adhoc Scan - Neon Purple */
+    .dash-card.purple-card {
+      border-color: rgba(138, 46, 255, 0.5);
+      box-shadow: 0 10px 30px rgba(138, 46, 255, 0.2), inset 0 0 20px rgba(138, 46, 255, 0.1);
+    }
+
+    .dash-card.purple-card:hover {
+      border-color: #8A2EFF;
+      box-shadow: 0 15px 50px rgba(138, 46, 255, 0.5), inset 0 0 40px rgba(138, 46, 255, 0.2);
+    }
+
+    /* Schedule Scan - Cyan */
+    .dash-card.cyan-card {
+      border-color: rgba(0, 229, 255, 0.5);
+      box-shadow: 0 10px 30px rgba(0, 229, 255, 0.2), inset 0 0 20px rgba(0, 229, 255, 0.1);
+    }
+
+    .dash-card.cyan-card:hover {
+      border-color: #00E5FF;
+      box-shadow: 0 15px 50px rgba(0, 229, 255, 0.5), inset 0 0 40px rgba(0, 229, 255, 0.2);
+    }
+
+    /* Patient Registration - Violet */
+    .dash-card.violet-card {
+      border-color: rgba(177, 78, 255, 0.5);
+      box-shadow: 0 10px 30px rgba(177, 78, 255, 0.2), inset 0 0 20px rgba(177, 78, 255, 0.1);
+    }
+
+    .dash-card.violet-card:hover {
+      border-color: #B14EFF;
+      box-shadow: 0 15px 50px rgba(177, 78, 255, 0.5), inset 0 0 40px rgba(177, 78, 255, 0.2);
+    }
+
+    .dash-card-icon {
+      width: 4.5em;
+      height: 4.5em;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .dash-card.purple-card .dash-card-icon {
+      background: radial-gradient(circle, rgba(138, 46, 255, 0.2), rgba(138, 46, 255, 0.05));
+      color: #8A2EFF;
+      box-shadow: 0 0 25px rgba(138, 46, 255, 0.4);
+      border: 1px solid rgba(138, 46, 255, 0.3);
+    }
+
+    .dash-card.cyan-card .dash-card-icon {
+      background: radial-gradient(circle, rgba(0, 229, 255, 0.2), rgba(0, 229, 255, 0.05));
+      color: #00E5FF;
+      box-shadow: 0 0 25px rgba(0, 229, 255, 0.4);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+    }
+
+    .dash-card.violet-card .dash-card-icon {
+      background: radial-gradient(circle, rgba(177, 78, 255, 0.2), rgba(177, 78, 255, 0.05));
+      color: #B14EFF;
+      box-shadow: 0 0 25px rgba(177, 78, 255, 0.4);
+      border: 1px solid rgba(177, 78, 255, 0.3);
+    }
+
+    .dash-card-icon svg {
+      width: 2.5em;
+      height: 2.5em;
+      filter: drop-shadow(0 0 8px currentColor);
+    }
+
+    .dash-card h3 {
+      font-size: 1.5em;
+      font-weight: 700;
+      margin: 0;
+      color: #ffffff;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    .dash-card p {
+      font-size: 0.95em;
+      color: #94A3B8;
+      margin: 0;
+      font-weight: 400;
+    }
+
+    .dash-bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2em;
+    }
+
+    /* Dashboard Stats Row CSS */
+    .dash-stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5em;
+      margin-bottom: 2.5em;
+    }
+
+    .stat-card {
+      background: linear-gradient(145deg, rgba(10, 15, 30, 0.5), rgba(5, 8, 15, 0.7));
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 1em;
+      padding: 1.25em 1.5em;
+      display: flex;
+      align-items: center;
+      gap: 1em;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .stat-card:hover {
+      background: rgba(15, 23, 42, 0.8);
+      border-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .stat-icon {
+      width: 3.5em;
+      height: 3.5em;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .stat-icon svg {
+      width: 1.75em;
+      height: 1.75em;
+      filter: drop-shadow(0 0 5px currentColor);
+    }
+
+    .stat-icon.cyan {
+      background: rgba(0, 229, 255, 0.1);
+      color: #00E5FF;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+      border: 1px solid rgba(0, 229, 255, 0.2);
+    }
+
+    .stat-icon.amber {
+      background: rgba(255, 179, 0, 0.1);
+      color: #FFB300;
+      box-shadow: 0 0 15px rgba(255, 179, 0, 0.2);
+      border: 1px solid rgba(255, 179, 0, 0.2);
+    }
+
+    .stat-icon.purple {
+      background: rgba(138, 46, 255, 0.1);
+      color: #8A2EFF;
+      box-shadow: 0 0 15px rgba(138, 46, 255, 0.2);
+      border: 1px solid rgba(138, 46, 255, 0.2);
+    }
+
+    .stat-icon.emerald {
+      background: rgba(0, 255, 153, 0.1);
+      color: #00FF99;
+      box-shadow: 0 0 15px rgba(0, 255, 153, 0.2);
+      border: 1px solid rgba(0, 255, 153, 0.2);
+    }
+
+    .stat-info h4 {
+      font-size: 0.85em;
+      color: #94A3B8;
+      margin: 0 0 0.4em 0;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stat-value {
+      font-size: 1.8em;
+      color: #fff;
+      font-weight: 700;
+      text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+      line-height: 1;
+    }
+
+    .dash-panel {
+      background: linear-gradient(180deg, rgba(10, 15, 30, 0.6), rgba(5, 8, 15, 0.8));
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1.5em;
+      padding: 2.5em;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.02);
+    }
+
+    .dash-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 1em;
+      margin-bottom: 2em;
+    }
+
+    .dash-panel-header h2 {
+      font-size: 1.4em;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+
+    .dash-panel-header.cyan h2 {
+      background: linear-gradient(90deg, #00E5FF, #00C8FF);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+    }
+
+    .dash-panel-header.cyan svg {
+      color: #00E5FF;
+      filter: drop-shadow(0 0 10px #00E5FF);
+    }
+
+    .dash-panel-header.purple h2 {
+      background: linear-gradient(90deg, #8A2EFF, #B14EFF);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 20px rgba(138, 46, 255, 0.3);
+    }
+
+    .dash-panel-header.purple svg {
+      color: #8A2EFF;
+      filter: drop-shadow(0 0 10px #8A2EFF);
+    }
+
+    .dash-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75em;
+    }
+
+    .dash-list-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1em;
+      padding: 1.5em 1.75em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dash-list-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 4px;
+      height: 100%;
+      background: transparent;
+      transition: all 0.3s ease;
+    }
+
+    .dash-panel-header.cyan+.dash-list .dash-list-item:hover {
+      background: rgba(0, 229, 255, 0.05);
+      border-color: rgba(0, 229, 255, 0.3);
+      box-shadow: 0 5px 20px rgba(0, 229, 255, 0.1);
+      transform: translateX(4px);
+    }
+
+    .dash-panel-header.cyan+.dash-list .dash-list-item:hover::before {
+      background: #00E5FF;
+      box-shadow: 0 0 10px #00E5FF;
+    }
+
+    .dash-panel-header.purple+.dash-list .dash-list-item:hover {
+      background: rgba(138, 46, 255, 0.05);
+      border-color: rgba(138, 46, 255, 0.3);
+      box-shadow: 0 5px 20px rgba(138, 46, 255, 0.1);
+      transform: translateX(4px);
+    }
+
+    .dash-panel-header.purple+.dash-list .dash-list-item:hover::before {
+      background: #8A2EFF;
+      box-shadow: 0 0 10px #8A2EFF;
+    }
+
+    .item-left h4 {
+      font-size: 1.15em;
+      font-weight: 600;
+      margin: 0 0 0.3em 0;
+      color: #ffffff;
+    }
+
+    .item-left p {
+      font-size: 0.9em;
+      color: #94A3B8;
+      margin: 0;
+      font-weight: 500;
+    }
+
+    .item-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.4em;
+    }
+
+    .status-pill {
+      font-size: 0.8em;
+      padding: 0.35em 1.25em;
+      border-radius: 2em;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .status-pill.progress {
+      background: rgba(0, 255, 153, 0.1);
+      color: #00FF99;
+      border: 1px solid rgba(0, 255, 153, 0.4);
+      box-shadow: 0 0 15px rgba(0, 255, 153, 0.2);
+    }
+
+    .status-pill.waiting {
+      background: rgba(255, 179, 0, 0.1);
+      color: #FFB300;
+      border: 1px solid rgba(255, 179, 0, 0.4);
+      box-shadow: 0 0 15px rgba(255, 179, 0, 0.2);
+    }
+
+    .item-time.cyan {
+      color: #00C8FF;
+      font-size: 0.95em;
+      font-weight: 700;
+      text-shadow: 0 0 10px rgba(0, 200, 255, 0.4);
+    }
+
+    .item-time.purple {
+      color: #B14EFF;
+      font-size: 0.95em;
+      font-weight: 700;
+      text-shadow: 0 0 10px rgba(177, 78, 255, 0.4);
+    }
+
+    /* Top Navigation Enhancements */
+    .topbar {
+      background: rgba(5, 7, 16, 0.7) !important;
+      backdrop-filter: blur(24px) !important;
+      border-bottom: 1px solid rgba(0, 229, 255, 0.15) !important;
+      box-shadow: 0 4px 30px rgba(0, 229, 255, 0.05) !important;
+    }
+
+    .icon-btn i {
+      filter: drop-shadow(0 0 8px currentColor);
+      transition: all 0.3s ease;
+    }
+
+    .icon-btn:hover {
+      background: rgba(0, 229, 255, 0.1) !important;
+    }
+
+    .icon-btn:hover i {
+      color: #00E5FF;
+      filter: drop-shadow(0 0 15px #00E5FF);
+      transform: scale(1.1);
+    }
+
+    .avatar-chip {
+      box-shadow: 0 0 15px rgba(138, 46, 255, 0.4);
+      border: 1px solid #8A2EFF;
+      transition: all 0.3s ease;
+    }
+
+    .avatar-chip:hover {
+      box-shadow: 0 0 25px rgba(138, 46, 255, 0.7);
+      background: rgba(138, 46, 255, 0.1);
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 900px) {
+      .dash-top-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .dash-bottom-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Insights Dashboard Styles */
+    /* Advanced Insights Dashboard Styles */
+    .insights-overview-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5em;
+      margin-bottom: 2em;
+    }
+
+    @media (max-width: 1200px) {
+      .insights-overview-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .insights-overview-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .insight-stat-card {
+      background: rgba(12, 18, 33, 0.6);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 1.5em;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .insight-stat-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(0, 229, 255, 0.4);
+      box-shadow: 0 10px 30px rgba(0, 229, 255, 0.1);
+    }
+
+    .insight-stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #00E5FF, transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .insight-stat-card:hover::before {
+      opacity: 1;
+    }
+
+    .insight-stat-header {
+      display: flex;
+      align-items: center;
+      gap: 0.8em;
+      margin-bottom: 1em;
+    }
+
+    .insight-stat-header i {
+      width: 20px;
+      height: 20px;
+    }
+
+    .insight-stat-header h4 {
+      margin: 0;
+      font-size: 0.9em;
+      color: #94A3B8;
+      font-weight: 500;
+    }
+
+    .insight-stat-card .stat-value {
+      margin: 0 0 0.2em 0;
+      font-size: 2.2em;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .insight-stat-card .stat-trend {
+      font-size: 0.85em;
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+    }
+
+    .stat-trend.positive {
+      color: #00FF99;
+    }
+
+    .stat-trend.neutral {
+      color: #94A3B8;
+    }
+
+    .stat-trend.negative {
+      color: #ff4545;
+    }
+
+    .insights-charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5em;
+      margin-bottom: 2em;
+    }
+
+    @media (max-width: 1024px) {
+      .insights-charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-container {
+      background: rgba(12, 18, 33, 0.6);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 1.5em;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-container h3 {
+      margin: 0 0 0.2em 0;
+      font-size: 1.1em;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .chart-container .chart-subtitle {
+      color: #94A3B8;
+      font-size: 0.85em;
+      margin-bottom: 1.5em;
+    }
+
+    .chart-wrapper {
+      position: relative;
+      flex: 1;
+      min-height: 250px;
+      width: 100%;
+    }
+
+    .ai-analytics-panel {
+      background: linear-gradient(145deg, rgba(168, 85, 247, 0.1), rgba(12, 18, 33, 0.8));
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 12px;
+      padding: 1.5em;
+      margin-bottom: 2em;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 2em;
+    }
+
+    @media (max-width: 1024px) {
+      .ai-analytics-panel {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .ai-stats-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+    }
+
+    .ai-stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.8em;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .ai-stat-item:last-child {
+      border-bottom: none;
+    }
+
+    .ai-stat-label {
+      color: #94A3B8;
+      font-size: 0.9em;
+    }
+
+    .ai-stat-val {
+      color: #fff;
+      font-weight: 600;
+      font-size: 1.1em;
+    }
+
+    .ai-stat-val.accent {
+      color: #A855F7;
+      font-size: 1.4em;
+    }
+
+    .activity-timeline-panel {
+      background: rgba(12, 18, 33, 0.6);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 1.5em;
+    }
+
+    .activity-timeline-panel h3 {
+      margin: 0 0 1.5em 0;
+      color: #fff;
+    }
+
+    .recent-activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8em;
+    }
+
+    .activity-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1em 1.5em;
+      background: rgba(2, 4, 10, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.02);
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .activity-row:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .activity-row-left {
+      display: flex;
+      align-items: center;
+      gap: 1em;
+    }
+
+    .activity-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .activity-dot.completed {
+      background: #00FF99;
+      box-shadow: 0 0 8px #00FF99;
+    }
+
+    .activity-dot.scheduled {
+      background: #F59E0B;
+      box-shadow: 0 0 8px #F59E0B;
+    }
+
+    .activity-dot.generated {
+      background: #00E5FF;
+      box-shadow: 0 0 8px #00E5FF;
+    }
+
+    .activity-dot.started {
+      background: #A855F7;
+      box-shadow: 0 0 8px #A855F7;
+    }
+
+    .activity-details h5 {
+      margin: 0 0 0.3em 0;
+      color: #fff;
+      font-size: 1em;
+    }
+
+    .activity-details p {
+      margin: 0;
+      color: #94A3B8;
+      font-size: 0.85em;
+    }
+
+    .activity-time {
+      color: #94A3B8;
+      font-size: 0.85em;
+    }
+
+    /* Schedule Scan Modal */
+    .schedule-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .schedule-modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .schedule-modal {
+      background: #111827;
+      border: 1px solid #00E5FF;
+      padding: 2.5em;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
+      transform: translateY(20px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .schedule-modal-overlay.active .schedule-modal {
+      transform: translateY(0);
+    }
+
+    .schedule-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2em;
+    }
+
+    .schedule-modal-header h3 {
+      margin: 0;
+      color: #fff;
+      font-size: 1.5em;
+      font-weight: 600;
+    }
+
+    .schedule-modal-close {
+      background: transparent;
+      border: none;
+      color: #94A3B8;
+      cursor: pointer;
+    }
+
+    .schedule-modal-close:hover {
+      color: #fff;
+    }
+
+    .form-group {
+      margin-bottom: 1.5em;
+    }
+
+    .form-group label {
+      display: block;
+      color: #94A3B8;
+      margin-bottom: 0.6em;
+      font-size: 0.9em;
+    }
+
+    .form-group select {
+      width: 100%;
+      background: #02040a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      font-size: 1em;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+      appearance: none;
+    }
+
+    .form-group select:focus {
+      border-color: #00E5FF;
+    }
+
+    .form-group select option {
+      background: #0b1121;
+    }
+
+    .date-time-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 2fr;
+      gap: 1em;
+    }
+
+    .schedule-btn {
+      width: 100%;
+      background: #00E5FF;
+      color: #000;
+      font-weight: 600;
+      border: none;
+      padding: 1.2em;
+      border-radius: 8px;
+      margin-top: 1.5em;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-size: 1.05em;
+    }
+
+    .schedule-btn:hover:not(:disabled) {
+      background: #00c8ff;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+    }
+
+    .schedule-btn:disabled {
+      background: #475569;
+      color: #94A3B8;
+      cursor: not-allowed;
+    }
+
+    /* Custom Notification popup */
+    .toast-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(12, 18, 33, 0.95);
+      border: 1px solid #00FF99;
+      padding: 1.5em;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 255, 153, 0.2);
+      z-index: 3000;
+      color: #fff;
+      transform: translateX(120%);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .toast-notification.show {
+      transform: translateX(0);
+    }
+
+    .toast-notification h4 {
+      margin: 0 0 0.5em 0;
+      color: #00FF99;
+      font-size: 1.1em;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+
+    .toast-notification p {
+      margin: 0.2em 0;
+      font-size: 0.9em;
+      color: #cbd5e1;
+    }
+  </style>
+</head>
+
+<body class="dashboard-page">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <aside class="sidebar" id="sidebar" aria-label="Dashboard navigation">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="brand-logo-wrap">
+          <img src="logo.png" alt="TORUS Logo" class="brand-logo" />
+        </div>
+        <div class="brand-copy">
+          <strong>TORUS</strong>
+          <span>Diagnostic Center</span>
+        </div>
+      </div>
+      <button class="close-sidebar" id="closeSidebar" type="button" aria-label="Close sidebar">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="sidebar-link active" type="button" data-nav-target="dashboard">
+        <i data-lucide="layout-dashboard" class="link-icon"></i>
+        <span>Dashboard</span>
+      </button>
+      <button class="sidebar-link" type="button" data-nav-target="center-profile">
+        <i data-lucide="building" class="link-icon"></i>
+        <span>Center Profile</span>
+      </button>
+      <button class="sidebar-link" type="button" data-nav-target="activity-log">
+        <i data-lucide="activity" class="link-icon"></i>
+        <span>Activity Log</span>
+      </button>
+      <button class="sidebar-link" type="button" data-nav-target="insights">
+        <i data-lucide="bar-chart-3" class="link-icon"></i>
+        <span>Insights</span>
+      </button>
+      <button class="sidebar-link" type="button" onclick="window.location.href='patient-reports.html'">
+        <i data-lucide="file-text" class="link-icon"></i>
+        <span>Patient Reports</span>
+      </button>
+      <button class="sidebar-link" type="button" onclick="window.location.href='patient-records.html'">
+        <i data-lucide="users" class="link-icon"></i>
+        <span>Patient Records</span>
+      </button>
+      <button class="sidebar-link logout" type="button" onclick="window.location.href='diagnostic-center.html'">
+        <i data-lucide="log-out" class="link-icon"></i>
+        <span>Logout</span>
+      </button>
+    </nav>
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-footer">
+      <div class="user-summary">
+        <strong data-user-name>Dr. User</strong>
+        <span data-user-email>user@example.com</span>
+        <span>Role: <span data-user-role>diagnostic center</span></span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="dashboard-shell">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-icon-btn" id="menuToggle" type="button" aria-label="Open sidebar">
+          <i data-lucide="menu"></i>
+        </button>
+        <div class="brand-inline">
+          <div class="brand-logo-wrap">
+            <img src="logo.png" alt="TORUS Logo" class="brand-logo" />
+          </div>
+          <div class="brand-wordmark">TORUS</div>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="haptic-status-stack">
+          <div class="haptic-chip haptic-chip--connecting" id="hapticStatusChip" role="status" aria-live="polite"
+            aria-atomic="true" data-haptic-status="connecting">
+            <span class="haptic-chip-alert" aria-hidden="true">⚠</span>
+            <span class="haptic-chip-label">Haptic Pad</span>
+            <span class="haptic-chip-separator" aria-hidden="true">•</span>
+            <span class="haptic-chip-state" id="hapticChipStateText">Connecting...</span>
+            <span class="haptic-chip-indicator" id="hapticChipIndicator" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <button class="icon-btn" type="button" aria-label="Notifications">
+          <i data-lucide="bell"></i>
+        </button>
+        <div class="avatar-chip" data-user-initials>DA</div>
+      </div>
+    </header>
+
+    <main class="dashboard-content">
+      <div class="dashboard-grid">
+        <section class="section-view active" data-section-view="dashboard">
+
+          <div class="dash-top-cards">
+            <div class="dash-card purple-card" onclick="window.location.href='connected-device.html?role=patient'">
+              <div class="dash-card-icon"><i data-lucide="play-circle"></i></div>
+              <div class="dash-card-text">
+                <h3>Adhoc Scan</h3>
+                <p>Initiate immediate examination</p>
+              </div>
+            </div>
+            <div class="dash-card cyan-card" onclick="openScheduleModal()">
+              <div class="dash-card-icon"><i data-lucide="calendar"></i></div>
+              <div class="dash-card-text">
+                <h3>Schedule Scan</h3>
+                <p>Plan future examination</p>
+              </div>
+            </div>
+            <div class="dash-card violet-card" onclick="window.location.href='patient-registration.html'">
+              <div class="dash-card-icon"><i data-lucide="user-plus"></i></div>
+              <div class="dash-card-text">
+                <h3>Patient Registration</h3>
+                <p>Register new patient details</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-stats-row">
+            <div class="stat-card">
+              <div class="stat-icon cyan"><i data-lucide="activity"></i></div>
+              <div class="stat-info">
+                <h4>Active Sessions</h4>
+                <span class="stat-value" id="activeSessionsCount">0</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon amber"><i data-lucide="clock"></i></div>
+              <div class="stat-info">
+                <h4>Waiting</h4>
+                <span class="stat-value" id="waitingCount">0</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon purple"><i data-lucide="calendar"></i></div>
+              <div class="stat-info">
+                <h4>Upcoming Sessions</h4>
+                <span class="stat-value" id="upcomingSessionsCount">0</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon emerald"><i data-lucide="check-circle"></i></div>
+              <div class="stat-info">
+                <h4>Completed Today</h4>
+                <span class="stat-value" id="completedTodayCount">0</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-bottom-grid" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="dash-panel">
+              <div class="dash-panel-header cyan">
+                <i data-lucide="activity"></i>
+                <h2>Active Sessions</h2>
+              </div>
+              <div class="dash-list" id="customActiveList"></div>
+            </div>
+
+            <div class="dash-panel">
+              <div class="dash-panel-header purple">
+                <i data-lucide="calendar"></i>
+                <h2>Upcoming Sessions</h2>
+              </div>
+              <div class="dash-list" id="customUpcomingList"></div>
+            </div>
+          </div>
+
+        </section>
+
+        <section class="section-view" data-section-view="center-profile">
+          <div class="panel" style="background: transparent; border: none; padding: 0;">
+            <div class="section-title-row" style="margin-bottom: 2em;">
+              <h2 class="panel-title"
+                style="font-size: 2em; background: linear-gradient(90deg, #00E5FF, #00C8FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(0,229,255,0.3);">
+                Center Profile</h2>
+              <span class="section-note">Diagnostic Center Management Details</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2em;">
+              <!-- Center Information -->
+              <div class="dash-panel"
+                style="background: linear-gradient(145deg, rgba(12, 18, 33, 0.7), rgba(5, 8, 15, 0.9)); border: 1px solid rgba(0, 229, 255, 0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <div class="dash-panel-header cyan">
+                  <i data-lucide="building"></i>
+                  <h2>Center Information</h2>
+                </div>
+                <div style="padding: 1.5em; display: flex; flex-direction: column; gap: 1em;">
+                  <div><span style="color:#94A3B8; font-size:0.85em; text-transform:uppercase;">Center Name</span>
+                    <div style="font-size:1.1em; color:#fff; font-weight:500;">TORUS Diagnostics Elite</div>
+                  </div>
+                  <div><span style="color:#94A3B8; font-size:0.85em; text-transform:uppercase;">Center ID</span>
+                    <div style="font-size:1.1em; color:#00E5FF; font-weight:600;">TRC-88492</div>
+                  </div>
+                  <div><span style="color:#94A3B8; font-size:0.85em; text-transform:uppercase;">Registration
+                      Number</span>
+                    <div style="font-size:1.1em; color:#fff; font-weight:500;">REG-2024-99881</div>
+                  </div>
+                  <div><span style="color:#94A3B8; font-size:0.85em; text-transform:uppercase;">Contact Number</span>
+                    <div style="font-size:1.1em; color:#fff; font-weight:500;">+1 (555) 889-2211</div>
+                  </div>
+                  <div><span style="color:#94A3B8; font-size:0.85em; text-transform:uppercase;">Email Address</span>
+                    <div style="font-size:1.1em; color:#fff; font-weight:500;">contact@torus-elite.com</div>
+                  </div>
+                  <div><span style="color:#94A3B8; font-size:0.85em; text-transform:uppercase;">Address</span>
+                    <div style="font-size:1.1em; color:#fff; font-weight:500;">442 Medical Plaza, Suite 900<br />San
+                      Francisco, CA 94107</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Staff Information -->
+              <div class="dash-panel"
+                style="background: linear-gradient(145deg, rgba(12, 18, 33, 0.7), rgba(5, 8, 15, 0.9)); border: 1px solid rgba(138, 46, 255, 0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <div class="dash-panel-header purple">
+                  <i data-lucide="users"></i>
+                  <h2>Staff Information</h2>
+                </div>
+                <div style="padding: 1.5em; display: flex; flex-direction: column; gap: 1em;">
+                  <div><span style="color:#94A3B8; font-size:0.85em; text-transform:uppercase;">Center Admin</span>
+                    <div style="font-size:1.1em; color:#fff; font-weight:500;">Dr. Sarah Jenkins</div>
+                  </div>
+                  <div><span style="color:#94A3B8; font-size:0.85em; text-transform:uppercase;">Lead Technician</span>
+                    <div style="font-size:1.1em; color:#fff; font-weight:500;">Mark Robinson</div>
+                  </div>
+                  <div><span style="color:#94A3B8; font-size:0.85em; text-transform:uppercase;">Attender</span>
+                    <div style="font-size:1.1em; color:#fff; font-weight:500;">Jessica Davis</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Device Information -->
+              <div class="dash-panel"
+                style="background: linear-gradient(145deg, rgba(12, 18, 33, 0.7), rgba(5, 8, 15, 0.9)); border: 1px solid rgba(0, 255, 153, 0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <div class="dash-panel-header emerald">
+                  <i data-lucide="cpu"></i>
+                  <h2>Device Information</h2>
+                </div>
+                <div style="padding: 1.5em; display: flex; flex-direction: column; gap: 1.5em;">
+                  <div><span style="color:#94A3B8; font-size:0.85em; text-transform:uppercase;">Device ID</span>
+                    <div style="font-size:1.1em; color:#00FF99; font-weight:600;">TORUS-HAP-99X</div>
+                  </div>
+                  <div><span style="color:#94A3B8; font-size:0.85em; text-transform:uppercase;">Center Joined
+                      Date</span>
+                    <div style="font-size:1.1em; color:#fff; font-weight:500;">12-04-2025</div>
+                  </div>
+                  <div style="margin-top: 1em;">
+                    <span
+                      style="color:#94A3B8; font-size:0.85em; text-transform:uppercase; display:block; margin-bottom:0.5em;">Haptic
+                      Pad Status</span>
+                    <div class="haptic-chip haptic-chip--connecting" id="profileHapticStatus"
+                      style="display: inline-flex; border: 1px solid rgba(0,229,255,0.4); box-shadow: 0 0 15px rgba(0,229,255,0.2);">
+                      <span class="haptic-chip-alert">⚠</span>
+                      <span class="haptic-chip-label">Haptic Pad</span>
+                      <span class="haptic-chip-separator">•</span>
+                      <span class="haptic-chip-state" id="profileHapticStateText">Connecting...</span>
+                      <span class="haptic-chip-indicator"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-view" data-section-view="activity-log">
+          <div class="activity-shell" style="max-width: 100%; margin: 0; padding: 2em;">
+            <div class="section-title-row"
+              style="margin-bottom: 2em; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1em;">
+              <h2 class="panel-title"
+                style="font-size: 2em; background: linear-gradient(90deg, #00E5FF, #00C8FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(0,229,255,0.3);">
+                Activity Log</h2>
+              <span class="section-note">Comprehensive system audit and tracking</span>
+            </div>
+
+            <div class="controls-row"
+              style="display: flex; gap: 1.5em; margin-bottom: 2em; align-items: center; flex-wrap: wrap;">
+              <div class="search-box" style="flex: 1; min-width: 300px; position: relative;">
+                <i data-lucide="search"
+                  style="position: absolute; left: 1.2em; top: 50%; transform: translateY(-50%); color: #00E5FF; width: 20px; height: 20px;"></i>
+                <input type="text" id="activitySearchInput" placeholder="Search by activity, patient..."
+                  onkeyup="fetchActivities()"
+                  style="width: 100%; background: rgba(2, 4, 10, 0.5); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 0.8em; padding: 1em 1em 1em 3em; color: #fff; font-size: 1.05em; transition: all 0.3s ease; box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.4);" />
+              </div>
+              <div class="filter-group" style="display: flex; gap: 1em;">
+                <select id="filterActivityType" class="filter-select" onchange="fetchActivities()"
+                  style="background: rgba(2, 4, 10, 0.5); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 0.8em; padding: 1em 3em 1em 1.2em; color: #fff; font-size: 1em; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2300E5FF\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 1.2em center; background-size: 1.4em; cursor: pointer;">
+                  <option value="" style="background: #0b1121;">All Activities</option>
+                  <option value="Patient Registered" style="background: #0b1121;">Patient Registered</option>
+                  <option value="Scan Scheduled" style="background: #0b1121;">Scan Scheduled</option>
+                  <option value="Scan Started" style="background: #0b1121;">Scan Started</option>
+                  <option value="Scan Completed" style="background: #0b1121;">Scan Completed</option>
+                  <option value="Report Generated" style="background: #0b1121;">Report Generated</option>
+                  <option value="Digital Signature Added" style="background: #0b1121;">Digital Signature</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="records-table-container"
+              style="overflow-x: auto; border-radius: 1em; border: 1px solid rgba(255, 255, 255, 0.05); background: rgba(2, 4, 10, 0.3); max-height: 600px; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+              <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead
+                  style="position: sticky; top: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); z-index: 10; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+                  <tr>
+                    <th
+                      style="padding: 1.2em 1em; color: #e2e8f0; font-weight: 600; text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                      Date & Time</th>
+                    <th
+                      style="padding: 1.2em 1em; color: #e2e8f0; font-weight: 600; text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                      Activity</th>
+                    <th
+                      style="padding: 1.2em 1em; color: #e2e8f0; font-weight: 600; text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                      Patient ID</th>
+                    <th
+                      style="padding: 1.2em 1em; color: #e2e8f0; font-weight: 600; text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                      Patient Name</th>
+                    <th
+                      style="padding: 1.2em 1em; color: #e2e8f0; font-weight: 600; text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                      Status</th>
+                  </tr>
+                </thead>
+                <tbody id="activityRecordsBody">
+                  <tr>
+                    <td colspan="5" style="text-align:center; padding: 2em; color: #94A3B8;">Loading activities...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-view" data-section-view="insights">
+          <div class="panel" style="background: transparent; border: none; padding: 0;">
+            <div class="section-title-row" style="margin-bottom: 2em;">
+              <h2 class="panel-title" style="font-size: 1.8em;">Insights Dashboard</h2>
+              <span class="section-note">Analytics and scan performance</span>
+            </div>
+
+            <!-- Top Analytics Cards (8 Cards in 4 columns) -->
+            <div class="insights-overview-grid">
+              <div class="insight-stat-card">
+                <div class="insight-stat-header"><i data-lucide="users" style="color:#00E5FF"></i>
+                  <h4>Registered Patients</h4>
+                </div>
+                <p class="stat-value">1,248</p>
+                <p class="stat-trend positive"><i data-lucide="trending-up" style="width:14px;height:14px;"></i> +15%
+                  this month</p>
+              </div>
+              <div class="insight-stat-card">
+                <div class="insight-stat-header"><i data-lucide="activity" style="color:#A855F7"></i>
+                  <h4>Total Scans</h4>
+                </div>
+                <p class="stat-value">856</p>
+                <p class="stat-trend positive"><i data-lucide="trending-up" style="width:14px;height:14px;"></i> +8%
+                  this week</p>
+              </div>
+              <div class="insight-stat-card">
+                <div class="insight-stat-header"><i data-lucide="calendar" style="color:#F59E0B"></i>
+                  <h4>Scheduled Scans</h4>
+                </div>
+                <p class="stat-value">42</p>
+                <p class="stat-trend neutral"><i data-lucide="minus" style="width:14px;height:14px;"></i> Stable</p>
+              </div>
+              <div class="insight-stat-card">
+                <div class="insight-stat-header"><i data-lucide="file-text" style="color:#00FF99"></i>
+                  <h4>Reports Generated</h4>
+                </div>
+                <p class="stat-value">842</p>
+                <p class="stat-trend positive"><i data-lucide="trending-up" style="width:14px;height:14px;"></i> +12%
+                  this month</p>
+              </div>
+
+              <div class="insight-stat-card">
+                <div class="insight-stat-header"><i data-lucide="stethoscope" style="color:#EC4899"></i>
+                  <h4>Active Doctors</h4>
+                </div>
+                <p class="stat-value">18</p>
+                <p class="stat-trend neutral"><i data-lucide="minus" style="width:14px;height:14px;"></i> Capacity
+                  nominal</p>
+              </div>
+              <div class="insight-stat-card">
+                <div class="insight-stat-header"><i data-lucide="cpu" style="color:#00E5FF"></i>
+                  <h4>Haptic Pad Sessions</h4>
+                </div>
+                <p class="stat-value">420</p>
+                <p class="stat-trend positive"><i data-lucide="trending-up" style="width:14px;height:14px;"></i> +22% vs
+                  last month</p>
+              </div>
+              <div class="insight-stat-card">
+                <div class="insight-stat-header"><i data-lucide="check-circle" style="color:#00FF99"></i>
+                  <h4>Success Rate</h4>
+                </div>
+                <p class="stat-value">98.5%</p>
+                <p class="stat-trend positive"><i data-lucide="trending-up" style="width:14px;height:14px;"></i> Above
+                  average</p>
+              </div>
+              <div class="insight-stat-card">
+                <div class="insight-stat-header"><i data-lucide="clock" style="color:#A855F7"></i>
+                  <h4>Avg Duration</h4>
+                </div>
+                <p class="stat-value">24m</p>
+                <p class="stat-trend negative"><i data-lucide="trending-down" style="width:14px;height:14px;"></i> -2m
+                  faster</p>
+              </div>
+            </div>
+
+            <!-- Advanced Graphical Analytics Row 1 -->
+            <div class="insights-charts-grid">
+              <div class="chart-container">
+                <h3>Weekly Scan Analytics</h3>
+                <p class="chart-subtitle">Daily scan volume for the current week</p>
+                <div class="chart-wrapper"><canvas id="weeklyScanChart"></canvas></div>
+              </div>
+              <div class="chart-container">
+                <h3>Monthly Patient Growth</h3>
+                <p class="chart-subtitle">Patient count trend over 5 months</p>
+                <div class="chart-wrapper"><canvas id="monthlyGrowthChart"></canvas></div>
+              </div>
+            </div>
+
+            <!-- Advanced Graphical Analytics Row 2 -->
+            <div class="insights-charts-grid">
+              <div class="chart-container">
+                <h3>Scan Type Distribution</h3>
+                <p class="chart-subtitle">Demographics by procedure type</p>
+                <div class="chart-wrapper"><canvas id="scanTypeChart"></canvas></div>
+              </div>
+              <div class="chart-container">
+                <h3>Report Generation Analytics</h3>
+                <p class="chart-subtitle">Throughput of diagnostic reports</p>
+                <div class="chart-wrapper"><canvas id="reportTrendChart"></canvas></div>
+              </div>
+            </div>
+
+            <!-- AI Analytics Section -->
+            <div class="ai-analytics-panel">
+              <div>
+                <h3 style="color:#fff; margin:0 0 1.5em 0; font-size:1.2em;"><i data-lucide="brain"
+                    style="color:#A855F7; margin-right:8px;"></i> AI Diagnostics</h3>
+                <div class="ai-stats-list">
+                  <div class="ai-stat-item">
+                    <span class="ai-stat-label">Detection Accuracy</span>
+                    <span class="ai-stat-val accent">99.2%</span>
+                  </div>
+                  <div class="ai-stat-item">
+                    <span class="ai-stat-label">Total AI Analyses</span>
+                    <span class="ai-stat-val">1,105</span>
+                  </div>
+                  <div class="ai-stat-item">
+                    <span class="ai-stat-label">Critical Findings Flagged</span>
+                    <span class="ai-stat-val" style="color:#ff4545">47</span>
+                  </div>
+                  <div class="ai-stat-item">
+                    <span class="ai-stat-label">Normal Findings</span>
+                    <span class="ai-stat-val" style="color:#00FF99">1,058</span>
+                  </div>
+                </div>
+              </div>
+              <div class="chart-container" style="background: transparent; border: none; padding: 0;">
+                <h3 style="margin-bottom:0.2em">AI Confidence Trend</h3>
+                <p class="chart-subtitle">Average confidence score per week</p>
+                <div class="chart-wrapper"><canvas id="aiConfidenceChart"></canvas></div>
+              </div>
+            </div>
+
+            <!-- Recent Activity Timeline -->
+            <div class="activity-timeline-panel">
+              <h3>Recent Activity</h3>
+              <div class="recent-activity-list">
+                <div class="activity-row">
+                  <div class="activity-row-left">
+                    <div class="activity-dot completed"></div>
+                    <div class="activity-details">
+                      <h5>Patient A</h5>
+                      <p>Completed abdominal scan</p>
+                    </div>
+                  </div>
+                  <div class="activity-time">2 hours ago</div>
+                </div>
+                <div class="activity-row">
+                  <div class="activity-row-left">
+                    <div class="activity-dot started"></div>
+                    <div class="activity-details">
+                      <h5>Patient B</h5>
+                      <p>Scan session started</p>
+                    </div>
+                  </div>
+                  <div class="activity-time">4 hours ago</div>
+                </div>
+                <div class="activity-row">
+                  <div class="activity-row-left">
+                    <div class="activity-dot generated"></div>
+                    <div class="activity-details">
+                      <h5>Patient C</h5>
+                      <p>Report generated successfully</p>
+                    </div>
+                  </div>
+                  <div class="activity-time">5 hours ago</div>
+                </div>
+                <div class="activity-row">
+                  <div class="activity-row-left">
+                    <div class="activity-dot scheduled"></div>
+                    <div class="activity-details">
+                      <h5>Patient D</h5>
+                      <p>Scan scheduled</p>
+                    </div>
+                  </div>
+                  <div class="activity-time">1 day ago</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <section class="section-view" data-section-view="patient-reports">
+          <div class="panel">
+            <div class="section-title-row">
+              <h2 class="panel-title">Patient Reports</h2>
+              <span class="section-note">Summary placeholders</span>
+            </div>
+            <div class="placeholder-card">
+              <p class="section-body" style="margin-bottom:0;">Reports will load here. The UI is ready for real API data
+                without changing the layout.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-view" data-section-view="history" id="historySectionRoot">
+          <div class="history-shell">
+            <button class="history-back-btn" type="button" data-nav-target="dashboard">
+              <i data-lucide="arrow-left"></i>
+              <span>Back to Dashboard</span>
+            </button>
+
+            <h2 class="history-main-title">Scan History</h2>
+            <p class="history-main-subtitle">Complete timeline of all past scans and consultations</p>
+
+            <label class="history-search-wrap" aria-label="Search history">
+              <i data-lucide="search"></i>
+              <input id="historySearchInput" type="text" placeholder="Search by patient, scan type, or device..." />
+            </label>
+
+            <section class="history-date-group" data-history-group>
+              <div class="history-date-row">
+                <span class="history-date-pill">2026-03-28</span>
+                <span class="history-date-line"></span>
+              </div>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Abdominal Ultrasound</h3>
+                      <p class="history-session-id">Session #0001</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>John Doe</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>09:15 AM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>28 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">Normal findings, no intervention required</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-A12</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Cardiac Ultrasound</h3>
+                      <p class="history-session-id">Session #0002</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>Emma Taylor</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>08:45 AM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>35 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">Regular cardiac rhythm detected</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-C15</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </section>
+
+            <section class="history-date-group" data-history-group>
+              <div class="history-date-row">
+                <span class="history-date-pill">2026-03-27</span>
+                <span class="history-date-line"></span>
+              </div>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Thyroid Ultrasound</h3>
+                      <p class="history-session-id">Session #0003</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>Michael Johnson</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>04:30 PM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>22 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">No abnormalities found</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-B08</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Pelvic Ultrasound</h3>
+                      <p class="history-session-id">Session #0004</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>Sophia Wilson</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>03:15 PM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>30 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">Normal examination results</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-A12</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </section>
+
+            <section class="history-date-group" data-history-group>
+              <div class="history-date-row">
+                <span class="history-date-pill">2026-03-26</span>
+                <span class="history-date-line"></span>
+              </div>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Vascular Ultrasound</h3>
+                      <p class="history-session-id">Session #0005</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>James Smith</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>02:00 PM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>40 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">Good blood flow, no stenosis</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-D22</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Abdominal Ultrasound</h3>
+                      <p class="history-session-id">Session #0006</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>Robert Brown</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>01:30 PM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>32 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">Follow-up recommended</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-E18</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </section>
+
+            <section class="history-date-group" data-history-group>
+              <div class="history-date-row">
+                <span class="history-date-pill">2026-03-25</span>
+                <span class="history-date-line"></span>
+              </div>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Renal Ultrasound</h3>
+                      <p class="history-session-id">Session #0007</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>Emily Davis</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>11:00 AM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>25 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">Both kidneys functioning normally</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-F09</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Thyroid Ultrasound</h3>
+                      <p class="history-session-id">Session #0008</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>Michael Wilson</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>10:15 AM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>27 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">Small benign cyst identified</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-A12</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Cardiac Ultrasound</h3>
+                      <p class="history-session-id">Session #0009</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>Sarah Johnson</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>03:45 PM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>38 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">Normal heart function</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-C15</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Abdominal Ultrasound</h3>
+                      <p class="history-session-id">Session #0010</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>David Lee</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>02:30 PM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>29 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">No significant findings</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-B08</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </section>
+          </div>
+        </section>
+
+        <section class="section-view hidden" id="adminPanel" data-section-view="admin"></section>
+        <section class="section-view hidden" id="dashboardEmptyState" data-section-view="empty"></section>
+      </div>
+    </main>
+  </div>
+
+  <div class="schedule-modal-overlay" id="scheduleModalOverlay">
+    <div class="schedule-modal">
+      <div class="schedule-modal-header">
+        <h3>Schedule Scan</h3>
+        <button class="schedule-modal-close" onclick="closeScheduleModal()"><i data-lucide="x"></i></button>
+      </div>
+
+      <div class="form-group">
+        <label>Select Patient</label>
+        <select id="schedulePatient" onchange="validateScheduleForm()">
+          <option value="">Choose a patient...</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Scan Type</label>
+        <select id="scheduleScanType" onchange="validateScheduleForm()">
+          <option value="">Select Scan Type...</option>
+          <option value="Abdominal Ultrasound">Abdominal Ultrasound</option>
+          <option value="Pelvic Ultrasound">Pelvic Ultrasound</option>
+          <option value="Cardiac Ultrasound">Cardiac Ultrasound</option>
+          <option value="Thyroid Scan">Thyroid Scan</option>
+          <option value="Vascular Scan">Vascular Scan</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Select Doctor</label>
+        <select id="scheduleDoctor" onchange="validateScheduleForm()">
+          <option value="">Choose a doctor...</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Select Slot (Date & Time)</label>
+        <div class="date-time-row">
+          <select id="scheduleDay" onchange="validateScheduleForm()">
+            <option value="">Day</option>
+          </select>
+          <select id="scheduleMonth" onchange="validateScheduleForm()">
+            <option value="">Month</option>
+          </select>
+          <select id="scheduleYear" onchange="validateScheduleForm()">
+            <option value="">Year</option>
+          </select>
+          <select id="scheduleTime" onchange="validateScheduleForm()">
+            <option value="">Select Time</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="schedule-btn" id="submitScheduleBtn" disabled onclick="submitSchedule()">Schedule Scan</button>
+    </div>
+  </div>
+
+  <div class="toast-notification" id="toastNotification">
+    <h4><i data-lucide="check-circle" style="width:18px;height:18px;"></i> Scheduled Successfully</h4>
+    <p>ID: <strong id="toastId"></strong></p>
+    <p>Patient: <strong id="toastPatient"></strong></p>
+    <p>Doctor: <strong id="toastDoctor"></strong></p>
+    <p>Date & Time: <strong id="toastDateTime"></strong></p>
+  </div>
+
+  <div class="device-modal-overlay" id="deviceModalOverlay" hidden>
+    <div class="device-modal" role="dialog" aria-modal="true" aria-labelledby="deviceModalTitle">
+      <div class="device-modal-header">
+        <h2 class="device-modal-title" id="deviceModalTitle">Search TORUS Device</h2>
+        <button class="device-modal-close" id="deviceModalClose" type="button" aria-label="Close device search">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="device-modal-filters">
+        <label class="device-filter-input-wrap" aria-label="Search devices">
+          <i data-lucide="search"></i>
+          <input id="deviceSearchInput" class="device-filter-input" type="text"
+            placeholder="Search by ID, hospital, city..." />
+        </label>
+        <label class="device-filter-input-wrap cyan" aria-label="Filter devices by location">
+          <i data-lucide="map-pin"></i>
+          <input id="deviceLocationInput" class="device-filter-input" type="text"
+            placeholder="Filter by country or city..." />
+        </label>
+      </div>
+
+      <div class="device-results-scroll" id="deviceResultsScroll">
+        <div class="device-results-grid" id="deviceResultsGrid"></div>
+      </div>
+
+      <div class="device-modal-footer">
+        <button class="device-primary-btn" id="connectDeviceBtn" type="button">Connect Device</button>
+        <button class="device-secondary-btn" id="deviceInfoBtn" type="button">Device Info</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="haptic-modal-overlay" id="hapticModalOverlay" hidden>
+    <div class="haptic-modal" id="hapticModal" role="dialog" aria-modal="true" aria-labelledby="hapticModalTitle">
+      <div class="haptic-modal-icon" id="hapticModalIcon" aria-hidden="true">⚠</div>
+      <h2 class="haptic-modal-title" id="hapticModalTitle">Connecting...</h2>
+      <p class="haptic-modal-subtitle" id="hapticModalSubtitle">Attempting to connect the haptic pad device.</p>
+      <button class="haptic-modal-btn" id="hapticModalAction" type="button">OK</button>
+    </div>
+  </div>
+
+  <script>
+    // Override scripts for Diagnostic Center Dashboard
+    setTimeout(() => {
+      // Handle logout correctly
+      const logoutBtn = document.querySelector('[data-action="logout"]');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          localStorage.removeItem('userSession');
+          localStorage.removeItem('userEmail');
+          localStorage.removeItem('userName');
+          localStorage.removeItem('userInitials');
+          localStorage.removeItem('userRole');
+          localStorage.removeItem('token');
+          window.location.href = 'diagnostic-center.html';
+        }, true);
+      }
+
+      // Override rendering for the new dashboard cards design
+      window.renderActiveSessions = function (list) {
+        const container = document.getElementById('customActiveList');
+        if (!container) return;
+        container.innerHTML = list.map(session => {
+          const isProgress = session.status === 'In Progress';
+          const pillClass = isProgress ? 'progress' : 'waiting';
+          const timeText = session.duration || '00:00';
+          return `
+            <div class="dash-list-item" onclick="openConnectedDevicePage('${session.device}')">
+              <div class="item-left">
+                <h4>${session.patient}</h4>
+                <p>${session.device}</p>
+              </div>
+              <div class="item-right">
+                <span class="status-pill ${pillClass}">${session.status}</span>
+                <span class="item-time cyan">${timeText}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      };
+
+      window.renderUpcomingSessions = function (list) {
+        const container = document.getElementById('customUpcomingList');
+        if (!container) return;
+        container.innerHTML = list.map(session => `
+          <div class="dash-list-item" style="cursor: default;">
+            <div class="item-left">
+              <h4>${session.patient}</h4>
+              <p>${session.device}</p>
+            </div>
+            <div class="item-right">
+              <span class="item-time purple">${session.time}</span>
+            </div>
+          </div>
+        `).join('');
+      };
+
+      // Fetch and render the database-stored schedules dynamically
+      if (typeof fetchUpcomingSessions === 'function') {
+        fetchUpcomingSessions();
+      }
+    }, 500);
+  </script>
+
+  <div class="haptic-modal-overlay" id="hapticModalOverlay" hidden>
+    <div class="haptic-modal" id="hapticModal" role="dialog" aria-modal="true" aria-labelledby="hapticModalTitle">
+      <div class="haptic-modal-icon" id="hapticModalIcon" aria-hidden="true">⚠</div>
+      <h2 class="haptic-modal-title" id="hapticModalTitle">Connecting...</h2>
+      <p class="haptic-modal-subtitle" id="hapticModalSubtitle">Attempting to connect the haptic pad device.</p>
+      <button class="haptic-modal-btn" id="hapticModalAction" type="button">OK</button>
+    </div>
+  </div>
+  <script>
+    let allActivities = [];
+
+    async function fetchActivities() {
+      try {
+        const response = await fetch('http://127.0.0.1:5002/api/activities');
+        const resData = await response.json();
+
+        if (response.ok && resData.data) {
+          allActivities = resData.data;
+          renderActivityTable();
+        }
+      } catch (err) {
+        console.error('Error fetching activities:', err);
+        document.getElementById('activityRecordsBody').innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2em; color: #ff4545;">Error loading activities.</td></tr>';
+      }
+    }
+
+    function renderActivityTable() {
+      const tbody = document.getElementById('activityRecordsBody');
+      const search = document.getElementById('activitySearchInput').value.toLowerCase();
+      const typeFilter = document.getElementById('filterActivityType').value;
+
+      let filtered = allActivities.filter(a => {
+        const matchSearch = !search ||
+          (a.activity && a.activity.toLowerCase().includes(search)) ||
+          (a.patient_name && a.patient_name.toLowerCase().includes(search)) ||
+          (a.patient_id && a.patient_id.toLowerCase().includes(search));
+
+        const matchType = !typeFilter || a.activity === typeFilter;
+
+        return matchSearch && matchType;
+      });
+
+      tbody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2em; color: #94A3B8;">No activity logs found.</td></tr>';
+        return;
+      }
+
+      filtered.forEach(a => {
+        const tr = document.createElement('tr');
+        tr.style.transition = "background 0.2s";
+        tr.onmouseover = () => tr.style.background = "rgba(0, 229, 255, 0.05)";
+        tr.onmouseout = () => tr.style.background = "transparent";
+
+        const badgeColor = a.status === 'Completed' ? 'rgba(0, 255, 153, 0.1)' : 'rgba(0, 229, 255, 0.1)';
+        const textColor = a.status === 'Completed' ? '#00FF99' : '#00E5FF';
+
+        tr.innerHTML = `
+          <td style="padding: 1.2em 1em; border-bottom: 1px solid rgba(255,255,255,0.03); color: #cbd5e1;">${a.date_time}</td>
+          <td style="padding: 1.2em 1em; border-bottom: 1px solid rgba(255,255,255,0.03); color: #fff; font-weight:500;">${a.activity}</td>
+          <td style="padding: 1.2em 1em; border-bottom: 1px solid rgba(255,255,255,0.03); color: #00E5FF;">${a.patient_id}</td>
+          <td style="padding: 1.2em 1em; border-bottom: 1px solid rgba(255,255,255,0.03); color: #fff;">${a.patient_name}</td>
+          <td style="padding: 1.2em 1em; border-bottom: 1px solid rgba(255,255,255,0.03);">
+            <span style="background: ${badgeColor}; color: ${textColor}; padding: 0.4em 0.8em; border-radius: 2em; font-size: 0.85em; font-weight: 600; border: 1px solid ${badgeColor.replace('0.1', '0.3')}">${a.status}</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Initial fetch for activities
+      fetchActivities();
+
+      // Initialize Insights Charts
+      initInsightsCharts();
+      // Fetch Schedule Dropdown Data
+      populateScheduleDateDropdowns();
+    });
+
+    // Schedule Scan Modal Logic
+    let fetchedPatients = [];
+    let fetchedDoctors = [];
+
+    function openScheduleModal() {
+      document.getElementById('scheduleModalOverlay').classList.add('active');
+      fetchScheduleData();
+    }
+
+    function closeScheduleModal() {
+      document.getElementById('scheduleModalOverlay').classList.remove('active');
+    }
+
+    // Close on click outside
+    document.getElementById('scheduleModalOverlay').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('scheduleModalOverlay')) {
+        closeScheduleModal();
+      }
+    });
+
+    async function fetchScheduleData() {
+      try {
+        const [patRes, docRes] = await Promise.all([
+          fetch('http://127.0.0.1:5002/api/patients'),
+          fetch('http://127.0.0.1:5002/api/doctors')
+        ]);
+
+        const patData = await patRes.json();
+        const docData = await docRes.json();
+
+        if (patData.data) {
+          fetchedPatients = patData.data;
+          const patientSelect = document.getElementById('schedulePatient');
+          patientSelect.innerHTML = '<option value="">Choose a patient...</option>';
+          fetchedPatients.forEach(p => {
+            patientSelect.innerHTML += `<option value="${p.patient_id}">${p.full_name} (${p.patient_id})</option>`;
+          });
+        }
+
+        if (docData.data) {
+          fetchedDoctors = docData.data;
+          const docSelect = document.getElementById('scheduleDoctor');
+          docSelect.innerHTML = '<option value="">Choose a doctor...</option>';
+          fetchedDoctors.forEach(d => {
+            docSelect.innerHTML += `<option value="${d.doctor_id}">${d.full_name} - ${d.specialization}</option>`;
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching schedule dropdown data", err);
+      }
+    }
+
+    function populateScheduleDateDropdowns() {
+      const daySelect = document.getElementById('scheduleDay');
+      const monthSelect = document.getElementById('scheduleMonth');
+      const yearSelect = document.getElementById('scheduleYear');
+      const timeSelect = document.getElementById('scheduleTime');
+
+      const today = new Date();
+
+      // Days 1-31
+      for (let i = 1; i <= 31; i++) {
+        let val = i.toString().padStart(2, '0');
+        daySelect.innerHTML += `<option value="${val}">${val}</option>`;
+      }
+
+      // Months
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      months.forEach((m, idx) => {
+        let val = (idx + 1).toString().padStart(2, '0');
+        monthSelect.innerHTML += `<option value="${val}">${m}</option>`;
+      });
+
+      // Years
+      let curYear = today.getFullYear();
+      yearSelect.innerHTML += `<option value="${curYear}">${curYear}</option>`;
+      yearSelect.innerHTML += `<option value="${curYear + 1}">${curYear + 1}</option>`;
+
+      // Times (e.g. 09:00 AM to 05:00 PM)
+      const times = [
+        "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
+        "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM",
+        "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM", "05:00 PM"
+      ];
+      times.forEach(t => {
+        timeSelect.innerHTML += `<option value="${t}">${t}</option>`;
+      });
+    }
+
+    function validateScheduleForm() {
+      const pat = document.getElementById('schedulePatient').value;
+      const type = document.getElementById('scheduleScanType').value;
+      const doc = document.getElementById('scheduleDoctor').value;
+      const day = document.getElementById('scheduleDay').value;
+      const month = document.getElementById('scheduleMonth').value;
+      const year = document.getElementById('scheduleYear').value;
+      const time = document.getElementById('scheduleTime').value;
+
+      const btn = document.getElementById('submitScheduleBtn');
+
+      if (pat && type && doc && day && month && year && time) {
+        const selectedDate = new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10));
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (selectedDate < today) {
+          btn.disabled = true;
+        } else {
+          btn.disabled = false;
+        }
+      } else {
+        btn.disabled = true;
+      }
+    }
+
+    async function submitSchedule() {
+      const btn = document.getElementById('submitScheduleBtn');
+      btn.disabled = true;
+      btn.textContent = "Scheduling...";
+
+      const patientId = document.getElementById('schedulePatient').value;
+      const patientName = fetchedPatients.find(p => p.patient_id === patientId)?.full_name || "Unknown";
+
+      const scanType = document.getElementById('scheduleScanType').value;
+
+      const doctorId = document.getElementById('scheduleDoctor').value;
+      const doctorName = fetchedDoctors.find(d => d.doctor_id === doctorId)?.full_name || "Unknown";
+
+      const day = document.getElementById('scheduleDay').value;
+      const month = document.getElementById('scheduleMonth').value;
+      const year = document.getElementById('scheduleYear').value;
+      const time = document.getElementById('scheduleTime').value;
+
+      const appointmentDate = `${day}-${month}-${year}`;
+
+      const payload = {
+        patient_id: patientId,
+        patient_name: patientName,
+        scan_type: scanType,
+        doctor_id: doctorId,
+        doctor_name: doctorName,
+        appointment_date: appointmentDate,
+        appointment_time: time
+      };
+
+      try {
+        const response = await fetch('http://127.0.0.1:5002/api/schedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const resData = await response.json();
+
+        if (response.ok) {
+          // Success
+          closeScheduleModal();
+          showToast(resData.data);
+
+          setTimeout(() => {
+            window.location.href = 'diagnostic-schedule.html';
+          }, 1500);
+        } else {
+          alert("Error: " + resData.error);
+        }
+      } catch (err) {
+        alert("Network Error: " + err.message);
+      } finally {
+        btn.textContent = "Schedule Scan";
+        // Reset form
+        document.getElementById('schedulePatient').value = '';
+        document.getElementById('scheduleScanType').value = '';
+        document.getElementById('scheduleDoctor').value = '';
+        document.getElementById('scheduleDay').value = '';
+        document.getElementById('scheduleMonth').value = '';
+        document.getElementById('scheduleYear').value = '';
+        document.getElementById('scheduleTime').value = '';
+        validateScheduleForm();
+      }
+    }
+
+    function showToast(data) {
+      document.getElementById('toastId').textContent = data.schedule_id;
+      document.getElementById('toastPatient').textContent = data.patient_name;
+      document.getElementById('toastDoctor').textContent = data.doctor_name;
+      document.getElementById('toastDateTime').textContent = `${data.appointment_date} at ${data.appointment_time}`;
+
+      const toast = document.getElementById('toastNotification');
+      toast.classList.add('show');
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 5000);
+    }
+
+    function getDeviceForScanType(scanType) {
+      if (!scanType) return 'TORUS-A12';
+      const type = scanType.toLowerCase();
+      if (type.includes('abdominal')) return 'TORUS-A12';
+      if (type.includes('cardiac')) return 'TORUS-B08';
+      if (type.includes('pelvic')) return 'TORUS-C15';
+      if (type.includes('thyroid')) return 'TORUS-D22';
+      if (type.includes('vascular')) return 'TORUS-E18';
+      return 'TORUS-F09';
+    }
+
+    async function fetchUpcomingSessions() {
+      try {
+        // Enforcing exactly the 3 cards requested in the exact order
+        const activeList = [
+          { patient: 'Patient A', device: 'TORUS-A12', status: 'In Progress', duration: '12:34' },
+          { patient: 'Patient B', device: 'TORUS-B08', status: 'Waiting', duration: '00:00' },
+          { patient: 'Patient C', device: 'TORUS-C15', status: 'Waiting', duration: '00:00' }
+        ];
+
+        const upcomingList = [
+          { patient: 'John Smith', device: 'TORUS-A12', time: '10:30 AM' },
+          { patient: 'Jane Smith', device: 'TORUS-B08', time: '12:00 PM' },
+          { patient: 'Robert Brown', device: 'TORUS-C15', time: '02:15 PM' }
+        ];
+
+        // Update stats UI exactly to match the reference design counts
+        const activeCountEl = document.getElementById('activeSessionsCount');
+        const waitingCountEl = document.getElementById('waitingCount');
+        const upcomingCountEl = document.getElementById('upcomingSessionsCount');
+        const completedTodayCountEl = document.getElementById('completedTodayCount');
+
+        if (activeCountEl) activeCountEl.textContent = '3';
+        if (waitingCountEl) waitingCountEl.textContent = '2';
+        if (upcomingCountEl) upcomingCountEl.textContent = '3';
+        if (completedTodayCountEl) completedTodayCountEl.textContent = '12';
+
+        // Render lists
+        if (typeof renderActiveSessions === 'function') {
+          renderActiveSessions(activeList);
+        }
+        if (typeof renderUpcomingSessions === 'function') {
+          renderUpcomingSessions(upcomingList);
+        }
+
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard schedules:', err);
+      }
+    }
+
+    function initInsightsCharts() {
+      // Global Defaults for Dark Theme
+      Chart.defaults.color = '#94A3B8';
+      Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
+      Chart.defaults.font.family = "'Inter', sans-serif";
+
+      const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false } },
+          y: { grid: { color: 'rgba(255,255,255,0.05)', borderDash: [5, 5] } }
+        }
+      };
+
+      // 1. Weekly Scan Analytics (Bar Chart - Purple)
+      const ctxWeekly = document.getElementById('weeklyScanChart');
+      if (ctxWeekly) {
+        new Chart(ctxWeekly, {
+          type: 'bar',
+          data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+              label: 'Scans',
+              data: [12, 18, 15, 22, 20, 8, 5],
+              backgroundColor: '#A855F7',
+              borderRadius: 6,
+              borderSkipped: false,
+              barThickness: 30
+            }]
+          },
+          options: commonOptions
+        });
+      }
+
+      // 2. Monthly Patient Growth (Line Chart - Cyan)
+      const ctxGrowth = document.getElementById('monthlyGrowthChart');
+      if (ctxGrowth) {
+        new Chart(ctxGrowth, {
+          type: 'line',
+          data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+            datasets: [{
+              label: 'Patients',
+              data: [30, 45, 60, 40, 70],
+              borderColor: '#00E5FF',
+              borderWidth: 3,
+              pointBackgroundColor: '#00E5FF',
+              pointRadius: 6,
+              pointBorderColor: '#02040a',
+              pointBorderWidth: 2,
+              fill: false,
+              tension: 0.4
+            }]
+          },
+          options: commonOptions
+        });
+      }
+
+      // 3. Scan Type Distribution (Donut)
+      const ctxType = document.getElementById('scanTypeChart');
+      if (ctxType) {
+        new Chart(ctxType, {
+          type: 'doughnut',
+          data: {
+            labels: ['Abdominal', 'Pelvic', 'Cardiac', 'Thyroid', 'Vascular'],
+            datasets: [{
+              data: [35, 25, 15, 10, 15],
+              backgroundColor: ['#00E5FF', '#A855F7', '#EC4899', '#F59E0B', '#00FF99'],
+              borderWidth: 0,
+              hoverOffset: 4
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            cutout: '75%',
+            plugins: {
+              legend: { position: 'right', labels: { color: '#94A3B8', padding: 20 } }
+            }
+          }
+        });
+      }
+
+      // 4. Report Generation (Area)
+      const ctxReport = document.getElementById('reportTrendChart');
+      if (ctxReport) {
+        new Chart(ctxReport, {
+          type: 'line',
+          data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            datasets: [{
+              label: 'Reports Generated',
+              data: [15, 22, 30, 28],
+              borderColor: '#00FF99',
+              backgroundColor: 'rgba(0, 255, 153, 0.1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 0
+            }]
+          },
+          options: commonOptions
+        });
+      }
+
+      // 5. AI Confidence (Line)
+      const ctxAI = document.getElementById('aiConfidenceChart');
+      if (ctxAI) {
+        new Chart(ctxAI, {
+          type: 'line',
+          data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
+            datasets: [{
+              label: 'Confidence Score',
+              data: [95, 96, 95.5, 98, 99.2],
+              borderColor: '#A855F7',
+              backgroundColor: 'rgba(168, 85, 247, 0.1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { display: false },
+              y: { display: false, min: 90, max: 100 }
+            }
+          }
+        });
+      }
+    }
+  </script>
+</body>
+
+</html>

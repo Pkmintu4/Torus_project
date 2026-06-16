@@ -1,0 +1,4867 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ultrasound Scanning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest?v=20260521_01"></script>
+  <script>
+    console.log('BUILD VERSION:', Date.now());
+    console.log('Capture Handler Loaded');
+    (function configureUltrasoundViewerMode() {
+      const viewerMode = new URLSearchParams(window.location.search).get('viewer') === '1';
+      document.documentElement.classList.toggle('ultrasound-viewer-mode', viewerMode);
+      window.__torusUltrasoundViewerMode = viewerMode;
+    })();
+  </script>
+  <style>
+    :root {
+      --bg-main: #0b0f18;
+      --bg-panel: #171b29;
+      --bg-panel-2: #131726;
+      --line: rgba(42, 173, 209, 0.24);
+      --line-soft: rgba(127, 55, 255, 0.24);
+      --text-main: #f7f8ff;
+      --text-muted: #9ca3b9;
+      --cyan: #18d8ff;
+      --cyan-2: #00bfe7;
+      --purple: #7c3aed;
+      --purple-2: #8b5cf6;
+      --green: #16f29c;
+      --red: #ff4545;
+      --shadow: 0 1.25em 3em rgba(0, 0, 0, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      background: radial-gradient(circle at top left, rgba(124, 58, 237, 0.08), transparent 32%),
+        radial-gradient(circle at top right, rgba(24, 216, 255, 0.07), transparent 28%),
+        var(--bg-main);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    body {
+      min-height: 100vh;
+      font-size: 67%;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      height: 4.625em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25em;
+      border-bottom: 0.0625em solid rgba(97, 59, 196, 0.22);
+      background: linear-gradient(180deg, rgba(10, 14, 32, 0.96) 0%, rgba(6, 10, 24, 0.96) 100%);
+      flex-shrink: 0;
+    }
+
+    .topbar-left,
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75em;
+    }
+
+    .menu-icon-btn {
+      width: 4em;
+      height: 4em;
+      border-radius: 0.75em;
+      border: 0.0625em solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+      color: #00e5ff;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: all 0.22s ease;
+    }
+
+    .menu-icon-btn i {
+      width: 1.75em;
+      height: 1.75em;
+    }
+
+    .menu-icon-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+
+    .brand-inline {
+      display: flex;
+      align-items: center;
+      gap: 1em;
+    }
+
+    .brand-inline .brand-logo-wrap {
+      width: 3.875em;
+      height: 3.875em;
+      border-radius: 0.75em;
+      margin: 0;
+      border: 0.0625em solid rgba(106, 0, 255, 0.14);
+      background: transparent;
+      box-shadow: none;
+      display: grid;
+      place-items: center;
+    }
+
+    .brand-inline .brand-logo {
+      width: 2em;
+      height: 2em;
+      object-fit: contain;
+      filter: contrast(1.2) saturate(1.1);
+    }
+
+    .brand-wordmark {
+      font-size: 2.5em;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      line-height: 1;
+      color: var(--text-main);
+    }
+
+    .icon-btn,
+    .profile-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 3em;
+      border-radius: 0.75em;
+      border: 0.0625em solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+      color: #dbe7ff;
+      cursor: pointer;
+      transition: all 0.22s ease;
+    }
+
+    .icon-btn {
+      width: 3em;
+      padding: 0;
+      color: #cbd5e1;
+    }
+
+    .icon-btn i {
+      width: 1.3125em;
+      height: 1.3125em;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .profile-pill {
+      width: 3.125em;
+      height: 3.125em;
+      border-radius: 50%;
+      padding: 0;
+      border-color: rgba(106, 0, 255, 0.55);
+      color: #d8b4fe;
+      background: rgba(106, 0, 255, 0.12);
+      font-weight: 700;
+      text-transform: uppercase;
+      box-shadow: 0 0 1em rgba(106, 0, 255, 0.2);
+    }
+
+    .main {
+      flex: 1;
+      padding: 1.375em 1.5em 1.125em;
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+    }
+
+    .heading-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1.25em;
+      flex-wrap: wrap;
+    }
+
+    .title-wrap h1 {
+      margin: 0;
+      font-size: 3em;
+      line-height: 1.15;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .title-wrap p {
+      margin: 0.25em 0 0;
+      font-size: 1.02em;
+      line-height: 1.35;
+      color: #a38cff;
+      font-weight: 500;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75em;
+      flex-wrap: wrap;
+      margin-top: 0.25em;
+    }
+
+    .back-btn {
+      height: 2.25em;
+      padding: 0 1em;
+      border-radius: 999px;
+      border: 0.0625em solid rgba(124, 58, 237, 0.55);
+      background: rgba(13, 18, 33, 0.88);
+      color: #d8deef;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4em;
+      cursor: pointer;
+      box-shadow: 0 0 0.75em rgba(124, 58, 237, 0.08);
+    }
+
+    .back-btn svg {
+      width: 1em;
+      height: 1em;
+    }
+
+    .session-details-slot {
+      width: 100%;
+    }
+
+    .patient-details-card {
+      width: 100%;
+      border-radius: 1em;
+      border: 0.0625em solid rgba(24, 216, 255, 0.22);
+      background: linear-gradient(180deg, rgba(22, 24, 36, 0.95), rgba(18, 21, 31, 0.95));
+      box-shadow: var(--shadow);
+      padding: 1.8em 1.8em 1.6em;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      column-gap: 2.2em;
+      row-gap: 1.2em;
+      align-items: start;
+    }
+
+    .patient-header {
+      grid-column: 1 / 4;
+      display: flex;
+      align-items: center;
+      gap: 0.65em;
+    }
+
+    .patient-header-icon {
+      width: 2.8em;
+      height: 2.8em;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: rgba(124, 58, 237, 0.1);
+    }
+
+    .patient-header-icon svg {
+      width: 1.45em;
+      height: 1.45em;
+      color: var(--purple);
+      stroke: var(--purple);
+    }
+
+    .patient-details-title {
+      margin: 0;
+      font-size: 1.85em;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .history-btn {
+      grid-column: 6 / 7;
+      justify-self: end;
+      align-self: start;
+      height: 2.5em;
+      padding: 0 1.2em;
+      border-radius: 999px;
+      border: 0.0625em solid rgba(0, 215, 255, 0.45);
+      background: linear-gradient(135deg, rgba(0, 215, 255, 0.16), rgba(0, 215, 255, 0.08));
+      color: #10d8ff;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45em;
+      cursor: pointer;
+      box-shadow: 0 0 1.1em rgba(0, 215, 255, 0.1);
+    }
+
+    .history-btn svg {
+      width: 1.05em;
+      height: 1.05em;
+    }
+
+    .patient-details-item {
+      grid-row: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35em;
+      min-width: 0;
+    }
+
+    .patient-item-top {
+      display: flex;
+      align-items: center;
+      gap: 0.35em;
+      min-width: 0;
+    }
+
+    .patient-icon-wrap {
+      width: 1.45em;
+      height: 1.45em;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+    }
+
+    .patient-icon-wrap svg {
+      width: 1.45em;
+      height: 1.45em;
+      color: var(--purple);
+      stroke: var(--purple);
+    }
+
+    .label {
+      font-size: 1.1em;
+      font-weight: 500;
+      color: rgba(233, 236, 255, 0.78);
+    }
+
+    .value {
+      font-size: 1.3em;
+      line-height: 1.25;
+      font-weight: 700;
+      color: #f4f6ff;
+      word-break: break-word;
+    }
+
+    .feeds-row {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1.2fr 1.2fr;
+      gap: 1em;
+      min-height: 48em;
+      margin-bottom: 1.5em;
+    }
+
+    .feed-card {
+      position: relative;
+      min-height: 48em;
+      border-radius: 1em;
+      border: 0.0625em solid rgba(24, 216, 255, 0.2);
+      background: linear-gradient(180deg, rgba(21, 24, 35, 0.97), rgba(18, 21, 31, 0.97));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .feed-card.left {
+      border-color: rgba(124, 58, 237, 0.3);
+    }
+
+    .feed-card.right {
+      border-color: rgba(0, 215, 255, 0.22);
+    }
+
+    .feed-card.capture-flash::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 9;
+      background:
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.68) 24%, rgba(24, 216, 255, 0.42) 48%, rgba(24, 216, 255, 0) 78%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08));
+      opacity: 0;
+      mix-blend-mode: screen;
+      animation: captureFlash 220ms ease-out;
+    }
+
+    @keyframes captureFlash {
+      0% {
+        opacity: 0;
+      }
+
+      18% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    .panel-controls {
+      position: absolute;
+      top: 1em;
+      left: 1em;
+      z-index: 5;
+      display: flex;
+      gap: 0.9em;
+    }
+
+    .panel-controls .control-btn {
+      width: 4.5em;
+      height: 4.5em;
+      border-radius: 999px;
+      border: 0.08em solid rgba(24, 216, 255, 0.3);
+      background: linear-gradient(180deg, rgba(20, 25, 40, 0.98), rgba(10, 14, 26, 0.98));
+      color: #20e5ff;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow:
+        0 0.6em 1.4em rgba(0, 191, 231, 0.16),
+        0 0 0 0.05em rgba(255, 255, 255, 0.03) inset,
+        0 0 1em rgba(24, 216, 255, 0.12);
+      backdrop-filter: blur(0.4em);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .panel-controls .control-btn:nth-child(2) {
+      color: #8b5cf6;
+      border-color: rgba(124, 58, 237, 0.34);
+      box-shadow:
+        0 0.6em 1.4em rgba(124, 58, 237, 0.18),
+        0 0 0 0.05em rgba(255, 255, 255, 0.03) inset,
+        0 0 1em rgba(124, 58, 237, 0.12);
+    }
+
+    .panel-controls .control-btn:nth-child(3) {
+      color: #9c6cff;
+      border-color: rgba(156, 108, 255, 0.32);
+      box-shadow:
+        0 0.6em 1.4em rgba(156, 108, 255, 0.18),
+        0 0 0 0.05em rgba(255, 255, 255, 0.03) inset,
+        0 0 1em rgba(156, 108, 255, 0.12);
+    }
+
+    .panel-controls .control-btn svg {
+      width: 2.1em;
+      height: 2.1em;
+      stroke-width: 2.4;
+    }
+
+    .ultrasound-fullscreen-btn {
+      position: absolute;
+      top: 1em;
+      right: 1em;
+      z-index: 5;
+      width: 4.5em;
+      height: 4.5em;
+      border-radius: 999px;
+      border: 0.08em solid rgba(156, 108, 255, 0.32);
+      background: linear-gradient(180deg, rgba(20, 25, 40, 0.98), rgba(10, 14, 26, 0.98));
+      color: #9c6cff;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow:
+        0 0.6em 1.4em rgba(156, 108, 255, 0.18),
+        0 0 0 0.05em rgba(255, 255, 255, 0.03) inset,
+        0 0 1em rgba(156, 108, 255, 0.12);
+      backdrop-filter: blur(0.4em);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .ultrasound-fullscreen-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(156, 108, 255, 0.52);
+      box-shadow:
+        0 0.7em 1.5em rgba(156, 108, 255, 0.22),
+        0 0 1em rgba(156, 108, 255, 0.16);
+    }
+
+    .ultrasound-fullscreen-btn i {
+      font-size: 1.8em;
+      line-height: 1;
+    }
+
+    .recording-indicator {
+      position: absolute;
+      top: 0.9em;
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+      z-index: 5;
+      display: none;
+      align-items: center;
+      padding: 0.42em 0.85em;
+      border-radius: 0.45em;
+      border: 0.06em solid rgba(255, 69, 69, 0.28);
+      background: rgba(61, 21, 35, 0.55);
+      color: #cf3956;
+      font-size: 1em;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .recording-indicator.active {
+      display: inline-flex;
+    }
+
+    .ultrasound-recording-dot {
+      position: absolute;
+      left: 0.95em;
+      bottom: 0.95em;
+      width: 0.7em;
+      height: 0.7em;
+      border-radius: 50%;
+      background: #ff0000;
+      box-shadow: 0 0 0.7em rgba(255, 0, 0, 0.72);
+      z-index: 7;
+      pointer-events: none;
+      display: none;
+    }
+
+    .ultrasound-recording-dot.active {
+      display: block;
+      animation: ultrasoundRecordingPulse 1s steps(2, end) infinite;
+    }
+
+    @keyframes ultrasoundRecordingPulse {
+
+      0%,
+      49% {
+        opacity: 1;
+      }
+
+      50%,
+      100% {
+        opacity: 0.15;
+      }
+    }
+
+    .feed-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.7em;
+      color: rgba(180, 191, 225, 0.7);
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .feed-center svg {
+      width: 3.4em;
+      height: 3.4em;
+      color: var(--purple);
+      stroke: var(--purple);
+    }
+
+    .feed-center .label-text {
+      font-size: 1.28em;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.02em;
+      text-shadow: 0 0 0.5em rgba(24, 216, 255, 0.28);
+    }
+
+    #ultrasoundPlaceholder {
+      pointer-events: auto;
+    }
+
+    .ultrasound-select-btn {
+      position: absolute;
+      left: 1rem;
+      right: 1rem;
+      bottom: 1rem;
+      z-index: 5;
+      border: 0.08em solid rgba(24, 216, 255, 0.32);
+      border-radius: 999px;
+      padding: 0.8rem 1rem;
+      background: linear-gradient(135deg, rgba(20, 25, 40, 0.98), rgba(12, 16, 28, 0.98));
+      color: #20e5ff;
+      font-weight: 800;
+      cursor: pointer;
+      pointer-events: auto;
+      box-shadow:
+        0 0.7em 1.5em rgba(0, 191, 231, 0.16),
+        0 0 0 0.05em rgba(255, 255, 255, 0.04) inset,
+        0 0 1em rgba(124, 58, 237, 0.12);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
+    }
+
+    .ultrasound-select-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+      border-color: rgba(156, 108, 255, 0.5);
+    }
+
+    .feed-label.bottom-text {
+      position: absolute;
+      left: 0.95em;
+      bottom: 0.9em;
+      z-index: 4;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-shadow: 0 0 0.55em rgba(24, 216, 255, 0.34);
+    }
+
+    .video-stream {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: transparent;
+      z-index: 2;
+    }
+
+    .video-stream::-webkit-media-controls,
+    .video-stream::-webkit-media-controls-enclosure,
+    .video-stream::-webkit-media-controls-panel,
+    .video-stream::-webkit-media-controls-play-button,
+    .video-stream::-webkit-media-controls-start-playback-button,
+    .video-stream::-webkit-media-controls-current-time-display,
+    .video-stream::-webkit-media-controls-time-remaining-display,
+    .video-stream::-webkit-media-controls-timeline,
+    .video-stream::-webkit-media-controls-seek-back-button,
+    .video-stream::-webkit-media-controls-seek-forward-button,
+    .video-stream::-webkit-media-controls-volume-slider,
+    .video-stream::-webkit-media-controls-mute-button,
+    .video-stream::-webkit-media-controls-fullscreen-button,
+    .video-stream::-webkit-media-controls-picture-in-picture-button,
+    .video-stream::-internal-media-controls-download-button {
+      display: none !important;
+      -webkit-appearance: none;
+    }
+
+    .ultrasound-video-stream {
+      object-fit: cover;
+      object-position: center center;
+      background: #05070c;
+    }
+
+    .ultrasound-video-stream.hidden {
+      display: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    html.ultrasound-viewer-mode .topbar,
+    html.ultrasound-viewer-mode .heading-row,
+    html.ultrasound-viewer-mode .patient-details-card,
+    html.ultrasound-viewer-mode .actions-row,
+    html.ultrasound-viewer-mode #patientCameraPanel,
+    html.ultrasound-viewer-mode .sidebar,
+    html.ultrasound-viewer-mode .sidebar-overlay {
+      display: none !important;
+    }
+
+    html.ultrasound-viewer-mode .main {
+      padding: 0.5em;
+      gap: 0.5em;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    html.ultrasound-viewer-mode body {
+      overflow: hidden;
+    }
+
+    html.ultrasound-viewer-mode .feeds-row {
+      grid-template-columns: 1fr;
+      min-height: calc(100vh - 1em);
+      margin-bottom: 0;
+    }
+
+    html.ultrasound-viewer-mode .feed-card.left {
+      min-height: calc(100vh - 1em);
+    }
+
+    .feed-label.bottom-text {
+      z-index: 3;
+    }
+
+    .doctor-tile {
+      position: absolute;
+      right: 0.85em;
+      bottom: 0.85em;
+      width: clamp(24em, 28vw, 30em);
+      height: clamp(16em, 18vw, 20em);
+      border-radius: 1em;
+      border: 0.125em solid rgba(156, 108, 255, 0.8);
+      background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+      color: #f5f7ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25em;
+      box-shadow: 0 0.5em 1.3em rgba(124, 58, 237, 0.34);
+      z-index: 6;
+      overflow: hidden;
+    }
+
+    .doctor-tile-video,
+    .consultation-doctor-tile-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .doctor-tile> :not(.doctor-tile-video),
+    .consultation-doctor-tile> :not(.consultation-doctor-tile-video) {
+      position: relative;
+      z-index: 2;
+    }
+
+    .doctor-tile svg {
+      width: 1.15em;
+      height: 1.15em;
+    }
+
+    .doctor-tile .name {
+      font-size: 0.72em;
+      line-height: 1;
+      font-weight: 700;
+    }
+
+    .call-status-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.8em;
+      width: 100%;
+      min-height: 4.25em;
+      border-radius: 0.95em;
+      border: 0.0625em solid rgba(24, 216, 255, 0.12);
+      background: rgba(17, 20, 29, 0.96);
+      color: #c99cff;
+      font-size: 1.05em;
+      font-weight: 600;
+      box-shadow: var(--shadow);
+    }
+
+    .spinner {
+      width: 2em;
+      height: 2em;
+      border-radius: 50%;
+      border: 0.2em solid rgba(201, 156, 255, 0.2);
+      border-top-color: #c99cff;
+      animation: spin 0.9s linear infinite;
+    }
+
+    .actions-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      /* left chinna, right pedda */
+      gap: 0.75em;
+      align-items: stretch;
+    }
+
+    .btn-primary,
+    .btn-danger {
+      border: 0;
+      border-radius: 0.85em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.25em;
+      min-height: 4.2em;
+      cursor: pointer;
+      letter-spacing: 0.01em;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    }
+
+    .btn-primary i,
+    .btn-danger i {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 0.6em;
+      flex: 0 0 auto;
+    }
+
+    .btn-primary i svg,
+    .btn-danger i svg {
+      width: 1.05em;
+      height: 1.05em;
+      stroke-width: 2.5;
+    }
+
+    .end-scan-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .end-scan-btn i,
+    .end-scan-btn svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .end-scan-btn i {
+      margin-right: 0;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #16d9ff, #00bfe7);
+      color: #06131d;
+      box-shadow: 0 0.65em 1.5em rgba(0, 191, 231, 0.28);
+    }
+
+    .btn-danger {
+      width: 100%;
+      background: linear-gradient(135deg, #ff4b4b, #ff3434);
+      color: #fff;
+      box-shadow: 0 0.65em 1.5em rgba(255, 69, 69, 0.22);
+    }
+
+    .btn-primary:active,
+    .btn-danger:active,
+    .back-btn:active,
+    .history-btn:active,
+    .panel-controls .control-btn:active {
+      transform: translateY(1px) scale(0.99);
+    }
+
+    .panel-controls .control-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255, 255, 255, 0.18);
+      box-shadow:
+        0 0.7em 1.5em rgba(0, 191, 231, 0.2),
+        0 0 0 0.05em rgba(255, 255, 255, 0.03) inset,
+        0 0 1em rgba(24, 216, 255, 0.14);
+    }
+
+    body.consultation-fullscreen {
+      overflow: hidden;
+    }
+
+    body.consultation-fullscreen .app-shell .main {
+      display: none;
+    }
+
+    .consultation-overlay {
+      position: fixed;
+      top: 4.625em;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 160;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 1em;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: none;
+      transition: opacity 300ms ease-in-out, visibility 0s linear 300ms;
+      background: transparent;
+    }
+
+    .consultation-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .consultation-overlay.active,
+    .consultation-overlay.floating-active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .consultation-overlay.closing {
+      opacity: 0;
+      visibility: visible;
+      pointer-events: none;
+    }
+
+    .consultation-overlay.closing .consultation-stage {
+      opacity: 0;
+      transform: scale(0.985);
+    }
+
+    .consultation-overlay.consultation-fullscreen {
+      background:
+        radial-gradient(circle at top left, rgba(124, 58, 237, 0.09), transparent 28%),
+        radial-gradient(circle at top right, rgba(24, 216, 255, 0.08), transparent 26%),
+        linear-gradient(180deg, rgba(7, 10, 18, 0.98) 0%, rgba(10, 13, 22, 0.99) 100%);
+      pointer-events: auto;
+    }
+
+    .consultation-stage {
+      position: fixed;
+      left: 0;
+      top: 4.625em;
+      width: 100vw;
+      height: calc(100vh - 4.625em);
+      border-radius: 1.25em;
+      border: 0.0625em solid rgba(24, 216, 255, 0.12);
+      background: linear-gradient(180deg, rgba(19, 22, 34, 0.97) 0%, rgba(14, 17, 27, 0.99) 100%);
+      box-shadow: 0 2em 5em rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .consultation-close-btn {
+      position: static;
+      width: 4.5em;
+      height: 4.5em;
+      border-radius: 50%;
+      border: 0.0625em solid rgba(24, 216, 255, 0.22);
+      background: rgba(12, 16, 29, 0.96);
+      color: #1fe4ff;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow:
+        0 0.6em 1.35em rgba(0, 191, 231, 0.14),
+        0 0 0.8em rgba(24, 216, 255, 0.08);
+    }
+
+    .consultation-stage {
+      transition:
+        left 300ms ease,
+        top 300ms ease,
+        width 300ms ease,
+        height 300ms ease,
+        transform 300ms ease,
+        border-radius 300ms ease,
+        box-shadow 300ms ease,
+        opacity 300ms ease;
+    }
+
+    .consultation-overlay.consultation-floating {
+      background: transparent;
+      pointer-events: auto;
+    }
+
+    .floating-consultation-active .sidebar,
+    .floating-consultation-active .menu-overlay,
+    .floating-consultation-active .sidebar-overlay {
+      pointer-events: none;
+    }
+
+    .consultation-overlay.consultation-floating .consultation-stage,
+    .floating-consultation-window {
+      position: fixed;
+      left: auto;
+      top: auto;
+      right: 1.2em;
+      bottom: auto;
+      width: clamp(380px, 40vw, 400px);
+      height: clamp(280px, 30vh, 340px);
+      max-width: calc(100vw - 1.5rem);
+      max-height: calc(100vh - 1.5rem);
+      border-radius: 1.2em;
+      border: 0.08em solid rgba(24, 216, 255, 0.72);
+      box-shadow:
+        0 0.9em 2.2em rgba(0, 0, 0, 0.42),
+        0 0 0 0.08em rgba(24, 216, 255, 0.34),
+        0 0 1.1em rgba(24, 216, 255, 0.32),
+        0 0 2.4em rgba(24, 216, 255, 0.22),
+        0 0 4.4em rgba(0, 215, 255, 0.14);
+      background:
+        linear-gradient(180deg, rgba(20, 24, 37, 0.96) 0%, rgba(14, 17, 27, 0.99) 100%),
+        radial-gradient(circle at 20% 0%, rgba(24, 216, 255, 0.14), transparent 34%),
+        radial-gradient(circle at 100% 0%, rgba(124, 58, 237, 0.08), transparent 30%);
+      z-index: 99999;
+      pointer-events: auto;
+      transform: none;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .floating-consultation-window::before,
+    .consultation-overlay.consultation-floating .consultation-stage::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 0.08em;
+      background: linear-gradient(135deg, rgba(24, 216, 255, 0.95), rgba(24, 216, 255, 0.18), rgba(124, 58, 237, 0.16));
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      box-shadow:
+        inset 0 0 1.1em rgba(24, 216, 255, 0.12),
+        0 0 1.2em rgba(24, 216, 255, 0.14);
+      opacity: 0.95;
+    }
+
+    .consultation-overlay.consultation-floating .consultation-header,
+    .floating-consultation-window .consultation-header {
+      cursor: move;
+      pointer-events: auto;
+    }
+
+    .consultation-overlay.consultation-floating .consultation-stage.floating-dragging,
+    .consultation-stage.floating-dragging {
+      transition: none;
+    }
+
+    .consultation-overlay.consultation-floating .consultation-stage.floating-dragging .consultation-header,
+    .consultation-stage.floating-dragging .consultation-header {
+      cursor: grabbing;
+    }
+
+    .floating-close-btn {
+      position: relative;
+      z-index: 999999 !important;
+      pointer-events: auto !important;
+      cursor: pointer;
+    }
+
+    .floating-close-btn,
+    .popup-close-btn {
+      appearance: none;
+      -webkit-appearance: none;
+      background: rgba(25, 5, 10, 0.88) !important;
+      border: 1px solid rgba(255, 60, 60, 0.45);
+      color: #ff4d4d !important;
+      box-shadow:
+        0 0 14px rgba(255, 60, 60, 0.22),
+        inset 0 0 10px rgba(255, 60, 60, 0.06);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    .floating-close-btn:hover,
+    .popup-close-btn:hover {
+      background: rgba(255, 60, 60, 0.14) !important;
+      box-shadow: 0 0 20px rgba(255, 60, 60, 0.5);
+      transform: scale(1.05);
+    }
+
+    .floating-consultation-window .consultation-panel-actions,
+    .consultation-overlay.consultation-floating .consultation-stage .consultation-panel-actions {
+      position: relative;
+      flex: 0 0 auto;
+      height: 4.45em;
+      padding: 0 1.5em 0 1.2em;
+      z-index: 6;
+    }
+
+    .floating-consultation-window .consultation-feed,
+    .consultation-overlay.consultation-floating .consultation-stage .consultation-feed {
+      position: relative;
+      inset: auto;
+      flex: 1 1 auto;
+      height: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      padding-top: 0 !important;
+      padding-right: 0.8em;
+      padding-bottom: 0.7em;
+      padding-left: 0.8em;
+      margin-top: 0 !important;
+      margin-bottom: 0;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .floating-consultation-window .consultation-video-stream,
+    .consultation-overlay.consultation-floating .consultation-stage .consultation-video-stream {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: 0;
+    }
+
+    .floating-consultation-window .consultation-feed-center,
+    .consultation-overlay.consultation-floating .consultation-stage .consultation-feed-center {
+      inset: 0 1em 0.9em;
+    }
+
+    .floating-consultation-window .consultation-doctor-tile,
+    .consultation-overlay.consultation-floating .consultation-stage .consultation-doctor-tile {
+      width: clamp(9rem, 21%, 11rem);
+      /* WIDTH increase */
+
+      height: clamp(5.8rem, 16%, 7rem);
+      /* HEIGHT decrease */
+
+      right: 1em;
+      bottom: 5.2em;
+
+      border-radius: 1em;
+
+      border: 0.1em solid rgba(24, 216, 255, 0.22);
+
+      background: linear-gradient(135deg,
+          rgba(124, 58, 237, 0.96),
+          rgba(139, 92, 246, 0.96));
+
+      box-shadow:
+        0 0 1.2em rgba(24, 216, 255, 0.25),
+        0 0 2.2em rgba(24, 216, 255, 0.12),
+        0 0.6em 1.5em rgba(124, 58, 237, 0.24);
+
+      overflow: hidden;
+    }
+
+    .floating-consultation-window .consultation-doctor-tile video,
+    .consultation-overlay.consultation-floating .consultation-stage .consultation-doctor-tile video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: inherit;
+    }
+
+    .floating-consultation-window .consultation-feed-label,
+    .consultation-overlay.consultation-floating .consultation-stage .consultation-feed-label {
+      left: 1em;
+      bottom: 0.65em;
+      z-index: 6;
+    }
+
+    .floating-consultation-window .consultation-bottom-bar,
+    .consultation-overlay.consultation-floating .consultation-stage .consultation-bottom-bar {
+      position: relative;
+      left: auto;
+      bottom: auto;
+      transform: none;
+      z-index: 7;
+      width: calc(100% - 1.85em);
+      margin: 0.05em auto 0.85em;
+      padding: 0.7em 1em;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.65em;
+      box-sizing: border-box;
+    }
+
+    .floating-consultation-window .consultation-action-btn,
+    .consultation-overlay.consultation-floating .consultation-stage .consultation-action-btn {
+      width: 2.95em;
+      height: 2.95em;
+    }
+
+    .floating-consultation-window .consultation-action-btn svg,
+    .consultation-overlay.consultation-floating .consultation-stage .consultation-action-btn svg {
+      width: 1.25em;
+      height: 1.25em;
+    }
+
+    .consultation-stage.consultation-restoring {
+      pointer-events: none;
+    }
+
+    .consultation-overlay.consultation-fullscreen .consultation-stage {
+      left: 0;
+      top: 4.625em;
+      width: 100vw;
+      height: calc(100vh - 4.625em);
+      border-radius: 1.25em;
+      pointer-events: auto;
+    }
+
+    .consultation-overlay.floating-active .consultation-stage {
+      pointer-events: auto;
+    }
+
+    .consultation-panel-actions {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65em;
+      height: 4.5em;
+      padding: 0 1em 0 1.1em;
+      border-bottom: 0.0625em solid rgba(24, 216, 255, 0.14);
+      background: linear-gradient(180deg, rgba(12, 16, 29, 0.97) 0%, rgba(12, 16, 29, 0.82) 100%);
+      backdrop-filter: blur(0.5em);
+    }
+
+    .consultation-header-title {
+      display: flex;
+      align-items: center;
+      gap: 0.7em;
+      min-width: 0;
+      color: #f7f8ff;
+      font-size: 1.08em;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+
+    .consultation-hd-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.1em;
+      height: 1.45em;
+      padding: 0 0.55em;
+      border-radius: 999px;
+      border: 0.0625em solid rgba(24, 216, 255, 0.3);
+      background: rgba(24, 216, 255, 0.12);
+      color: #86f4ff;
+      font-size: 0.72em;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .consultation-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.55em;
+      margin-left: auto;
+    }
+
+    .consultation-header-actions .consultation-close-btn,
+    .consultation-header-actions .consultation-dismiss-btn {
+      width: 2.85em;
+      height: 2.85em;
+      min-width: 2.85em;
+      min-height: 2.85em;
+      padding: 0;
+      border-radius: 0.8em;
+      border: 0.0625em solid rgba(24, 216, 255, 0.22);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 0.5em 1.1em rgba(0, 191, 231, 0.12);
+    }
+
+    .consultation-header-actions .consultation-close-btn {
+      background: rgba(12, 16, 29, 0.96);
+      color: #1fe4ff;
+    }
+
+    .consultation-header-actions .consultation-dismiss-btn {
+      background: rgba(44, 16, 23, 0.96);
+      border-color: rgba(255, 69, 69, 0.3);
+      color: #ff4f4f;
+      line-height: 1;
+    }
+
+    .consultation-header-actions .consultation-close-btn svg,
+    .consultation-header-actions .consultation-dismiss-btn svg {
+      width: 1.3em;
+      height: 1.3em;
+      stroke-width: 2.5;
+    }
+
+    .consultation-menu-btn {
+      width: 3em;
+      height: 3em;
+      border-radius: 0.85em;
+    }
+
+    .consultation-menu-btn i {
+      width: 1.35em;
+      height: 1.35em;
+    }
+
+    .consultation-close-btn svg {
+      width: 2.35em;
+      height: 2.35em;
+      stroke-width: 2.4;
+    }
+
+    /* Fullscreen top-right close button style (teal/cyan rounded square with white inward arrows) */
+    .consultation-close-btn.fullscreen-style {
+      background: linear-gradient(135deg, rgba(0, 215, 255, 0.95), rgba(0, 185, 220, 0.95));
+      border-color: rgba(0, 215, 255, 0.9);
+      color: #ffffff;
+      box-shadow: 0 0.6em 1.35em rgba(0, 215, 255, 0.18);
+    }
+
+    .consultation-close-btn.fullscreen-style svg {
+      stroke: #ffffff;
+    }
+
+    .consultation-overlay.consultation-fullscreen .floating-close-btn {
+      display: none !important;
+    }
+
+    .consultation-overlay.consultation-floating .floating-close-btn {
+      display: flex;
+    }
+
+    .fullscreen-expand-btn,
+    .consultation-expand-btn,
+    .top-right-expand-btn {
+
+      appearance: none;
+      -webkit-appearance: none;
+
+      width: 52px;
+      height: 52px;
+
+      border-radius: 14px;
+
+      background: rgba(5, 10, 25, 0.92) !important;
+
+      border: 1px solid rgba(0, 229, 255, 0.45);
+
+      color: #00e5ff !important;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      box-shadow:
+        0 0 18px rgba(0, 229, 255, 0.32),
+        inset 0 0 10px rgba(0, 229, 255, 0.08);
+
+      backdrop-filter: blur(12px);
+
+      transition: all 0.22s ease;
+
+      cursor: pointer;
+    }
+
+    .fullscreen-expand-btn:hover,
+    .consultation-expand-btn:hover,
+    .top-right-expand-btn:hover {
+
+      background: rgba(0, 229, 255, 0.12) !important;
+
+      box-shadow:
+        0 0 24px rgba(0, 229, 255, 0.6);
+
+      transform: scale(1.08);
+    }
+
+    .fullscreen-expand-btn i,
+    .consultation-expand-btn i,
+    .top-right-expand-btn i {
+
+      font-size: 20px;
+    }
+
+    .consultation-feed {
+      position: absolute;
+      inset: 0;
+      padding: 5.05em 1.15em 6.75em;
+      background: linear-gradient(180deg, rgba(20, 23, 35, 0.96) 0%, rgba(14, 17, 27, 0.99) 100%);
+    }
+
+    .consultation-video-stream {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: transparent;
+      z-index: 2;
+    }
+
+    .consultation-feed-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.7em;
+      color: rgba(180, 191, 225, 0.72);
+      text-align: center;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .consultation-feed-center svg {
+      width: 3.6em;
+      height: 3.6em;
+      color: var(--purple);
+      stroke: var(--purple);
+    }
+
+    .consultation-feed-center .label-text {
+      font-size: 1.16em;
+      font-weight: 700;
+      color: #b0b6c8;
+    }
+
+    .consultation-feed-label {
+      position: absolute;
+      left: 0.95em;
+      bottom: 0.9em;
+      z-index: 4;
+      color: #dfe4ff;
+      font-size: 0.86em;
+      font-weight: 600;
+    }
+
+    .consultation-doctor-tile {
+      position: absolute;
+      right: 1.05em;
+      bottom: 1.05em;
+      width: clamp(20.5em, 24vw, 26em);
+      height: clamp(12.8em, 15vw, 16em);
+      border-radius: 1em;
+      border: 0.125em solid rgba(156, 108, 255, 0.8);
+      background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+      color: #f5f7ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.28em;
+      box-shadow: 0 0.65em 1.4em rgba(124, 58, 237, 0.34);
+      z-index: 5;
+      overflow: hidden;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .consultation-doctor-tile:active {
+      cursor: grabbing;
+    }
+
+    .consultation-doctor-tile svg {
+      width: 1.25em;
+      height: 1.25em;
+    }
+
+    .consultation-doctor-tile .name {
+      font-size: 0.9em;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .consultation-doctor-tile .role {
+      font-size: 0.82em;
+      line-height: 1;
+      opacity: 0.9;
+    }
+
+    .consultation-bottom-bar {
+      position: absolute;
+      left: 50%;
+      bottom: 1.15em;
+      transform: translateX(-50%);
+      z-index: 8;
+      display: flex;
+      align-items: center;
+      gap: 0.8em;
+      padding: 0.9em 1.1em;
+      border-radius: 1em;
+      border: 0.0625em solid rgba(24, 216, 255, 0.12);
+      background: rgba(17, 20, 29, 0.96);
+      box-shadow: var(--shadow);
+    }
+
+    .consultation-action-btn {
+      width: 3.25em;
+      height: 3.25em;
+      border-radius: 50%;
+      border: 0.0625em solid rgba(24, 216, 255, 0.18);
+      background: rgba(9, 14, 25, 0.92);
+      color: #1fe4ff;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow:
+        0 0.5em 1.1em rgba(0, 191, 231, 0.12),
+        inset 0 0.0625em 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .consultation-action-btn svg {
+      width: 1.45em;
+      height: 1.45em;
+      stroke-width: 2.4;
+    }
+
+    .consultation-action-btn.video {
+      color: #8b5cf6;
+      border-color: rgba(124, 58, 237, 0.34);
+      box-shadow:
+        0 0.5em 1.1em rgba(124, 58, 237, 0.14),
+        inset 0 0.0625em 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .consultation-action-btn.chat {
+      color: #9c6cff;
+      border-color: rgba(156, 108, 255, 0.32);
+      box-shadow:
+        0 0.5em 1.1em rgba(156, 108, 255, 0.14),
+        inset 0 0.0625em 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .consultation-action-btn.settings {
+      color: #20e5ff;
+      border-color: rgba(24, 216, 255, 0.2);
+    }
+
+    .consultation-action-btn.is-active.chat,
+    .consultation-action-btn.is-active.settings {
+      box-shadow:
+        0 0.6em 1.25em rgba(124, 58, 237, 0.2),
+        0 0 0 0.1em rgba(124, 58, 237, 0.32);
+    }
+
+    .consultation-action-btn.is-off {
+      color: #ff4b4b;
+      border-color: rgba(255, 75, 75, 0.36);
+      background: rgba(52, 14, 22, 0.92);
+      box-shadow:
+        0 0.5em 1.1em rgba(255, 75, 75, 0.16),
+        inset 0 0.0625em 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .consultation-action-btn .icon-off {
+      display: none;
+    }
+
+    .consultation-action-btn.is-off .icon-on {
+      display: none;
+    }
+
+    .consultation-action-btn.is-off .icon-off {
+      display: block;
+    }
+
+    .consultation-chat-panel {
+      position: absolute;
+      top: 0.95em;
+      right: 0.95em;
+      bottom: 0.95em;
+      width: min(24em, calc(100% - 2em));
+      border-radius: 1.05em;
+      border: 0.0625em solid rgba(124, 58, 237, 0.34);
+      background: linear-gradient(180deg, rgba(23, 26, 40, 0.98) 0%, rgba(20, 24, 38, 0.98) 100%);
+      box-shadow: 0 1.25em 3em rgba(0, 0, 0, 0.45);
+      z-index: 150;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(108%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.28s ease, opacity 0.22s ease;
+    }
+
+    .consultation-chat-panel.open {
+      transform: translateX(0) !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
+    .chat-panel-header {
+      height: 4.8em;
+      padding: 0 1.2em;
+      border-bottom: 0.0625em solid rgba(124, 58, 237, 0.28);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1em;
+    }
+
+    .chat-panel-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45em;
+      font-size: 1.95em;
+      font-weight: 800;
+      color: #f7f8ff;
+      line-height: 1;
+    }
+
+    .chat-panel-title i {
+      width: 0.95em;
+      height: 0.95em;
+      color: #8b2dff;
+      stroke-width: 2.4;
+    }
+
+    .chat-close-btn {
+      width: 2.6em;
+      height: 2.6em;
+      min-width: 2.6em;
+      min-height: 2.6em;
+      border-radius: 0.65em;
+      border: 0.0625em solid rgba(255, 71, 87, 0.24);
+      background: rgba(255, 71, 87, 0.14);
+      color: #ff4f4f;
+      padding: 0;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .chat-close-btn i,
+    .chat-close-btn svg {
+      display: block;
+      width: 1.25em;
+      height: 1.25em;
+      stroke-width: 2.4;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 1.1em 1em;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85em;
+      overflow: auto;
+    }
+
+    .chat-bubble {
+      max-width: 84%;
+      border-radius: 1em;
+      padding: 0.78em 0.9em 0.72em;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35em;
+      line-height: 1.35;
+      font-size: 1.15em;
+      font-weight: 600;
+    }
+
+    .chat-bubble.doctor {
+      align-self: flex-end;
+      background: rgba(82, 34, 146, 0.88);
+      border: 0.0625em solid rgba(124, 58, 237, 0.42);
+      color: #f0e7ff;
+    }
+
+    .chat-bubble.patient {
+      align-self: flex-start;
+      background: rgba(17, 79, 98, 0.78);
+      border: 0.0625em solid rgba(24, 216, 255, 0.34);
+      color: #dff7ff;
+    }
+
+    .chat-time {
+      font-size: 0.88em;
+      font-weight: 500;
+      opacity: 0.78;
+    }
+
+    .chat-input-wrap {
+      border-top: 0.0625em solid rgba(124, 58, 237, 0.24);
+      padding: 0.8em;
+      display: flex;
+      align-items: center;
+      gap: 0.6em;
+    }
+
+    .chat-input {
+      flex: 1;
+      height: 2.65em;
+      border-radius: 0.7em;
+      border: 0.0625em solid rgba(124, 58, 237, 0.36);
+      background: rgba(10, 15, 29, 0.95);
+      color: #eaf0ff;
+      font-size: 1.1em;
+      padding: 0 0.85em;
+      outline: none;
+    }
+
+    .chat-input:focus {
+      border-color: rgba(124, 58, 237, 0.62);
+      box-shadow: 0 0 0 0.14em rgba(124, 58, 237, 0.2);
+    }
+
+    .chat-send-btn {
+      width: 2.65em;
+      height: 2.65em;
+      min-width: 2.65em;
+      min-height: 2.65em;
+      border-radius: 0.7em;
+      border: 0.0625em solid rgba(124, 58, 237, 0.4);
+      background: rgba(124, 58, 237, 0.2);
+      color: #8b2dff;
+      padding: 0;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .chat-send-btn i,
+    .chat-send-btn svg {
+      display: block;
+      width: 1.15em;
+      height: 1.15em;
+      stroke-width: 2.5;
+    }
+
+    .consultation-settings-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 200;
+      background: rgba(4, 8, 16, 0.74);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.1em;
+    }
+
+    .consultation-settings-modal.hidden {
+      display: none !important;
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    .consultation-settings-modal:not(.hidden) {
+      display: flex !important;
+      pointer-events: auto;
+      visibility: visible;
+    }
+
+    .consultation-settings-content {
+      width: min(41em, 100%);
+      border-radius: 1.2em;
+      border: 0.0625em solid rgba(24, 216, 255, 0.34);
+      background:
+        radial-gradient(circle at top left, rgba(124, 58, 237, 0.08), transparent 33%),
+        radial-gradient(circle at top right, rgba(24, 216, 255, 0.1), transparent 30%),
+        linear-gradient(180deg, rgba(22, 26, 40, 0.98) 0%, rgba(16, 19, 31, 0.99) 100%);
+      box-shadow:
+        0 1.5em 4em rgba(0, 0, 0, 0.52),
+        0 0 0.8em rgba(24, 216, 255, 0.12);
+      padding: 1.75em;
+      max-height: 90%;
+      overflow: auto;
+    }
+
+    .consultation-settings-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1em;
+      margin-bottom: 1.25em;
+    }
+
+    .consultation-settings-header h2 {
+      margin: 0;
+      font-size: 2.25em;
+      line-height: 1;
+      font-weight: 800;
+      color: #f7f8ff;
+    }
+
+    .consultation-settings-close {
+      width: 2.8em;
+      height: 2.8em;
+      min-width: 2.8em;
+      min-height: 2.8em;
+      border-radius: 0.75em;
+      border: 0.0625em solid rgba(255, 71, 87, 0.26);
+      background: rgba(255, 71, 87, 0.14);
+      color: #ff4f4f;
+      padding: 0;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .consultation-settings-close i,
+    .consultation-settings-close svg {
+      display: block;
+      width: 1.3em;
+      height: 1.3em;
+    }
+
+    .consultation-settings-body {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25em;
+    }
+
+    .consultation-settings-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7em;
+    }
+
+    .consultation-settings-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4em;
+      margin: 0;
+      font-size: 1.7em;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .consultation-settings-title i {
+      width: 0.95em;
+      height: 0.95em;
+      stroke-width: 2.4;
+    }
+
+    .consultation-settings-title.audio {
+      color: #1fe4ff;
+    }
+
+    .consultation-settings-title.video {
+      color: #8b2dff;
+    }
+
+    .consultation-settings-title.general {
+      color: #d6deee;
+    }
+
+    .consultation-setting-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35em;
+    }
+
+    .consultation-setting-label {
+      color: #9ea7bb;
+      font-size: 1.3em;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .consultation-setting-select {
+      width: 100%;
+      height: 2.35em;
+      border-radius: 0.72em;
+      border: 0.0625em solid rgba(24, 216, 255, 0.42);
+      background: rgba(6, 11, 24, 0.95);
+      color: #f1f4ff;
+      font-size: 1.2em;
+      font-weight: 500;
+      padding: 0 2.15em 0 0.75em;
+      appearance: none;
+      outline: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23e3ecff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.6em center;
+      background-size: 1em;
+    }
+
+    .consultation-setting-select.video {
+      border-color: rgba(124, 58, 237, 0.62);
+    }
+
+    .consultation-setting-select:focus {
+      box-shadow: 0 0 0 0.14em rgba(24, 216, 255, 0.2);
+    }
+
+    .consultation-setting-select.video:focus {
+      box-shadow: 0 0 0 0.14em rgba(139, 92, 246, 0.22);
+    }
+
+    .consultation-setting-check {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1em;
+    }
+
+    .consultation-setting-check input {
+      width: 1.45em;
+      height: 1.45em;
+      accent-color: #15d7ff;
+      cursor: pointer;
+    }
+
+    .consultation-setting-check .brightness {
+      accent-color: #7c3aed;
+    }
+
+    .consultation-end-btn {
+      min-width: 8.5em;
+      height: 3.25em;
+      padding: 0 1.25em;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ff4b4b, #ff3434);
+      color: #fff;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45em;
+      cursor: pointer;
+      box-shadow: 0 0.65em 1.5em rgba(255, 69, 69, 0.22);
+    }
+
+    .consultation-end-btn svg {
+      width: 1.1em;
+      height: 1.1em;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 8, 16, 0.72);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25em;
+      z-index: 100;
+    }
+
+    .modal.hidden {
+      display: none;
+    }
+
+    .modal-content {
+      width: min(52em, 100%);
+      max-height: min(80vh, 52em);
+      overflow: auto;
+      border-radius: 1em;
+      border: 0.0625em solid rgba(24, 216, 255, 0.18);
+      background: linear-gradient(180deg, rgba(18, 21, 31, 0.98), rgba(15, 18, 27, 0.98));
+      box-shadow: 0 2em 4.5em rgba(0, 0, 0, 0.45);
+      padding: 1em;
+    }
+
+    .modal-content.large {
+      width: min(56em, 100%);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1em;
+      margin-bottom: 1em;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 1.35em;
+      font-weight: 800;
+    }
+
+    .close-btn {
+      width: 2.4em;
+      height: 2.4em;
+      border-radius: 999px;
+      border: 0.0625em solid rgba(124, 58, 237, 0.5);
+      background: rgba(13, 18, 33, 0.88);
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 0.85em;
+    }
+
+    .history-card {
+      border-radius: 0.9em;
+      border: 0.0625em solid rgba(124, 58, 237, 0.22);
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.95em;
+    }
+
+    .history-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1em;
+    }
+
+    .history-card .title {
+      margin: 0;
+      font-weight: 800;
+      font-size: 1.05em;
+    }
+
+    .history-card .date,
+    .history-card .doctor,
+    .history-card .result {
+      margin: 0.3em 0 0;
+      color: var(--text-muted);
+      font-size: 0.95em;
+      line-height: 1.45;
+    }
+
+    .history-card .status {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.35em 0.75em;
+      border-radius: 999px;
+      color: var(--green);
+      border: 0.0625em solid rgba(22, 242, 156, 0.18);
+      background: rgba(22, 242, 156, 0.08);
+      font-size: 0.85em;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .collage-toast {
+      position: fixed;
+      right: 1em;
+      bottom: 1em;
+      z-index: 80;
+      padding: 0.8em 1em;
+      border-radius: 999px;
+      background: rgba(10, 14, 24, 0.95);
+      color: #f2f5ff;
+      border: 0.0625em solid rgba(24, 216, 255, 0.18);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(0.5em);
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      font-size: 0.92em;
+      font-weight: 600;
+    }
+
+    .collage-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      background: rgba(5, 8, 22, 0.66);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+    }
+
+    .sidebar-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .consultation-stage .sidebar-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 22.25em;
+      z-index: 50;
+      transform: translateX(-104%);
+      transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+      background: linear-gradient(180deg, rgba(17, 19, 28, 0.98) 0%, rgba(10, 12, 20, 0.98) 100%);
+      border-right: 0.0625em solid rgba(106, 0, 255, 0.2);
+      box-shadow: 1.125em 0 2.75em rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .consultation-stage .sidebar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 11;
+    }
+
+    .sidebar.open {
+      transform: translateX(0);
+    }
+
+    .sidebar-header {
+      height: 6.5em;
+      padding: 1.375em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 0.0625em solid rgba(106, 0, 255, 0.16);
+      flex-shrink: 0;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 1.125em;
+    }
+
+    .sidebar-brand .brand-logo-wrap {
+      width: 3.5em;
+      height: 3.5em;
+      border-radius: 0.875em;
+      background: rgba(255, 255, 255, 0.98);
+      border: 0.0625em solid rgba(106, 0, 255, 0.14);
+      display: grid;
+      place-items: center;
+    }
+
+    .sidebar-brand .brand-logo-wrap svg {
+      width: 2em;
+      height: 2em;
+    }
+
+    .sidebar-brand .brand-logo-wrap img {
+      width: 2em;
+      height: 2em;
+      object-fit: contain;
+    }
+
+    .sidebar-brand .brand-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1875em;
+    }
+
+    .sidebar-brand .brand-copy strong {
+      font-size: 1.5em;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .sidebar-brand .brand-copy span {
+      font-size: 1.125em;
+      color: var(--text-muted);
+      line-height: 1.2;
+    }
+
+    .close-sidebar {
+      width: 3.5em;
+      height: 3.5em;
+      border-radius: 0.75em;
+      border: 0.0625em solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-muted);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.22s ease;
+    }
+
+    .close-sidebar i {
+      width: 1.5em;
+      height: 1.5em;
+    }
+
+    .close-sidebar:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.12);
+      color: #00e5ff;
+    }
+
+    .close-sidebar:focus {
+      outline: 0.0625em solid rgba(24, 216, 255, 0.5);
+      outline-offset: 0.125em;
+    }
+
+    .sidebar-nav {
+      padding: 1.125em;
+      display: grid;
+      gap: 0.875em;
+      flex: 1;
+    }
+
+    .sidebar-link {
+      width: 100%;
+      min-height: 4em;
+      padding: 0 1.25em;
+      border: 0.0625em solid rgba(106, 0, 255, 0.18);
+      background: rgba(15, 17, 23, 0.94);
+      border-radius: 0.875em;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 1em;
+      cursor: pointer;
+      text-align: left;
+      font-size: 1.25em;
+      font-weight: 700;
+      transition: all 0.22s ease;
+    }
+
+    .sidebar-link:hover,
+    .sidebar-link.active {
+      background: rgba(106, 0, 255, 0.18);
+      border-color: rgba(106, 0, 255, 0.42);
+    }
+
+    .sidebar-link.logout {
+      color: #ff6b6b;
+    }
+
+    .sidebar-link.logout:hover {
+      background: rgba(255, 107, 107, 0.1);
+      border-color: rgba(255, 107, 107, 0.3);
+    }
+
+    .sidebar-link .link-icon {
+      width: 1.5em;
+      height: 1.5em;
+    }
+
+    .sidebar-spacer {
+      flex: 1;
+    }
+
+    .sidebar-footer {
+      padding: 1.25em;
+      border-top: 0.0625em solid rgba(106, 0, 255, 0.16);
+    }
+
+    .user-summary {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3em;
+      color: var(--text-muted);
+    }
+
+    .spinner {
+      width: 2em;
+      height: 2em;
+      border-radius: 50%;
+      border: 0.2em solid rgba(201, 156, 255, 0.2);
+      border-top-color: #c99cff;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .patient-details-card {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .patient-header,
+      .history-btn {
+        grid-column: 1 / -1;
+        justify-self: start;
+      }
+
+      .feeds-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .topbar {
+        height: auto;
+        padding: 0.75em 0.85em;
+        gap: 0.75em;
+        align-items: flex-start;
+      }
+
+      .main {
+        padding: 1.5em 2.5em 2em;
+      }
+
+      .title-wrap h1 {
+        font-size: 1.7em;
+      }
+
+      .patient-details-card {
+        padding: 1em;
+      }
+
+      .actions-row {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-danger {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-icon-btn" id="menuToggle" type="button" aria-label="Open sidebar">
+          <i data-lucide="menu"></i>
+        </button>
+        <div class="brand-inline">
+          <div class="brand-logo-wrap">
+            <img src="logo.png" alt="PlebC Logo" class="brand-logo" />
+          </div>
+          <div class="brand-wordmark">TORUS</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn" type="button" aria-label="Notifications"><i data-lucide="bell"></i></button>
+        <div class="profile-pill">D</div>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="heading-row">
+        <div class="title-wrap">
+          <h1>Ultrasound Scanning</h1>
+          <p>patient A - Abdominal Ultrasound</p>
+        </div>
+        <div class="status-row">
+          <button class="back-btn" id="backToConsultationBtn" type="button">
+            <i data-lucide="arrow-left"></i>
+            Back
+          </button>
+        </div>
+      </section>
+
+      <section class="session-details-slot">
+        <article class="patient-details-card patient-details" id="patientDetailsCard">
+          <div class="patient-header">
+            <div class="patient-header-icon"><i data-lucide="user"></i></div>
+            <h2 class="patient-details-title">Patient Details</h2>
+          </div>
+          <button class="history-btn" id="openHistoryBtn" type="button">
+            <i data-lucide="clock"></i>
+            History
+          </button>
+
+          <div class="patient-details-item">
+            <div class="patient-item-top">
+              <div class="patient-icon-wrap"><i data-lucide="credit-card"></i></div>
+              <div class="label">Patient ID</div>
+            </div>
+            <div class="value">PAT-2026-001</div>
+          </div>
+          <div class="patient-details-item">
+            <div class="patient-item-top">
+              <div class="patient-icon-wrap"><i data-lucide="user"></i></div>
+              <div class="label">Name</div>
+            </div>
+            <div class="value">John Stephen</div>
+          </div>
+          <div class="patient-details-item">
+            <div class="patient-item-top">
+              <div class="patient-icon-wrap"><i data-lucide="activity"></i></div>
+              <div class="label">Age</div>
+            </div>
+            <div class="value">45 years</div>
+          </div>
+          <div class="patient-details-item">
+            <div class="patient-item-top">
+              <div class="patient-icon-wrap"><i data-lucide="calendar"></i></div>
+              <div class="label">Last Scan</div>
+            </div>
+            <div class="value">2026-02-15</div>
+          </div>
+          <div class="patient-details-item">
+            <div class="patient-item-top">
+              <div class="patient-icon-wrap"><i data-lucide="stethoscope"></i></div>
+              <div class="label">Scan Type</div>
+            </div>
+            <div class="value">Abdominal</div>
+          </div>
+          <div class="patient-details-item">
+            <div class="patient-item-top">
+              <div class="patient-icon-wrap"><i data-lucide="file-text"></i></div>
+              <div class="label">Notes</div>
+            </div>
+            <div class="value">No complications</div>
+          </div>
+        </article>
+      </section>
+
+      <section class="feeds-row">
+        <article class="feed-card left" id="ultrasoundPanel">
+          <div class="panel-controls" aria-label="Ultrasound panel controls">
+            <button class="control-btn" type="button" onclick="captureSnapshot('ultrasound')"
+              aria-label="Capture ultrasound frame"><i data-lucide="camera"></i></button>
+            <button class="control-btn" id="ultrasoundRecordBtn" type="button" onclick="toggleFreeze('ultrasound')"
+              aria-label="Toggle ultrasound recording"><i data-lucide="play"></i></button>
+            <button class="control-btn" type="button" onclick="openConsultationInNewWindow()"
+              aria-label="Open ultrasound feed in new window"><i data-lucide="external-link"></i></button>
+          </div>
+          <button class="ultrasound-fullscreen-btn" id="ultrasoundFullscreenBtn" type="button"
+            aria-label="Fullscreen ultrasound feed">⛶</button>
+          <div class="recording-indicator" id="ultrasoundRecordingIndicator"></div>
+          <div class="ultrasound-recording-dot" id="ultrasoundRecordingDot" aria-hidden="true"></div>
+          <div class="feed-center" id="ultrasoundPlaceholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M2 12h4l2-6 4 12 2-6h8"></path>
+            </svg>
+            <div class="label-text">Ultrasound Video Feed</div>
+            <button class="ultrasound-select-btn" id="ultrasoundSelectBtn" type="button"
+              onclick="selectUltrasoundVideo()">Select Ultrasound Video</button>
+          </div>
+          <video id="ultrasoundVideo" class="video-stream ultrasound-video-stream hidden" autoplay playsinline
+            muted></video>
+        </article>
+
+        <article class="feed-card right" id="patientCameraPanel">
+          <div class="panel-controls" aria-label="Patient camera controls">
+            <button class="control-btn" type="button" onclick="captureSnapshot('patient')"
+              aria-label="Capture camera frame"><i data-lucide="camera"></i></button>
+            <button class="control-btn" id="patientRecordBtn" type="button" onclick="toggleFreeze('patient')"
+              aria-label="Toggle patient recording"><i data-lucide="play"></i></button>
+            <button class="control-btn" type="button" onclick="openFullscreenConsultation()"
+              aria-label="Expand patient camera"><i data-lucide="maximize-2"></i></button>
+          </div>
+          <div class="recording-indicator" id="patientRecordingIndicator"></div>
+          <div class="feed-center" id="patientPlaceholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="2" y="7" width="14" height="10" rx="2" ry="2"></rect>
+              <path d="M16 10l6-3v10l-6-3z"></path>
+            </svg>
+            <div class="label-text">Patient Camera</div>
+          </div>
+          <video id="patientVideo" class="video-stream" autoplay playsinline muted></video>
+          <div class="doctor-tile" id="doctorBadge">
+            <video id="doctorTileVideo" class="doctor-tile-video" autoplay playsinline muted></video>
+          </div>
+          <div class="feed-label bottom-text">Patient Camera</div>
+        </article>
+      </section>
+      <section class="actions-row">
+        <button class="btn-primary" id="generateReportBtn" type="button"><i data-lucide="file-text"></i>View
+          Report</button>
+        <button class="btn-danger end-scan-btn" id="endConsultationBtn" type="button"><i data-lucide="phone-off"></i>End
+          Scan</button>
+      </section>
+    </main>
+  </div>
+
+  <div id="consultationOverlay" class="consultation-overlay hidden" aria-hidden="true">
+    <div class="consultation-stage">
+      <div class="consultation-panel-actions consultation-header" aria-label="Consultation window header">
+        <div class="consultation-header-title">
+          <span>Patient Video</span>
+          <span class="consultation-hd-badge">HD</span>
+        </div>
+        <div class="consultation-header-actions">
+          <button class="consultation-close-btn consultation-expand-btn top-right-expand-btn" id="consultationCloseBtn"
+            type="button" aria-label="Minimize consultation">
+            <i data-lucide="minimize-2"></i>
+          </button>
+          <button class="consultation-dismiss-btn floating-close-btn" id="consultationDismissBtn" type="button"
+            aria-label="Close consultation" onclick="closeFloatingConsultation(event)">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <div class="consultation-feed">
+        <div class="consultation-feed-center" id="consultationPlaceholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <rect x="2" y="7" width="14" height="10" rx="2" ry="2"></rect>
+            <path d="M16 10l6-3v10l-6-3z"></path>
+          </svg>
+          <div class="label-text">Patient Camera</div>
+        </div>
+
+        <video id="consultationPatientVideo" class="consultation-video-stream" autoplay playsinline muted></video>
+
+        <div class="consultation-doctor-tile">
+          <video id="consultationDoctorTileVideo" class="consultation-doctor-tile-video" autoplay playsinline
+            muted></video>
+
+        </div>
+
+        <div class="consultation-feed-label">Patient Camera</div>
+      </div>
+
+      <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+      <aside class="sidebar" id="sidebar" aria-label="Dashboard navigation">
+        <div class="sidebar-header">
+          <div class="sidebar-brand">
+            <div class="brand-logo-wrap">
+              <img src="logo.png" alt="TORUS Logo" class="brand-logo" />
+            </div>
+            <div class="brand-copy">
+              <strong>TORUS</strong>
+              <span>Doctor Portal</span>
+            </div>
+          </div>
+          <button class="close-sidebar" id="closeSidebar" type="button" aria-label="Close sidebar">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <nav class="sidebar-nav">
+          <button class="sidebar-link active" type="button" data-nav-target="dashboard">
+            <i data-lucide="layout-dashboard" class="link-icon"></i>
+            <span>Dashboard</span>
+          </button>
+          <button class="sidebar-link" type="button" data-nav-target="doctor-profile">
+            <i data-lucide="users" class="link-icon"></i>
+            <span>Doctor Profile</span>
+          </button>
+          <button class="sidebar-link" type="button" data-nav-target="activity-log">
+            <i data-lucide="activity" class="link-icon"></i>
+            <span>Activity Log</span>
+          </button>
+          <button class="sidebar-link" type="button" data-nav-target="insights">
+            <i data-lucide="bar-chart-3" class="link-icon"></i>
+            <span>Insights</span>
+          </button>
+          <button class="sidebar-link" type="button" data-nav-target="patient-reports">
+            <i data-lucide="file-text" class="link-icon"></i>
+            <span>Patient Reports</span>
+          </button>
+          <button class="sidebar-link" type="button" data-nav-target="history">
+            <i data-lucide="history" class="link-icon"></i>
+            <span>History</span>
+          </button>
+          <button class="sidebar-link logout" type="button" data-action="logout">
+            <i data-lucide="log-out" class="link-icon"></i>
+            <span>Logout</span>
+          </button>
+        </nav>
+        <div class="sidebar-spacer"></div>
+
+        <div class="sidebar-footer">
+          <div class="user-summary">
+            <strong data-user-name>Dr. User</strong>
+            <span data-user-email>user@example.com</span>
+            <span>Role: <span data-user-role>doctor</span></span>
+          </div>
+        </div>
+      </aside>
+
+      <div class="consultation-bottom-bar" aria-label="Consultation controls">
+        <button class="consultation-action-btn mic" id="consultationMicBtn" type="button"
+          aria-label="Toggle microphone">
+          <i class="icon-on" data-lucide="mic"></i>
+          <i class="icon-off" data-lucide="mic-off"></i>
+        </button>
+        <button class="consultation-action-btn video" id="consultationVideoBtn" type="button" aria-label="Toggle video">
+          <i class="icon-on" data-lucide="video"></i>
+          <i class="icon-off" data-lucide="video-off"></i>
+        </button>
+        <button class="consultation-action-btn chat" id="consultationChatBtn" type="button" aria-label="Open chat"><i
+            data-lucide="message-square"></i></button>
+        <button class="consultation-action-btn settings" id="consultationSettingsBtn" type="button"
+          aria-label="Open settings"><i data-lucide="settings"></i></button>
+        <button class="consultation-end-btn" id="consultationEndBtn" type="button" aria-label="End call"><i
+            data-lucide="phone-off"></i>End Call</button>
+      </div>
+
+      <aside class="consultation-chat-panel" id="consultationChatPanel" aria-label="Consultation chat panel">
+        <div class="chat-panel-header">
+          <div class="chat-panel-title"><i data-lucide="message-square"></i>Chat</div>
+          <button class="chat-close-btn" id="consultationChatCloseBtn" type="button" aria-label="Close chat panel"><i
+              data-lucide="x"></i></button>
+        </div>
+        <div class="chat-messages" id="consultationChatMessages">
+          <article class="chat-bubble doctor">
+            <div>Hello, how are you feeling today?</div>
+            <div class="chat-time">14:30</div>
+          </article>
+          <article class="chat-bubble patient">
+            <div>I'm doing okay, a bit nervous.</div>
+            <div class="chat-time">14:31</div>
+          </article>
+          <article class="chat-bubble doctor">
+            <div>Don't worry, this will be quick and painless.</div>
+            <div class="chat-time">14:32</div>
+          </article>
+        </div>
+        <div class="chat-input-wrap">
+          <input class="chat-input" id="consultationChatInput" type="text" placeholder="Type a message..." />
+          <button class="chat-send-btn" id="consultationChatSendBtn" type="button" aria-label="Send message"><i
+              data-lucide="send"></i></button>
+        </div>
+      </aside>
+
+      <div class="consultation-settings-modal hidden" id="consultationSettingsModal" aria-hidden="true">
+        <div class="consultation-settings-content">
+          <div class="consultation-settings-header">
+            <h2>Settings</h2>
+            <button class="consultation-settings-close" id="consultationSettingsCloseBtn" type="button"
+              aria-label="Close settings"><i data-lucide="x"></i></button>
+          </div>
+          <div class="consultation-settings-body">
+            <section class="consultation-settings-section" aria-label="Audio settings">
+              <h3 class="consultation-settings-title audio"><i data-lucide="mic"></i>Audio</h3>
+              <label class="consultation-setting-field" for="consultationMicSelect">
+                <span class="consultation-setting-label">Microphone</span>
+                <select id="consultationMicSelect" class="consultation-setting-select" name="consultationMic">
+                  <option selected>External Microphone</option>
+                  <option>Built-in Microphone</option>
+                  <option>Bluetooth Microphone</option>
+                </select>
+              </label>
+              <label class="consultation-setting-field" for="consultationSpeakerSelect">
+                <span class="consultation-setting-label">Speaker</span>
+                <select id="consultationSpeakerSelect" class="consultation-setting-select" name="consultationSpeaker">
+                  <option selected>External Speaker</option>
+                  <option>Built-in Speaker</option>
+                  <option>Headphones</option>
+                </select>
+              </label>
+            </section>
+            <section class="consultation-settings-section" aria-label="Video settings">
+              <h3 class="consultation-settings-title video"><i data-lucide="camera"></i>Video</h3>
+              <label class="consultation-setting-field" for="consultationCameraSelect">
+                <span class="consultation-setting-label">Camera</span>
+                <select id="consultationCameraSelect" class="consultation-setting-select video"
+                  name="consultationCamera">
+                  <option selected>Default - Built-in Camera</option>
+                  <option>External USB Camera</option>
+                  <option>Virtual Camera</option>
+                </select>
+              </label>
+              <label class="consultation-setting-field" for="consultationResolutionSelect">
+                <span class="consultation-setting-label">Resolution</span>
+                <select id="consultationResolutionSelect" class="consultation-setting-select video"
+                  name="consultationResolution">
+                  <option selected>1080p HD</option>
+                  <option>720p HD</option>
+                  <option>480p SD</option>
+                </select>
+              </label>
+            </section>
+            <section class="consultation-settings-section" aria-label="General settings">
+              <h3 class="consultation-settings-title general"><i data-lucide="monitor"></i>General</h3>
+              <label class="consultation-setting-check" for="consultationHdQuality">
+                <span class="consultation-setting-label">Enable HD Quality</span>
+                <input id="consultationHdQuality" type="checkbox" checked />
+              </label>
+              <label class="consultation-setting-check" for="consultationBrightness">
+                <span class="consultation-setting-label">Auto-adjust Brightness</span>
+                <input id="consultationBrightness" class="brightness" type="checkbox" checked />
+              </label>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="historyModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-content large">
+      <div class="modal-header">
+        <h2>Patient History</h2>
+        <button id="closeHistoryBtn" class="close-btn" type="button">✕</button>
+      </div>
+      <div class="history-list">
+        <div class="history-card">
+          <div class="history-top">
+            <div>
+              <p class="title">Abdominal Ultrasound</p>
+              <p class="date">2026-02-15</p>
+            </div>
+            <span class="status">Completed</span>
+          </div>
+          <p class="doctor">Dr. Anderson • TORUS-A12</p>
+          <p class="result">Results: Normal findings, no abnormalities detected.</p>
+        </div>
+        <div class="history-card">
+          <div class="history-top">
+            <div>
+              <p class="title">Routine Check-up</p>
+              <p class="date">2026-01-10</p>
+            </div>
+            <span class="status">Completed</span>
+          </div>
+          <p class="doctor">Dr. Anderson • TORUS-B08</p>
+          <p class="result">Results: All vitals normal, patient healthy.</p>
+        </div>
+        <div class="history-card">
+          <div class="history-top">
+            <div>
+              <p class="title">Cardiac Screening</p>
+              <p class="date">2025-12-20</p>
+            </div>
+            <span class="status">Completed</span>
+          </div>
+          <p class="doctor">Dr. Smith • TORUS-C15</p>
+          <p class="result">Results: Normal cardiac function, no concerns.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="collageToast" class="collage-toast">Snapshot saved to collage</div>
+
+  <script>
+    lucide.createIcons();
+
+    // Fullscreen icon swap for panel buttons: maximize-2 <-> minimize-2
+    (function setupFullscreenIconToggles() {
+      function swapPanelIcons(isFs) {
+        // find svg icons inside panel-controls that represent the maximize button
+        const svgs = document.querySelectorAll('.panel-controls svg[data-lucide="maximize-2"], .panel-controls svg[data-lucide="maximize"]');
+        svgs.forEach(svg => {
+          const btn = svg.closest('button');
+          if (!btn) return;
+          btn.innerHTML = isFs ? '<i data-lucide="minimize-2"></i>' : '<i data-lucide="maximize-2"></i>';
+        });
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+          window.lucide.createIcons();
+        }
+      }
+
+      // initialize on load
+      window.addEventListener('load', () => swapPanelIcons(false));
+    })();
+
+    // Sidebar management
+    function openSidebar() {
+      if (document.body.classList.contains('floating-consultation-active')) {
+        return;
+      }
+
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      if (sidebar) sidebar.classList.add('open');
+      if (overlay) overlay.classList.add('active');
+      syncSidebarPlacement();
+    }
+
+    function closeSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      if (sidebar) sidebar.classList.remove('open');
+      if (overlay) overlay.classList.remove('active');
+    }
+
+    function isConsultationFullscreen() {
+      return document.body.classList.contains('consultation-fullscreen');
+    }
+
+    function syncSidebarPlacement() {
+      const sidebar = document.getElementById('sidebar');
+      const sidebarOverlay = document.getElementById('sidebarOverlay');
+      const sidebarAnchor = document.querySelector('.app-shell');
+      const consultationStage = document.querySelector('.consultation-stage');
+      if (!sidebar || !sidebarOverlay || !sidebarAnchor || !consultationStage) {
+        return;
+      }
+
+      if (isConsultationFullscreen()) {
+        if (sidebar.parentNode !== consultationStage) {
+          consultationStage.appendChild(sidebarOverlay);
+          consultationStage.appendChild(sidebar);
+        }
+        return;
+      }
+
+      if (sidebar.parentNode === consultationStage) {
+        sidebarAnchor.parentNode.insertBefore(sidebarOverlay, sidebarAnchor);
+        sidebarAnchor.parentNode.insertBefore(sidebar, sidebarAnchor);
+      }
+    }
+
+    function openSidebarFromTopbar() {
+      if (document.body.classList.contains('floating-consultation-active')) {
+        return;
+      }
+
+      if (isConsultationFullscreen()) {
+        return;
+      }
+      openSidebar();
+    }
+
+    function openSidebarFromFullscreen() {
+      if (document.body.classList.contains('floating-consultation-active')) {
+        return;
+      }
+
+      if (!isConsultationFullscreen()) {
+        return;
+      }
+      openSidebar();
+    }
+
+    // Initialize sidebar event listeners
+    const menuToggle = document.getElementById('menuToggle');
+    const menuToggleFs = document.getElementById('menuToggleFs');
+    const closeSidebarBtn = document.getElementById('closeSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    if (menuToggle) menuToggle.addEventListener('click', (event) => {
+      if (document.body.classList.contains('floating-consultation-active')) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      openSidebarFromTopbar();
+    });
+    if (menuToggleFs) menuToggleFs.addEventListener('click', (event) => {
+      if (document.body.classList.contains('floating-consultation-active')) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      openSidebarFromFullscreen();
+    });
+    if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', (event) => {
+      if (document.body.classList.contains('floating-consultation-active')) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      closeSidebar();
+    });
+    if (overlay) overlay.addEventListener('click', (event) => {
+      if (document.body.classList.contains('floating-consultation-active')) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      closeSidebar();
+    });
+
+    // Handle navigation links
+    document.querySelectorAll('[data-nav-target]').forEach((item) => {
+      item.addEventListener('click', () => {
+        const target = item.dataset.navTarget;
+        if (!target) return;
+
+        if (target === 'dashboard') {
+          window.location.href = 'doctor-dashboard.html';
+          return;
+        }
+
+        document.querySelectorAll('[data-nav-target]').forEach((link) => {
+          link.classList.toggle('active', link.dataset.navTarget === target);
+        });
+
+        if (window.innerWidth < 1024) {
+          closeSidebar();
+        }
+      });
+    });
+
+    // Handle logout
+    document.querySelectorAll('[data-action="logout"]').forEach((button) => {
+      button.addEventListener('click', () => {
+        localStorage.removeItem('userSession');
+        window.location.href = 'doctor-portal.html';
+      });
+    });
+
+    // Load user information
+    function loadUserInfo() {
+      const userNameEl = document.querySelector('[data-user-name]');
+      const userEmailEl = document.querySelector('[data-user-email]');
+      const userRoleEl = document.querySelector('[data-user-role]');
+
+      let userSession = JSON.parse(localStorage.getItem('userSession') || '{}');
+      if (!userSession.name) {
+        userSession = {
+          name: 'Dr. User',
+          email: 'user@example.com',
+          role: 'doctor'
+        };
+      }
+
+      if (userNameEl) userNameEl.textContent = userSession.name || 'Dr. User';
+      if (userEmailEl) userEmailEl.textContent = userSession.email || 'user@example.com';
+      if (userRoleEl) userRoleEl.textContent = userSession.role || 'doctor';
+    }
+
+    loadUserInfo();
+  </script>
+  <script>
+    (() => {
+      const CAPTURE_STORAGE_KEYS = {
+        sessionId: 'torus-patient-capture-session-id',
+        images: 'patientCapturedImages'
+      };
+
+      function createCaptureSessionId() {
+        return `capture-session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      }
+
+      function getActiveCaptureSessionId() {
+        return localStorage.getItem(CAPTURE_STORAGE_KEYS.sessionId)
+          || sessionStorage.getItem(CAPTURE_STORAGE_KEYS.sessionId)
+          || '';
+      }
+
+      function setActiveCaptureSessionId(sessionId) {
+        localStorage.setItem(CAPTURE_STORAGE_KEYS.sessionId, sessionId);
+        sessionStorage.setItem(CAPTURE_STORAGE_KEYS.sessionId, sessionId);
+        return sessionId;
+      }
+
+      const BUILD_VERSION = '20260521_01';
+
+      function initializeBuildVersion() {
+        try {
+          const previousVersion = localStorage.getItem('torus-build-version') || '';
+          if (previousVersion !== BUILD_VERSION) {
+            localStorage.removeItem(CAPTURE_STORAGE_KEYS.images);
+            localStorage.removeItem(CAPTURE_STORAGE_KEYS.sessionId);
+            sessionStorage.removeItem(CAPTURE_STORAGE_KEYS.images);
+            sessionStorage.removeItem(CAPTURE_STORAGE_KEYS.sessionId);
+          }
+
+          localStorage.setItem('torus-build-version', BUILD_VERSION);
+          sessionStorage.setItem('torus-build-version', BUILD_VERSION);
+        } catch (error) {
+          console.warn('Unable to initialize build version:', error);
+        }
+      }
+
+      function clearCaptureStorage(options = {}) {
+        const keepSessionId = Boolean(options.keepSessionId);
+        localStorage.removeItem(CAPTURE_STORAGE_KEYS.images);
+        sessionStorage.removeItem(CAPTURE_STORAGE_KEYS.images);
+
+        if (!keepSessionId) {
+          localStorage.removeItem(CAPTURE_STORAGE_KEYS.sessionId);
+          sessionStorage.removeItem(CAPTURE_STORAGE_KEYS.sessionId);
+        }
+      }
+
+      function startFreshCaptureSession() {
+        const sessionId = createCaptureSessionId();
+        clearCaptureStorage({ keepSessionId: false });
+        setActiveCaptureSessionId(sessionId);
+        localStorage.setItem(CAPTURE_STORAGE_KEYS.images, '[]');
+        sessionStorage.setItem(CAPTURE_STORAGE_KEYS.images, '[]');
+        return sessionId;
+      }
+
+      function ensureCaptureSession() {
+        const sessionId = getActiveCaptureSessionId();
+        if (sessionId) {
+          return sessionId;
+        }
+
+        return startFreshCaptureSession();
+      }
+
+      function readCapturedImages() {
+        try {
+          const raw = localStorage.getItem(CAPTURE_STORAGE_KEYS.images) || sessionStorage.getItem(CAPTURE_STORAGE_KEYS.images) || '[]';
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+          console.warn('Unable to read captured images:', error);
+          return [];
+        }
+      }
+
+      function persistCapturedImage(obj) {
+        try {
+          const sessionId = ensureCaptureSession();
+          const capturedImages = readCapturedImages();
+          console.log('Before save:', capturedImages.length);
+          capturedImages.push(obj);
+          const serialized = JSON.stringify(capturedImages);
+          localStorage.setItem(CAPTURE_STORAGE_KEYS.images, serialized);
+          sessionStorage.setItem(CAPTURE_STORAGE_KEYS.images, serialized);
+          localStorage.setItem(CAPTURE_STORAGE_KEYS.sessionId, sessionId);
+          sessionStorage.setItem(CAPTURE_STORAGE_KEYS.sessionId, sessionId);
+          console.log('After save:', capturedImages.length);
+          return capturedImages.length;
+        } catch (error) {
+          console.warn('Unable to persist captured image', error);
+          return 0;
+        }
+      }
+
+      initializeBuildVersion();
+      startFreshCaptureSession();
+
+      const current = new URL(window.location.href);
+      const patientVideo = document.getElementById('patientVideo');
+      const patientPlaceholder = document.getElementById('patientPlaceholder');
+      const consultationOverlay = document.getElementById('consultationOverlay');
+      const consultationStage = document.querySelector('.consultation-stage');
+      const consultationPatientVideo = document.getElementById('consultationPatientVideo');
+      const consultationPlaceholder = document.getElementById('consultationPlaceholder');
+      const consultationCloseBtn = document.getElementById('consultationCloseBtn');
+      const consultationEndBtn = document.getElementById('consultationEndBtn');
+      const patientVideoEl = patientVideo;
+
+      const consultationMicBtn = document.getElementById('consultationMicBtn');
+      const consultationVideoBtn = document.getElementById('consultationVideoBtn');
+      const consultationChatBtn = document.getElementById('consultationChatBtn');
+      const consultationSettingsBtn = document.getElementById('consultationSettingsBtn');
+      const consultationChatPanel = document.getElementById('consultationChatPanel');
+      const consultationChatCloseBtn = document.getElementById('consultationChatCloseBtn');
+      const consultationChatMessages = document.getElementById('consultationChatMessages');
+      const consultationChatInput = document.getElementById('consultationChatInput');
+      const consultationChatSendBtn = document.getElementById('consultationChatSendBtn');
+      const consultationSettingsModal = document.getElementById('consultationSettingsModal');
+      const consultationSettingsCloseBtn = document.getElementById('consultationSettingsCloseBtn');
+      const doctorTileVideo = document.getElementById('doctorTileVideo');
+      const consultationDoctorTileVideo = document.getElementById('consultationDoctorTileVideo');
+      const ultrasoundRecordBtn = document.getElementById('ultrasoundRecordBtn');
+      const patientRecordBtn = document.getElementById('patientRecordBtn');
+      const ultrasoundRecordingDot = document.getElementById('ultrasoundRecordingDot');
+      const ultrasoundRecordingIndicator = document.getElementById('ultrasoundRecordingIndicator');
+      const patientRecordingIndicator = document.getElementById('patientRecordingIndicator');
+      const consultationDoctorTile = document.querySelector('.consultation-doctor-tile');
+      const statusMessage = document.getElementById('statusMessage');
+      const historyModal = document.getElementById('historyModal');
+      const collageToast = document.getElementById('collageToast');
+      const sidebar = document.getElementById('sidebar');
+      const sidebarOverlay = document.getElementById('sidebarOverlay');
+      const sidebarAnchor = document.querySelector('.app-shell');
+      const sidebarState = sidebar && sidebar.parentNode ? {
+        parent: sidebar.parentNode
+      } : null;
+
+      function showToast(message) {
+        try {
+          if (!collageToast) return;
+          collageToast.textContent = message;
+          collageToast.classList.add('show');
+          clearTimeout(showToast._t);
+          showToast._t = setTimeout(() => collageToast.classList.remove('show'), 1600);
+        } catch (e) { console.warn(e); }
+      }
+
+      function createPlaceholderSnapshot(panelKey, width, height) {
+        const canvas = document.createElement('canvas');
+        canvas.width = width || 1280;
+        canvas.height = height || 720;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return 'data:,';
+
+        const palette = {
+          ultrasound: ['#203a43', '#2c5364'],
+          patient: ['#4b6cb7', '#182848'],
+          default: ['#5b6b73', '#2f3e46'],
+        };
+        const [startColor, endColor] = palette[panelKey] || palette.default;
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(0, startColor);
+        gradient.addColorStop(1, endColor);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL('image/jpeg', 0.6);
+      }
+
+      function saveSnapshotAppend(dataUrl, panelKey) {
+        try {
+          const id = Date.now() + '-' + Math.random().toString(36).slice(2);
+          const createdAt = new Date().toISOString();
+          return persistCapturedImage({ id, createdAt, dataUrl, image: dataUrl, source: panelKey });
+        } catch (err) {
+          console.error('saveSnapshotAppend failed:', err);
+          return 0;
+        }
+      }
+      const captureState = {
+        isCapturing: false,
+        isNavigating: false,
+      };
+      const captureFlashTimers = {
+        ultrasound: null,
+        patient: null
+      };
+      const recordDurationMs = 15000;
+      const recordDurationSeconds = Math.round(recordDurationMs / 1000);
+      const recordingSessions = {
+        ultrasound: {
+          active: false,
+          paused: false,
+          remainingSeconds: recordDurationSeconds,
+          timerId: null
+        },
+        patient: {
+          active: false,
+          paused: false,
+          remainingSeconds: recordDurationSeconds,
+          timerId: null
+        }
+      };
+      const panelRecording = {
+        ultrasound: {
+          button: ultrasoundRecordBtn,
+          indicator: ultrasoundRecordingIndicator,
+          session: recordingSessions.ultrasound
+        },
+        patient: {
+          button: patientRecordBtn,
+          indicator: patientRecordingIndicator,
+          session: recordingSessions.patient
+        }
+      };
+      let stream = null;
+      let micMuted = false;
+      let videoMuted = false;
+      let consultationOverlayTimer = null;
+      let consultationMode = 'closed';
+      let floatingConsultationPosition = { left: 0, top: 0 };
+      let isFloatingConsultationDragging = false;
+      let floatingDragOffsetX = 0;
+      let floatingDragOffsetY = 0;
+      let isConsultationPanelDragging = false;
+      let consultationDragOffsetX = 0;
+      let consultationDragOffsetY = 0;
+      const floatingConsultationPositionKey = 'torusFloatingConsultationPosition';
+      const consultationHeader = document.querySelector('.consultation-header');
+      const consultationToggleBtn = document.getElementById('consultationCloseBtn');
+      const consultationDismissBtn = document.getElementById('consultationDismissBtn');
+      const floatingCloseBtn = document.querySelector('.floating-close-btn');
+
+      console.log('floatingCloseBtn:', floatingCloseBtn);
+
+      function formatNow() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        return `${hh}:${mm}`;
+      }
+
+      function getTopBarHeight() {
+        const topbar = document.querySelector('.topbar');
+        return topbar ? topbar.getBoundingClientRect().height : 0;
+      }
+
+      function loadFloatingConsultationPosition() {
+        try {
+          const raw = localStorage.getItem(floatingConsultationPositionKey);
+          if (!raw) {
+            return false;
+          }
+
+          const parsed = JSON.parse(raw);
+          if (typeof parsed?.left === 'number' && typeof parsed?.top === 'number') {
+            floatingConsultationPosition = { left: parsed.left, top: parsed.top };
+            return true;
+          }
+        } catch (error) {
+          console.warn('Unable to restore floating consultation position:', error);
+        }
+
+        return false;
+      }
+
+      function saveFloatingConsultationPosition() {
+        try {
+          localStorage.setItem(floatingConsultationPositionKey, JSON.stringify(floatingConsultationPosition));
+        } catch (error) {
+          console.warn('Unable to persist floating consultation position:', error);
+        }
+      }
+
+      function clampFloatingConsultationPosition(left, top) {
+        if (!consultationStage) {
+          return { left, top };
+        }
+
+        const rect = consultationStage.getBoundingClientRect();
+        const minLeft = 0;
+        const minTop = 0;
+        const maxLeft = Math.max(minLeft, window.innerWidth - rect.width);
+        const maxTop = Math.max(minTop, window.innerHeight - rect.height);
+
+        return {
+          left: Math.min(Math.max(left, minLeft), maxLeft),
+          top: Math.min(Math.max(top, minTop), maxTop),
+        };
+      }
+
+      function applyFloatingConsultationPosition() {
+        if (!consultationStage || consultationMode !== 'floating') {
+          return;
+        }
+
+        consultationStage.style.left = `${floatingConsultationPosition.left}px`;
+        consultationStage.style.top = `${floatingConsultationPosition.top}px`;
+        consultationStage.style.right = 'auto';
+        consultationStage.style.bottom = 'auto';
+        consultationStage.style.transform = 'none';
+        consultationStage.style.zIndex = '99999';
+      }
+
+      function resetConsultationStageInlineStyles() {
+        if (!consultationStage) {
+          return;
+        }
+
+        consultationStage.style.display = '';
+        consultationStage.style.left = '';
+        consultationStage.style.top = '';
+        consultationStage.style.right = '';
+        consultationStage.style.bottom = '';
+        consultationStage.style.width = '';
+        consultationStage.style.height = '';
+        consultationStage.style.transform = '';
+        consultationStage.style.zIndex = '';
+      }
+
+      function syncConsultationToggleButton() {
+        if (!consultationToggleBtn) {
+          return;
+        }
+
+        consultationToggleBtn.innerHTML = consultationMode === 'floating'
+          ? '<i data-lucide="maximize-2"></i>'
+          : '<i data-lucide="minimize-2"></i>';
+        consultationToggleBtn.setAttribute(
+          'aria-label',
+          consultationMode === 'floating' ? 'Restore fullscreen consultation' : 'Minimize consultation'
+        );
+
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+          window.lucide.createIcons();
+        }
+      }
+
+      function finishConsultationTransition() {
+        window.setTimeout(() => {
+          if (consultationStage) {
+            consultationStage.classList.remove('consultation-restoring');
+            consultationStage.classList.remove('floating-dragging');
+          }
+        }, 320);
+      }
+
+      function setConsultationMode(nextMode, options = {}) {
+        if (!consultationOverlay || !consultationStage) {
+          return;
+        }
+
+        consultationMode = nextMode;
+        consultationOverlay.classList.remove('hidden');
+        consultationOverlay.classList.add('active');
+
+        if (nextMode !== 'closed') {
+          consultationStage.style.display = '';
+        }
+
+        if (nextMode === 'fullscreen') {
+          document.body.classList.add('consultation-fullscreen');
+          document.body.classList.remove('consultation-floating');
+          document.body.classList.remove('floating-consultation-active');
+          consultationOverlay.classList.add('consultation-fullscreen');
+          consultationOverlay.classList.remove('consultation-floating', 'floating-active');
+          consultationOverlay.setAttribute('aria-hidden', 'false');
+          resetConsultationStageInlineStyles();
+          consultationStage.classList.remove('floating-consultation-window');
+          consultationStage.classList.add('consultation-restoring');
+          consultationStage.classList.remove('floating-dragging');
+          syncSidebarPlacement();
+        } else if (nextMode === 'floating') {
+          document.body.classList.remove('consultation-fullscreen');
+          document.body.classList.add('consultation-floating');
+          document.body.classList.add('floating-consultation-active');
+          consultationOverlay.classList.remove('consultation-fullscreen');
+          consultationOverlay.classList.add('consultation-floating', 'floating-active');
+          consultationOverlay.setAttribute('aria-hidden', 'false');
+          consultationStage.classList.add('floating-consultation-window');
+          consultationStage.classList.add('consultation-restoring');
+          consultationStage.classList.remove('floating-dragging');
+
+          requestAnimationFrame(() => {
+            if (!consultationStage) {
+              return;
+            }
+
+            if (!options.keepPosition && !loadFloatingConsultationPosition()) {
+              const rect = consultationStage.getBoundingClientRect();
+              const topBarHeight = getTopBarHeight();
+              floatingConsultationPosition = {
+                left: Math.max(12, Math.round(window.innerWidth - rect.width - 18)),
+                top: Math.max(topBarHeight + 12, Math.round(topBarHeight + (window.innerHeight - topBarHeight - rect.height) / 2)),
+              };
+            }
+
+            applyFloatingConsultationPosition();
+          });
+        } else {
+          document.body.classList.remove('consultation-fullscreen', 'consultation-floating', 'floating-consultation-active');
+          consultationOverlay.classList.remove('consultation-fullscreen', 'consultation-floating', 'floating-active');
+          consultationStage.classList.remove('floating-consultation-window', 'floating-dragging', 'consultation-restoring');
+          consultationOverlay.setAttribute('aria-hidden', 'true');
+          resetConsultationStageInlineStyles();
+        }
+
+        syncConsultationToggleButton();
+        finishConsultationTransition();
+      }
+
+      function openConsultationOverlay() {
+        if (!consultationOverlay) {
+          console.error('Consultation overlay not found');
+          return;
+        }
+
+        if (consultationStage && sidebar && sidebarOverlay && sidebarState) {
+          consultationStage.appendChild(sidebarOverlay);
+          consultationStage.appendChild(sidebar);
+        }
+
+        console.log('Opening consultation overlay...');
+        window.clearTimeout(consultationOverlayTimer);
+        setConsultationMode('fullscreen');
+
+        syncAllVideoViews();
+      }
+
+      function openConsultationInNewWindow() {
+        const viewerUrl = new URL(window.location.href);
+        viewerUrl.searchParams.set('viewer', '1');
+        const consultationWindow = window.open(
+          viewerUrl.toString(),
+          `torus-ultrasound-viewer-${viewerUrl.searchParams.get('room') || 'default-room'}`,
+          'popup=yes,width=1400,height=900,resizable=yes,scrollbars=yes'
+        );
+
+        if (consultationWindow) {
+          consultationWindow.focus();
+        } else {
+          console.warn('Popup blocked: unable to open consultation window.');
+        }
+      }
+
+      function openFullscreenConsultation() {
+        openConsultationOverlay();
+      }
+
+      function openFloatingConsultation() {
+        if (!consultationOverlay || !consultationStage) {
+          return;
+        }
+
+        closeChatPanel();
+        closeSettingsModal();
+        closeSidebar();
+
+        if (consultationMode === 'fullscreen') {
+          minimizeConsultationToFloating();
+          return;
+        }
+
+        if (consultationMode === 'floating') {
+          consultationOverlay.classList.remove('hidden');
+          consultationOverlay.classList.add('active', 'consultation-floating', 'floating-active');
+          document.body.classList.add('consultation-floating', 'floating-consultation-active');
+          consultationStage.classList.add('floating-consultation-window');
+          consultationStage.classList.remove('consultation-restoring', 'floating-dragging');
+          applyFloatingConsultationPosition();
+          syncConsultationToggleButton();
+          syncAllVideoViews();
+          return;
+        }
+
+        setConsultationMode('floating');
+        syncAllVideoViews();
+      }
+
+      function minimizeConsultationToFloating() {
+        if (!consultationOverlay || consultationMode !== 'fullscreen') {
+          return;
+        }
+
+        closeChatPanel();
+        closeSettingsModal();
+        setConsultationMode('floating');
+      }
+
+      function restoreFloatingConsultation() {
+        if (!consultationOverlay || consultationMode !== 'floating') {
+          return;
+        }
+
+        setConsultationMode('fullscreen');
+      }
+
+      function closeFloatingConsultation(event) {
+        if (event) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+
+        const floatingWindow = document.querySelector('.floating-consultation-window');
+
+        if (!floatingWindow) {
+          return;
+        }
+
+        consultationMode = 'closed';
+        isFloatingConsultationDragging = false;
+        isConsultationPanelDragging = false;
+
+        floatingWindow.classList.remove('consultation-floating', 'floating-active', 'floating-dragging');
+        floatingWindow.style.display = 'none';
+
+        document.body.classList.remove('floating-consultation-active', 'consultation-floating', 'consultation-fullscreen');
+
+        if (consultationOverlay) {
+          consultationOverlay.classList.remove('active', 'consultation-floating', 'floating-active', 'consultation-fullscreen');
+          consultationOverlay.classList.add('hidden');
+          consultationOverlay.setAttribute('aria-hidden', 'true');
+        }
+
+        if (consultationStage) {
+          consultationStage.classList.remove('floating-consultation-window', 'floating-dragging', 'consultation-restoring');
+        }
+
+        if (sidebar) {
+          sidebar.classList.remove('open');
+        }
+        if (sidebarOverlay) {
+          sidebarOverlay.classList.remove('active');
+        }
+
+        closeChatPanel();
+        closeSettingsModal();
+        resetConsultationStageInlineStyles();
+        delete video.dataset.ultrasoundSource;
+      }
+
+      function toggleConsultationMode() {
+        if (consultationMode === 'closed') {
+          openConsultationOverlay();
+          return;
+        }
+
+        if (consultationMode === 'fullscreen') {
+          minimizeConsultationToFloating();
+          return;
+        }
+
+        restoreFloatingConsultation();
+      }
+
+      function enableFloatingDrag() {
+        if (!consultationHeader) {
+          return;
+        }
+
+        consultationHeader.addEventListener('mousedown', (event) => {
+          if (consultationMode !== 'floating' || !consultationStage) {
+            return;
+          }
+
+          if (
+            event.target.closest('.floating-close-btn') ||
+            event.target.closest('.floating-expand-btn') ||
+            event.target.closest('.floating-controls button') ||
+            event.target.closest('button')
+          ) {
+            return;
+          }
+
+          event.preventDefault();
+          isFloatingConsultationDragging = true;
+          floatingDragOffsetX = event.clientX - floatingConsultationPosition.left;
+          floatingDragOffsetY = event.clientY - floatingConsultationPosition.top;
+          consultationStage.classList.add('floating-dragging');
+
+          const handleMove = (moveEvent) => {
+            if (!isFloatingConsultationDragging) {
+              return;
+            }
+
+            const nextPosition = clampFloatingConsultationPosition(
+              moveEvent.clientX - floatingDragOffsetX,
+              moveEvent.clientY - floatingDragOffsetY,
+            );
+
+            floatingConsultationPosition = nextPosition;
+            applyFloatingConsultationPosition();
+          };
+
+          const endDrag = () => {
+            if (!isFloatingConsultationDragging) {
+              return;
+            }
+
+            isFloatingConsultationDragging = false;
+            consultationStage.classList.remove('floating-dragging');
+            saveFloatingConsultationPosition();
+
+            window.removeEventListener('mousemove', handleMove);
+            window.removeEventListener('mouseup', endDrag);
+          };
+
+          window.addEventListener('mousemove', handleMove);
+          window.addEventListener('mouseup', endDrag);
+        });
+      }
+
+      function openChatPanel() {
+        if (!consultationChatPanel) {
+          console.error('Chat panel not found');
+          return;
+        }
+        console.log('Opening chat panel...');
+        consultationChatPanel.classList.add('open');
+        // Force inline styles to ensure visibility (override CSS transitions)
+        consultationChatPanel.style.opacity = '1';
+        consultationChatPanel.style.transform = 'translateX(0px)';
+        consultationChatPanel.style.pointerEvents = 'auto';
+        consultationChatBtn?.classList.add('is-active');
+        consultationChatMessages?.scrollTo(0, consultationChatMessages.scrollHeight);
+      }
+
+      function closeChatPanel() {
+        if (!consultationChatPanel) return;
+        console.log('Closing chat panel...');
+        consultationChatPanel.classList.remove('open');
+        // Force inline styles to hide panel
+        consultationChatPanel.style.opacity = '0';
+        consultationChatPanel.style.transform = 'translateX(108%)';
+        consultationChatPanel.style.pointerEvents = 'none';
+        consultationChatBtn?.classList.remove('is-active');
+      }
+
+      function toggleChatPanel() {
+        if (!consultationChatPanel) return;
+        if (consultationChatPanel.classList.contains('open')) {
+          closeChatPanel();
+          return;
+        }
+        openChatPanel();
+      }
+
+      function openSettingsModal() {
+        if (!consultationSettingsModal) {
+          console.error('Settings modal not found');
+          return;
+        }
+        console.log('Opening settings modal...');
+        consultationSettingsModal.classList.remove('hidden');
+        consultationSettingsModal.setAttribute('aria-hidden', 'false');
+        // Force inline styles to ensure visibility
+        consultationSettingsModal.style.display = 'flex';
+        consultationSettingsModal.style.visibility = 'visible';
+        consultationSettingsModal.style.pointerEvents = 'auto';
+        consultationSettingsBtn?.classList.add('is-active');
+      }
+
+      function closeSettingsModal() {
+        if (!consultationSettingsModal) return;
+        console.log('Closing settings modal...');
+        consultationSettingsModal.classList.add('hidden');
+        consultationSettingsModal.setAttribute('aria-hidden', 'true');
+        // Force inline styles to hide modal
+        consultationSettingsModal.style.display = 'none';
+        consultationSettingsModal.style.visibility = 'hidden';
+        consultationSettingsModal.style.pointerEvents = 'none';
+        consultationSettingsBtn?.classList.remove('is-active');
+      }
+
+      function toggleMicState() {
+        micMuted = !micMuted;
+        consultationMicBtn?.classList.toggle('is-off', micMuted);
+        if (stream) {
+          stream.getAudioTracks().forEach((track) => {
+            track.enabled = !micMuted;
+          });
+        }
+      }
+
+      function toggleVideoState() {
+        videoMuted = !videoMuted;
+        consultationVideoBtn?.classList.toggle('is-off', videoMuted);
+        if (stream) {
+          stream.getVideoTracks().forEach((track) => {
+            track.enabled = !videoMuted;
+          });
+        }
+        consultationPlaceholder?.classList.toggle('hidden', !videoMuted);
+      }
+
+      function sendChatMessage() {
+        const message = consultationChatInput?.value?.trim();
+        if (!message || !consultationChatMessages) return;
+
+        const bubble = document.createElement('article');
+        bubble.className = 'chat-bubble doctor';
+        bubble.innerHTML = `<div>${message}</div><div class="chat-time">${formatNow()}</div>`;
+        consultationChatMessages.appendChild(bubble);
+        consultationChatMessages.scrollTop = consultationChatMessages.scrollHeight;
+        consultationChatInput.value = '';
+      }
+
+      function bindVideoStream(videoElement, activeStream) {
+        if (!videoElement) {
+          return;
+        }
+
+        if (videoElement.closest && videoElement.closest('#ultrasoundPanel')) {
+          return;
+        }
+
+        if (!activeStream) {
+          videoElement.srcObject = null;
+          return;
+        }
+
+        if (videoElement.srcObject !== activeStream) {
+          videoElement.srcObject = activeStream;
+        }
+
+        void videoElement.play().catch((error) => {
+          console.error('Failed to play bound video:', error);
+        });
+      }
+
+      const ULTRASOUND_BLOB_KEY = 'ultrasoundVideoBlob';
+      const ULTRASOUND_STATE_KEY = 'ultrasoundVideoState';
+      const ULTRASOUND_VIEWER_MODE = new URLSearchParams(window.location.search).get('viewer') === '1';
+      const ULTRASOUND_VIEWER_CHANNEL = `torus-ultrasound-feed:${new URLSearchParams(window.location.search).get('room') || 'default-room'}`;
+      let activeUltrasoundObjectUrl = null;
+      let ultrasoundViewerChannel = null;
+      let ultrasoundViewerBroadcastTimer = null;
+
+      function getUltrasoundPlaceholder() {
+        return document.getElementById('ultrasoundPlaceholder');
+      }
+
+      function getUltrasoundVideo() {
+        return document.getElementById('ultrasoundVideo');
+      }
+
+      function getUltrasoundStatusIndicator() {
+        return document.getElementById('ultrasoundRecordingDot');
+      }
+
+      function setUltrasoundStatusIndicatorVisible(isVisible) {
+        const indicator = getUltrasoundStatusIndicator();
+        if (!indicator) {
+          return;
+        }
+
+        indicator.classList.toggle('active', Boolean(isVisible));
+        indicator.setAttribute('aria-hidden', isVisible ? 'false' : 'true');
+      }
+
+      function syncUltrasoundStatusIndicator(video = getUltrasoundVideo()) {
+        const shouldShow = Boolean(
+          video &&
+          !video.ended &&
+          (video.dataset?.ultrasoundSource || video.srcObject)
+        );
+
+        setUltrasoundStatusIndicatorVisible(shouldShow);
+      }
+
+      function getSavedUltrasoundState() {
+        const raw = sessionStorage.getItem(ULTRASOUND_STATE_KEY);
+        if (!raw) {
+          return null;
+        }
+
+        try {
+          return JSON.parse(raw);
+        } catch (_error) {
+          return null;
+        }
+      }
+
+      function saveUltrasoundState(video, sourceUrl) {
+        if (!video) {
+          return;
+        }
+
+        const payload = {
+          source: sourceUrl || video.currentSrc || video.src || sessionStorage.getItem(ULTRASOUND_BLOB_KEY) || '',
+          currentTime: Number.isFinite(video.currentTime) ? video.currentTime : 0,
+          paused: Boolean(video.paused)
+        };
+
+        if (payload.source) {
+          sessionStorage.setItem(ULTRASOUND_BLOB_KEY, payload.source);
+        }
+        sessionStorage.setItem(ULTRASOUND_STATE_KEY, JSON.stringify(payload));
+        if (!ULTRASOUND_VIEWER_MODE) {
+          scheduleUltrasoundViewerBroadcast();
+        }
+      }
+
+      function syncUltrasoundPlaybackState(video, savedState = null) {
+        if (!video) {
+          return;
+        }
+
+        const restoreTime = Number(savedState?.currentTime || 0);
+        const shouldPause = savedState?.paused !== undefined ? Boolean(savedState.paused) : false;
+        const currentTime = Number.isFinite(video.currentTime) ? video.currentTime : 0;
+
+        if (Number.isFinite(restoreTime) && restoreTime > 0 && Math.abs(currentTime - restoreTime) > 0.75 && video.readyState >= 1) {
+          try {
+            video.currentTime = restoreTime;
+          } catch (_error) {
+            // ignore seek failures
+          }
+        }
+
+        if (shouldPause) {
+          if (!video.paused) {
+            video.pause();
+          }
+          syncUltrasoundStatusIndicator(video);
+          return;
+        }
+
+        if (video.paused) {
+          video.play().catch((error) => {
+            console.error('[ultrasound] Video play failed:', error);
+          });
+        }
+
+        syncUltrasoundStatusIndicator(video);
+      }
+
+      function getCurrentUltrasoundFeedState() {
+        const video = getUltrasoundVideo();
+        return {
+          source: sessionStorage.getItem(ULTRASOUND_BLOB_KEY) || video?.currentSrc || video?.src || '',
+          currentTime: Number.isFinite(video?.currentTime) ? video.currentTime : 0,
+          paused: Boolean(video?.paused),
+          viewerMode: ULTRASOUND_VIEWER_MODE
+        };
+      }
+
+      function applyUltrasoundFeedState(state) {
+        if (!state || !state.source) {
+          showUltrasoundPlaceholder();
+          return;
+        }
+
+        renderSelectedUltrasoundVideo(state.source, state);
+      }
+
+      function ensureUltrasoundViewerChannel() {
+        if (ultrasoundViewerChannel || typeof BroadcastChannel === 'undefined') {
+          return null;
+        }
+
+        ultrasoundViewerChannel = new BroadcastChannel(ULTRASOUND_VIEWER_CHANNEL);
+        ultrasoundViewerChannel.onmessage = (event) => {
+          const message = event.data || {};
+          if (message.type === 'ultrasound-request-state' && !ULTRASOUND_VIEWER_MODE) {
+            ultrasoundViewerChannel.postMessage({
+              type: 'ultrasound-state',
+              state: getCurrentUltrasoundFeedState()
+            });
+            return;
+          }
+
+          if (message.type === 'ultrasound-state' && ULTRASOUND_VIEWER_MODE) {
+            applyUltrasoundFeedState(message.state);
+          }
+        };
+
+        return ultrasoundViewerChannel;
+      }
+
+      function scheduleUltrasoundViewerBroadcast() {
+        if (ULTRASOUND_VIEWER_MODE || typeof BroadcastChannel === 'undefined') {
+          return;
+        }
+
+        ensureUltrasoundViewerChannel();
+        if (!ultrasoundViewerChannel) {
+          return;
+        }
+
+        window.clearTimeout(ultrasoundViewerBroadcastTimer);
+        ultrasoundViewerBroadcastTimer = window.setTimeout(() => {
+          ultrasoundViewerChannel.postMessage({
+            type: 'ultrasound-state',
+            state: getCurrentUltrasoundFeedState()
+          });
+        }, 40);
+      }
+
+      function showUltrasoundPlaceholder() {
+        const placeholder = getUltrasoundPlaceholder();
+        const video = getUltrasoundVideo();
+        const label = document.querySelector('#ultrasoundPanel .feed-label.bottom-text');
+
+        if (placeholder) {
+          placeholder.classList.remove('hidden');
+        }
+
+        if (label) {
+          label.classList.add('hidden');
+        }
+
+        if (video) {
+          video.classList.add('hidden');
+          video.controls = false;
+          video.removeAttribute('controls');
+          video.removeAttribute('controlslist');
+          video.setAttribute('controlsList', 'nodownload noplaybackrate noremoteplayback');
+          video.disablePictureInPicture = true;
+          video.pause();
+          video.removeAttribute('src');
+          video.srcObject = null;
+          video.load();
+          video.dataset.ultrasoundSource = '';
+        }
+
+        setUltrasoundStatusIndicatorVisible(false);
+      }
+
+      function renderSelectedUltrasoundVideo(sourceUrl, savedState = null) {
+        const placeholder = getUltrasoundPlaceholder();
+        const video = getUltrasoundVideo();
+        const label = document.querySelector('#ultrasoundPanel .feed-label.bottom-text');
+
+        if (!placeholder || !video || !sourceUrl) {
+          return;
+        }
+
+        if (activeUltrasoundObjectUrl && activeUltrasoundObjectUrl.startsWith('blob:') && activeUltrasoundObjectUrl !== sourceUrl) {
+          URL.revokeObjectURL(activeUltrasoundObjectUrl);
+        }
+
+        const existingSource = video.dataset.ultrasoundSource || video.currentSrc || video.src || '';
+        if (existingSource === sourceUrl) {
+          placeholder.classList.add('hidden');
+          if (label) {
+            label.classList.remove('hidden');
+          }
+          video.classList.remove('hidden');
+          video.controls = false;
+          video.removeAttribute('controls');
+          video.removeAttribute('controlslist');
+          video.setAttribute('controlsList', 'nodownload noplaybackrate noremoteplayback');
+          video.disablePictureInPicture = true;
+          syncUltrasoundPlaybackState(video, savedState);
+          syncUltrasoundStatusIndicator(video);
+          return;
+        }
+
+        activeUltrasoundObjectUrl = sourceUrl;
+        video.dataset.ultrasoundSource = sourceUrl;
+        placeholder.classList.add('hidden');
+        if (label) {
+          label.classList.remove('hidden');
+        }
+        video.classList.remove('hidden');
+        video.controls = false;
+        video.removeAttribute('controls');
+        video.removeAttribute('controlslist');
+        video.setAttribute('controlsList', 'nodownload noplaybackrate noremoteplayback');
+        video.disablePictureInPicture = true;
+        video.muted = true;
+        video.loop = true;
+        video.autoplay = true;
+        video.setAttribute('playsinline', '');
+        video.srcObject = null;
+        video.src = sourceUrl;
+        console.log('[ultrasound] Stream received', sourceUrl);
+        console.log('[ultrasound] Stream attached via src URL');
+
+        video.onloadedmetadata = () => {
+          syncUltrasoundPlaybackState(video, savedState);
+          saveUltrasoundState(video, sourceUrl);
+          syncUltrasoundStatusIndicator(video);
+        };
+
+        video.onplay = () => {
+          saveUltrasoundState(video, sourceUrl);
+          syncUltrasoundStatusIndicator(video);
+        };
+        video.onpause = () => {
+          saveUltrasoundState(video, sourceUrl);
+          syncUltrasoundStatusIndicator(video);
+        };
+        video.onemptied = () => setUltrasoundStatusIndicatorVisible(false);
+        video.onabort = () => setUltrasoundStatusIndicatorVisible(false);
+        video.onerror = () => setUltrasoundStatusIndicatorVisible(false);
+        video.ontimeupdate = () => saveUltrasoundState(video, sourceUrl);
+        video.onseeked = () => saveUltrasoundState(video, sourceUrl);
+        video.onended = () => {
+          saveUltrasoundState(video, sourceUrl);
+          syncUltrasoundStatusIndicator(video);
+        };
+        video.load();
+        syncUltrasoundStatusIndicator(video);
+      }
+
+      function selectUltrasoundVideo() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'video/*';
+        input.style.display = 'none';
+        document.body.appendChild(input);
+
+        input.addEventListener('change', (event) => {
+          const file = event.target.files && event.target.files[0];
+          if (!file) {
+            input.remove();
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = () => {
+            const sourceUrl = String(reader.result || '');
+            if (!sourceUrl) {
+              input.remove();
+              return;
+            }
+
+            renderSelectedUltrasoundVideo(sourceUrl, { currentTime: 0, paused: false });
+            input.remove();
+          };
+          reader.onerror = () => {
+            console.error('[ultrasound] Failed to read selected video');
+            input.remove();
+          };
+          reader.readAsDataURL(file);
+        }, { once: true });
+
+        input.click();
+      }
+
+      window.selectUltrasoundVideo = selectUltrasoundVideo;
+      window.loadUltrasoundVideo = function loadUltrasoundVideo() {
+        const savedState = getSavedUltrasoundState();
+        const saved = savedState?.source || sessionStorage.getItem(ULTRASOUND_BLOB_KEY);
+
+        if (saved) {
+          renderSelectedUltrasoundVideo(saved, savedState);
+          return;
+        }
+        showUltrasoundPlaceholder();
+      };
+
+      window.getUltrasoundViewerState = getCurrentUltrasoundFeedState;
+      if (ULTRASOUND_VIEWER_MODE) {
+        ensureUltrasoundViewerChannel();
+        if (ultrasoundViewerChannel) {
+          ultrasoundViewerChannel.postMessage({ type: 'ultrasound-request-state' });
+        } else if (window.opener && typeof window.opener.getUltrasoundViewerState === 'function') {
+          applyUltrasoundFeedState(window.opener.getUltrasoundViewerState());
+        } else {
+          showUltrasoundPlaceholder();
+        }
+      }
+
+      function syncAllVideoViews() {
+
+        const activeStream = stream;
+        if (!activeStream) {
+          consultationPlaceholder?.classList.remove('hidden');
+          return;
+        }
+
+        bindVideoStream(patientVideo, activeStream);
+        bindVideoStream(consultationPatientVideo, activeStream);
+        bindVideoStream(doctorTileVideo, activeStream);
+        bindVideoStream(consultationDoctorTileVideo, activeStream);
+
+        patientPlaceholder?.classList.add('hidden');
+        consultationPlaceholder?.classList.add('hidden');
+      }
+
+      function startConsultationPanelDrag(event) {
+        if (!consultationOverlay || consultationOverlay.classList.contains('hidden') || !consultationDoctorTile) {
+          return;
+        }
+
+        if (event.target && event.target.closest('button')) {
+          return;
+        }
+
+        const rect = consultationDoctorTile.getBoundingClientRect();
+        isConsultationPanelDragging = true;
+        consultationDragOffsetX = event.clientX - rect.left;
+        consultationDragOffsetY = event.clientY - rect.top;
+        consultationDoctorTile.style.left = `${rect.left}px`;
+        consultationDoctorTile.style.top = `${rect.top}px`;
+        consultationDoctorTile.style.right = 'auto';
+        consultationDoctorTile.style.bottom = 'auto';
+      }
+
+      function moveConsultationPanelDrag(event) {
+        if (!isConsultationPanelDragging || !consultationDoctorTile) {
+          return;
+        }
+
+        const maxX = Math.max(0, window.innerWidth - consultationDoctorTile.offsetWidth);
+        const maxY = Math.max(0, window.innerHeight - consultationDoctorTile.offsetHeight);
+        const nextX = Math.min(Math.max(0, event.clientX - consultationDragOffsetX), maxX);
+        const nextY = Math.min(Math.max(0, event.clientY - consultationDragOffsetY), maxY);
+        consultationDoctorTile.style.left = `${nextX}px`;
+        consultationDoctorTile.style.top = `${nextY}px`;
+      }
+
+      function endConsultationPanelDrag() {
+        isConsultationPanelDragging = false;
+      }
+
+      function closeConsultationOverlay() {
+        closeFloatingConsultation();
+      }
+
+      function toggleConsultationOverlay() {
+        openFullscreenConsultation();
+      }
+
+      function showToast(message) {
+        if (!collageToast) return;
+        collageToast.textContent = message;
+        collageToast.classList.add('show');
+        window.clearTimeout(showToast._timer);
+        showToast._timer = window.setTimeout(() => collageToast.classList.remove('show'), 1400);
+      }
+
+      function clearRecordingTimer() {
+        Object.values(recordingSessions).forEach((session) => {
+          if (session.timerId) {
+            window.clearInterval(session.timerId);
+            session.timerId = null;
+          }
+        });
+      }
+
+      function clearRecordingTimerForPanel(panelKey) {
+        const session = recordingSessions[panelKey];
+        if (!session || !session.timerId) {
+          return;
+        }
+
+        window.clearInterval(session.timerId);
+        session.timerId = null;
+      }
+
+      function getRecordingSession(panelKey) {
+        return recordingSessions[panelKey] || null;
+      }
+
+      function getRecordingLabel(panelKey) {
+        const session = getRecordingSession(panelKey);
+        const remainingSeconds = session ? session.remainingSeconds : recordDurationSeconds;
+        return `● Recording ${remainingSeconds}s`;
+      }
+
+      function syncRecordingUI() {
+        Object.entries(panelRecording).forEach(([panelKey, state]) => {
+          const session = state.session;
+          const isVisible = Boolean(session && (session.active || session.paused));
+          const indicatorText = isVisible ? getRecordingLabel(panelKey) : '';
+
+          if (state.button) {
+            state.button.innerHTML = session && session.active && !session.paused
+              ? '<i data-lucide="pause"></i>'
+              : '<i data-lucide="play"></i>';
+          }
+
+          if (state.indicator) {
+            state.indicator.textContent = indicatorText;
+            state.indicator.classList.toggle('active', isVisible);
+          }
+        });
+
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+          window.lucide.createIcons();
+        }
+      }
+
+      function setRecordUI() {
+        syncRecordingUI();
+      }
+
+      function stopPanelRecording(panelKey) {
+        const session = getRecordingSession(panelKey);
+        if (!session || !panelRecording[panelKey]) return;
+
+        session.active = false;
+        session.paused = false;
+        session.remainingSeconds = recordDurationSeconds;
+        clearRecordingTimerForPanel(panelKey);
+        syncRecordingUI();
+      }
+
+      function getPanelCaptureCard(panelKey) {
+        if (panelKey === 'ultrasound') {
+          return document.getElementById('ultrasoundPanel');
+        }
+
+        if (panelKey === 'patient') {
+          return document.getElementById('patientCameraPanel');
+        }
+
+        return null;
+      }
+
+      function triggerCaptureFlash(panelKey) {
+        const panel = getPanelCaptureCard(panelKey);
+        if (!panel) {
+          return;
+        }
+
+        window.clearTimeout(captureFlashTimers[panelKey]);
+        panel.classList.remove('capture-flash');
+        void panel.offsetWidth;
+        panel.classList.add('capture-flash');
+
+        captureFlashTimers[panelKey] = window.setTimeout(() => {
+          panel.classList.remove('capture-flash');
+          captureFlashTimers[panelKey] = null;
+        }, 240);
+      }
+
+      function startRecordingTicker(panelKey) {
+        const session = getRecordingSession(panelKey);
+        if (!session) {
+          return;
+        }
+
+        clearRecordingTimerForPanel(panelKey);
+        session.timerId = window.setInterval(() => {
+          if (!session.active || session.paused) {
+            return;
+          }
+
+          if (session.remainingSeconds <= 1) {
+            stopPanelRecording(panelKey);
+            return;
+          }
+
+          session.remainingSeconds -= 1;
+          syncRecordingUI();
+        }, 1000);
+      }
+
+      function startPanelRecording(panelKey) {
+        const session = getRecordingSession(panelKey);
+        if (!session || !panelRecording[panelKey]) return;
+
+        session.active = true;
+        session.paused = false;
+        session.remainingSeconds = recordDurationSeconds;
+        syncRecordingUI();
+        startRecordingTicker(panelKey);
+      }
+
+      function pausePanelRecording(panelKey) {
+        const session = getRecordingSession(panelKey);
+        if (!session || !panelRecording[panelKey] || !session.active || session.paused) {
+          return;
+        }
+
+        session.paused = true;
+        clearRecordingTimerForPanel(panelKey);
+        syncRecordingUI();
+      }
+
+      function resumePanelRecording(panelKey) {
+        const session = getRecordingSession(panelKey);
+        if (!session || !panelRecording[panelKey] || !session.paused) {
+          return;
+        }
+
+        session.paused = false;
+        syncRecordingUI();
+        startRecordingTicker(panelKey);
+      }
+
+      function getPanelVideo(panelKey) {
+        if (panelKey === 'ultrasound') {
+          return document.getElementById('ultrasoundVideo');
+        } else if (panelKey === 'patient') {
+          return document.getElementById('patientVideo');
+        }
+        return null;
+      }
+
+      function getCurrentFrame(panelKey) {
+        const liveVideo = document.getElementById('patientVideo');
+        const video = getPanelVideo(panelKey) || liveVideo;
+
+        if (!video) {
+          return createPlaceholderSnapshot(panelKey, 1280, 720);
+        }
+
+        const width = video.videoWidth || 1280;
+        const height = video.videoHeight || 720;
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          return createPlaceholderSnapshot(panelKey, 1280, 720);
+        }
+
+        try {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          return canvas.toDataURL('image/jpeg', 0.6);
+        } catch (drawErr) {
+          console.warn('Video frame capture failed; using placeholder snapshot', drawErr);
+          return createPlaceholderSnapshot(panelKey, 1280, 720);
+        }
+      }
+
+      function captureSnapshot(panelKey) {
+        if (captureState.isCapturing) return;
+        captureState.isCapturing = true;
+
+        try {
+          triggerCaptureFlash(panelKey);
+          const dataUrl = getCurrentFrame(panelKey);
+          const count = saveSnapshotAppend(dataUrl, panelKey);
+          showToast(`Snapshot saved — ${count} total`);
+        } catch (err) {
+          console.error('Capture failed', err);
+          const fallbackDataUrl = createPlaceholderSnapshot(panelKey, 1280, 720);
+          const count = saveSnapshotAppend(fallbackDataUrl, panelKey);
+          showToast(`Snapshot saved — ${count} total`);
+        } finally {
+          captureState.isCapturing = false;
+        }
+      }
+
+      function toggleFreeze(panelKey) {
+        if (!panelRecording[panelKey]) return;
+
+        const session = getRecordingSession(panelKey);
+        if (!session) return;
+
+        if (session.active && !session.paused) {
+          pausePanelRecording(panelKey);
+        } else if (session.paused) {
+          resumePanelRecording(panelKey);
+        } else {
+          startPanelRecording(panelKey);
+        }
+      }
+
+      function addToCollage(panelKey) {
+        captureSnapshot(panelKey);
+      }
+
+      async function startCamera() {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user' },
+            audio: false
+          });
+
+          syncAllVideoViews();
+
+          if (patientPlaceholder) {
+            patientPlaceholder.classList.add('hidden');
+          }
+
+          if (statusMessage) {
+            statusMessage.innerHTML = '<div class="spinner" aria-hidden="true"></div><div>Connected</div>';
+          }
+        } catch (error) {
+          console.error('Camera access error:', error);
+          if (statusMessage) {
+            statusMessage.innerHTML = '<div class="spinner" aria-hidden="true"></div><div>Camera access required</div>';
+          }
+        }
+      }
+
+      function generateReport() {
+        try {
+          // Read current captured images before navigation (optional check)
+          const images = readCapturedImages();
+          console.log('Before navigation', images);
+        } catch (err) {
+          console.warn('Before navigation: unable to read capturedImages', err);
+        }
+
+        try {
+          // Both signalingSocket and roomId are encapsulated in a separate IIFE and not globally available
+          // We wrap this in try-catch to avoid ReferenceError crashing the button click handler.
+          if (typeof signalingSocket !== 'undefined' && signalingSocket && signalingSocket.connected) {
+            console.log("Emitting patient-report-redirect to room", typeof roomId !== 'undefined' ? roomId : 'unknown');
+            signalingSocket.emit("patient-report-redirect", { roomId: typeof roomId !== 'undefined' ? roomId : 'unknown', room: typeof roomId !== 'undefined' ? roomId : 'unknown' });
+          }
+        } catch (e) {
+          console.warn("Skipping socket emission due to reference error:", e);
+        }
+
+        const reportUrl = new URL(window.location.href);
+        reportUrl.pathname = reportUrl.pathname.replace(/(ultrasound-scanning\.html|patient-generate\.html)$/i, 'patient-report.html');
+
+        // Wait 300ms to ensure the signal is transmitted before navigating away
+        setTimeout(() => {
+          window.location.href = reportUrl.toString();
+        }, 300);
+      }
+
+      function endConsultation() {
+        stopPanelRecording('ultrasound');
+        stopPanelRecording('patient');
+
+        if (stream) {
+          stream.getTracks().forEach((track) => track.stop());
+          stream = null;
+        }
+        bindVideoStream(patientVideo, null);
+        bindVideoStream(consultationPatientVideo, null);
+        bindVideoStream(doctorTileVideo, null);
+        bindVideoStream(consultationDoctorTileVideo, null);
+        clearCaptureStorage();
+        window.location.href = 'connected-device.html' + current.search;
+      }
+
+      function goBack() {
+        const backUrl = new URL(window.location.href);
+        backUrl.pathname = backUrl.pathname.replace(/patient-generate\.html$/i, 'ultrasound-scanning.html');
+        window.location.href = backUrl.toString();
+      }
+
+      window.captureFrame = captureSnapshot;
+      window.captureSnapshot = captureSnapshot;
+      window.toggleFreeze = toggleFreeze;
+      window.addToCollage = addToCollage;
+      window.toggleConsultationOverlay = toggleConsultationOverlay;
+      window.openConsultationInNewWindow = openConsultationInNewWindow;
+      window.openFullscreenConsultation = openFullscreenConsultation;
+      window.closeConsultationOverlay = closeConsultationOverlay;
+      window.openConsultationOverlay = openConsultationOverlay;
+      window.minimizeConsultationToFloating = minimizeConsultationToFloating;
+      window.restoreFloatingConsultation = restoreFloatingConsultation;
+      window.enableFloatingDrag = enableFloatingDrag;
+      window.closeFloatingConsultation = closeFloatingConsultation;
+      window.toggleConsultationMode = toggleConsultationMode;
+
+      document.getElementById('backToConsultationBtn').onclick = goBack;
+      const generateReportBtn = document.getElementById('generateReportBtn');
+      if (generateReportBtn) {
+        generateReportBtn.addEventListener('click', generateReport);
+      }
+      document.getElementById('endConsultationBtn').onclick = endConsultation;
+
+      if (consultationEndBtn) {
+        consultationEndBtn.addEventListener('click', closeConsultationOverlay);
+        console.log('✓ End call button listener attached');
+      } else {
+        console.error('End call button not found');
+      }
+
+      // Attach all event listeners with verification
+      if (consultationMicBtn) {
+        consultationMicBtn.addEventListener('click', toggleMicState);
+        console.log('✓ Mic button listener attached');
+      } else {
+        console.error('Mic button not found');
+      }
+
+      if (consultationVideoBtn) {
+        consultationVideoBtn.addEventListener('click', toggleVideoState);
+        console.log('✓ Video button listener attached');
+      } else {
+        console.error('Video button not found');
+      }
+
+      if (consultationChatBtn) {
+        consultationChatBtn.addEventListener('click', toggleChatPanel);
+        console.log('✓ Chat button listener attached');
+      } else {
+        console.error('Chat button not found');
+      }
+
+      if (consultationSettingsBtn) {
+        consultationSettingsBtn.addEventListener('click', openSettingsModal);
+        console.log('✓ Settings button listener attached');
+      } else {
+        console.error('Settings button not found');
+      }
+
+      if (consultationChatCloseBtn) {
+        consultationChatCloseBtn.addEventListener('click', closeChatPanel);
+        console.log('✓ Chat close button listener attached');
+      }
+
+      if (consultationSettingsCloseBtn) {
+        consultationSettingsCloseBtn.addEventListener('click', closeSettingsModal);
+        console.log('✓ Settings close button listener attached');
+      }
+
+      if (consultationCloseBtn) {
+        consultationCloseBtn.addEventListener('click', toggleConsultationMode);
+        console.log('✓ Consultation minimize/restore button listener attached');
+      }
+
+      if (floatingCloseBtn) {
+        console.log('floatingCloseBtn:', floatingCloseBtn);
+        floatingCloseBtn.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          closeFloatingConsultation(event);
+        });
+        console.log('✓ Consultation close button listener attached');
+      }
+
+      if (consultationChatSendBtn) {
+        consultationChatSendBtn.addEventListener('click', sendChatMessage);
+        console.log('✓ Chat send button listener attached');
+      }
+
+      if (consultationChatInput) {
+        consultationChatInput.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            sendChatMessage();
+          }
+        });
+        console.log('✓ Chat input listener attached');
+      }
+
+      // Settings modal: click outside to close
+      if (consultationSettingsModal) {
+        consultationSettingsModal.addEventListener('click', (event) => {
+          if (event.target === consultationSettingsModal) {
+            console.log('Closing settings modal via outside click');
+            closeSettingsModal();
+          }
+        });
+        console.log('✓ Settings modal outside-click listener attached');
+      }
+
+      enableFloatingDrag();
+      loadFloatingConsultationPosition();
+      syncConsultationToggleButton();
+      setRecordUI('ultrasound', false);
+      setRecordUI('patient', false);
+
+      window.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') return;
+
+        if (consultationSettingsModal && !consultationSettingsModal.classList.contains('hidden')) {
+          console.log('Closing settings modal via Escape key');
+          closeSettingsModal();
+          return;
+        }
+
+        if (consultationChatPanel && consultationChatPanel.classList.contains('open')) {
+          console.log('Closing chat panel via Escape key');
+          closeChatPanel();
+          return;
+        }
+
+        if (consultationOverlay && !consultationOverlay.classList.contains('hidden')) {
+          console.log('Closing consultation overlay via Escape key');
+          closeConsultationOverlay();
+        }
+      });
+
+      const historyBtn = document.getElementById('openHistoryBtn');
+      const closeHistoryBtn = document.getElementById('closeHistoryBtn');
+      if (historyBtn) {
+        historyBtn.onclick = () => historyModal.classList.remove('hidden');
+      }
+      if (closeHistoryBtn) {
+        closeHistoryBtn.onclick = () => historyModal.classList.add('hidden');
+      }
+      window.addEventListener('click', (event) => {
+        if (event.target === historyModal) {
+          historyModal.classList.add('hidden');
+        }
+      });
+
+      if (!window.__torusUltrasoundViewerMode) {
+        window.addEventListener('load', startCamera);
+      }
+
+      const ultrasoundFullscreenBtn = document.getElementById('ultrasoundFullscreenBtn');
+      if (ultrasoundFullscreenBtn) {
+        ultrasoundFullscreenBtn.addEventListener('click', async () => {
+          const panel = document.getElementById('ultrasoundPanel');
+          if (!panel) {
+            return;
+          }
+
+          try {
+            if (!document.fullscreenElement) {
+              if (panel.requestFullscreen) {
+                await panel.requestFullscreen();
+              } else if (panel.webkitRequestFullscreen) {
+                await panel.webkitRequestFullscreen();
+              } else if (panel.msRequestFullscreen) {
+                await panel.msRequestFullscreen();
+              }
+            } else {
+              await document.exitFullscreen();
+            }
+          } catch (error) {
+            console.error('Ultrasound fullscreen error:', error);
+          }
+        });
+      }
+    })();
+  </script>
+
+  <!-- WebRTC Signaling -->
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js?v=20260521_01"></script>
+  <script>
+    (() => {
+      // WebRTC Configuration
+      const RTC_CONFIG = {
+        iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+      };
+
+      const DEFAULT_SIGNAL_SERVER = "http://127.0.0.1:5002";
+
+      let peerConnection = null;
+      let localStream = null;
+      let remoteStream = null;
+      let signalingSocket = null;
+      let pendingIceCandidates = [];
+      let hasCreatedOffer = false;
+
+      // Get URL parameters
+      function getUrlParam(key) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(key);
+      }
+
+      const roomId = getUrlParam('room') || 'default-room';
+      const role = getUrlParam('role') || 'doctor';
+
+      console.log(`🎥 WebRTC Handler: Room=${roomId}, Role=${role}`);
+
+      // Get video elements
+      const patientVideoEl = document.getElementById('patientVideo');
+      const doctorTileEl = document.getElementById('doctorBadge');
+      const consultationPatientVideoEl = document.getElementById('consultationPatientVideo');
+
+      // Connect to signaling server
+      function connectSignaling() {
+        return new Promise((resolve, reject) => {
+          signalingSocket = io(DEFAULT_SIGNAL_SERVER, {
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            reconnectionAttempts: 5
+          });
+
+          signalingSocket.on('connect', () => {
+            console.log('✅ Connected to signaling server');
+            // Join the room
+            signalingSocket.emit('join-room', {
+              room: roomId,
+              roomId: roomId,
+              role: role
+            });
+            resolve();
+          });
+
+          signalingSocket.on('error', (error) => {
+            console.error('❌ Signaling error:', error);
+            reject(error);
+          });
+
+          signalingSocket.on('offer', async (payload) => {
+            console.log('📨 Offer received');
+            await handleOffer(payload);
+          });
+
+          signalingSocket.on('answer', async (payload) => {
+            console.log('📨 Answer received');
+            await handleAnswer(payload);
+          });
+
+          signalingSocket.on('ice-candidate', async (payload) => {
+            console.log('📨 ICE candidate received');
+            await handleIceCandidate(payload);
+          });
+
+          signalingSocket.on('disconnect', () => {
+            console.log('⚠️ Disconnected from signaling server');
+          });
+        });
+      }
+
+      // Create peer connection
+      function createPeerConnection() {
+        if (peerConnection) return peerConnection;
+
+        peerConnection = new RTCPeerConnection(RTC_CONFIG);
+        console.log('🔧 Peer connection created');
+
+        // Add local stream tracks
+        if (localStream) {
+          localStream.getTracks().forEach((track) => {
+            peerConnection.addTrack(track, localStream);
+            console.log(`✅ Added ${track.kind} track to peer connection`);
+          });
+        }
+
+        // Handle remote tracks
+        peerConnection.ontrack = (event) => {
+          remoteStream = event.streams[0];
+
+          if (remoteStream) {
+            // Attach remote stream to ultrasound video panel
+            const ultrasoundVideo = document.getElementById('ultrasoundVideo');
+            if (ultrasoundVideo) {
+              ultrasoundVideo.srcObject = remoteStream;
+              ultrasoundVideo.classList.remove('hidden');
+              ultrasoundVideo.addEventListener('loadedmetadata', () => {
+                ultrasoundVideo.play().catch(() => { });
+              }, { once: true });
+
+              // Hide placeholder
+              const placeholder = document.getElementById('ultrasoundPlaceholder');
+              if (placeholder) placeholder.classList.add('hidden');
+            }
+
+            // Also attach to doctor tile for consistency if needed, or leave it hidden
+            if (consultationPatientVideoEl) {
+              consultationPatientVideoEl.srcObject = remoteStream;
+              consultationPatientVideoEl.addEventListener('loadedmetadata', () => {
+                consultationPatientVideoEl.play().catch(() => { });
+              }, { once: true });
+            }
+          }
+        };
+
+        // Handle ICE candidates
+        peerConnection.onicecandidate = (event) => {
+          if (!event.candidate) return;
+          if (!signalingSocket || !signalingSocket.connected) return;
+
+          console.log('🧊 Sending ICE candidate');
+          signalingSocket.emit('ice-candidate', {
+            room: roomId,
+            roomId: roomId,
+            candidate: event.candidate
+          });
+        };
+
+        // Monitor connection state
+        peerConnection.onconnectionstatechange = () => {
+          console.log('🔌 Connection state:', peerConnection.connectionState);
+          if (peerConnection.connectionState === 'connected' || peerConnection.connectionState === 'completed') {
+            console.log('✅ Peer connection established');
+          }
+          if (peerConnection.connectionState === 'failed' || peerConnection.connectionState === 'disconnected') {
+            console.log('❌ Peer connection lost');
+            closePeerConnection();
+          }
+        };
+
+        peerConnection.oniceconnectionstatechange = () => {
+          console.log('🧊 ICE connection state:', peerConnection.iceConnectionState);
+        };
+
+        return peerConnection;
+      }
+
+      // Create and send offer
+      async function createOffer() {
+        if (hasCreatedOffer || !peerConnection || peerConnection.signalingState !== 'stable') {
+          return;
+        }
+
+        hasCreatedOffer = true;
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+
+        signalingSocket.emit('offer', {
+          room: roomId,
+          roomId: roomId,
+          offer: offer
+        });
+        console.log('📤 Offer sent');
+      }
+
+      // Handle received offer
+      async function handleOffer(payload) {
+        const pc = createPeerConnection();
+        hasCreatedOffer = false;
+
+        await pc.setRemoteDescription(new RTCSessionDescription(payload));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+
+        // Flush pending ICE candidates
+        await flushPendingIceCandidates();
+
+        signalingSocket.emit('answer', {
+          room: roomId,
+          roomId: roomId,
+          answer: answer
+        });
+        console.log('📤 Answer sent');
+      }
+
+      // Handle received answer
+      async function handleAnswer(payload) {
+        if (!peerConnection) return;
+
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(payload));
+        await flushPendingIceCandidates();
+        hasCreatedOffer = false;
+        console.log('✅ Answer processed');
+      }
+
+      // Handle ICE candidate
+      async function handleIceCandidate(payload) {
+        if (!peerConnection) return;
+
+        const candidate = payload.candidate || payload;
+        if (!candidate) return;
+
+        try {
+          if (peerConnection.remoteDescription) {
+            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+          } else {
+            pendingIceCandidates.push(candidate);
+          }
+        } catch (error) {
+          console.error('❌ ICE error:', error);
+        }
+      }
+
+      // Flush pending ICE candidates
+      async function flushPendingIceCandidates() {
+        if (!peerConnection || !pendingIceCandidates.length) return;
+
+        const pending = [...pendingIceCandidates];
+        pendingIceCandidates = [];
+
+        for (const candidate of pending) {
+          try {
+            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+          } catch (error) {
+            console.error('❌ Pending ICE error:', error);
+          }
+        }
+      }
+
+      // Close peer connection
+      function closePeerConnection() {
+        if (peerConnection) {
+          peerConnection.close();
+          peerConnection = null;
+          hasCreatedOffer = false;
+          pendingIceCandidates = [];
+        }
+      }
+
+      // Initialize WebRTC with signaling
+      async function initializeWebRTC() {
+        try {
+          // Get local stream
+          if (!localStream) {
+            console.error('❌ Local stream not available');
+            return;
+          }
+
+          // Connect to signaling server
+          await connectSignaling();
+
+          // Create peer connection
+          createPeerConnection();
+
+          // If doctor, create offer
+          if (role === 'doctor') {
+            setTimeout(createOffer, 500);
+          }
+        } catch (error) {
+          console.error('❌ WebRTC initialization failed:', error);
+        }
+      }
+
+      // Override startCamera to add WebRTC
+      const originalStartCamera = window.startCamera || (() => { });
+      window.startCamera = async function () {
+        try {
+          ensureCaptureSession();
+
+          localStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user' },
+            audio: true
+          });
+
+          if (patientVideoEl) {
+            patientVideoEl.srcObject = localStream;
+            window.__torusActiveStream = localStream;
+            patientVideoEl.addEventListener('loadedmetadata', () => {
+              patientVideoEl.play().catch(() => { });
+            }, { once: true });
+          }
+
+          // Hide placeholder
+          const patientPlaceholder = document.getElementById('patientPlaceholder');
+          if (patientPlaceholder) {
+            patientPlaceholder.classList.add('hidden');
+          }
+
+          console.log('✅ Local camera started');
+
+          // Initialize WebRTC after a short delay
+          setTimeout(initializeWebRTC, 1000);
+        } catch (error) {
+          console.error('❌ Camera access error:', error);
+        }
+      };
+
+
+
+      console.log('🚀 WebRTC handler initialized for ultrasound-scanning.html');
+    })();
+  </script>
+
+  <script>
+    (() => {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          if (typeof window.loadUltrasoundVideo === 'function') {
+            window.loadUltrasoundVideo();
+          }
+        });
+      } else if (typeof window.loadUltrasoundVideo === 'function') {
+        window.loadUltrasoundVideo();
+      }
+    })();
+  </script>
+</body>
+
+</html>

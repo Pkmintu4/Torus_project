@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlebC - Diagnostic Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+            --text-white: #FFFFFF;
+            --text-muted: #94A3B8;
+            --purple-neon: #A855F7;
+            --purple-gradient-start: #7C3AED;
+            --purple-gradient-end: #9333EA;
+            --cyan-neon: #22D3EE;
+            --card-bg: rgba(15, 23, 42, 0.6);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --input-bg: rgba(15, 23, 42, 0.8);
+            --input-border: rgba(255, 255, 255, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050816;
+            background-image: radial-gradient(circle at top, #1a0033 0%, #050816 60%, #02030a 100%);
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: var(--text-white);
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: -9.375em;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 75em;
+            height: 37.5em;
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.15) 0%, transparent 70%);
+            filter: blur(3.75em);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.25em;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .top-back-btn {
+            position: fixed;
+            top: 1.25em;
+            right: 1.25em;
+            background: rgba(255, 255, 255, 0.03);
+            border: 0.0625em solid var(--input-border);
+            color: var(--text-muted);
+            border-radius: 999px;
+            width: 7.50em;
+            height: 3.59em;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            font-size: 1em;
+            font-weight: 600;
+            line-height: 1;
+            cursor: pointer;
+            z-index: 30;
+            box-shadow: 0 0 0.9em rgba(34, 211, 238, 0.12);
+            transition: all 0.25s ease;
+        }
+
+        .top-back-btn:hover {
+            color: var(--text-white);
+            border-color: rgba(34, 211, 238, 0.45);
+            background: rgba(34, 211, 238, 0.08);
+            box-shadow: 0 0 1.05em rgba(34, 211, 238, 0.25);
+            transform: translateY(-0.0625em);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2em;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.25), transparent 70%);
+            padding: 0.75em;
+            border-radius: 1em;
+            margin-bottom: 0.6em;
+        }
+
+        .main-logo {
+            width: 13.75em;
+            background: transparent;
+            mix-blend-mode: screen;
+            opacity: 0.9;
+            display: block;
+            object-fit: contain;
+        }
+
+        .main-title {
+            font-size: 3.5em;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.3em;
+            letter-spacing: 0.125em;
+        }
+
+        .subtitle {
+            font-size: 1.5em;
+            font-weight: 500;
+            color: #E2E8F0;
+            margin-bottom: 0;
+            opacity: 0.9;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 43.75em;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card {
+            width: 100%;
+            background: var(--card-bg);
+            border: 0.0625em solid var(--card-border);
+            border-radius: 1.75em;
+            padding: 3.75em 3.5em;
+            backdrop-filter: blur(0.5em);
+            -webkit-backdrop-filter: blur(0.5em);
+            box-shadow: 0 1em 4em rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+            margin-bottom: 2em;
+        }
+
+        .form-group label {
+            font-size: 1.125em;
+            font-weight: 500;
+            color: var(--text-muted);
+            letter-spacing: 0.0313em;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper svg.input-icon {
+            position: absolute;
+            left: 1.5em;
+            width: 1.625em;
+            height: 1.625em;
+            fill: none;
+            stroke: var(--text-muted);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .eye-icon {
+            position: absolute;
+            right: 1.5em;
+            width: 1.625em;
+            height: 1.625em;
+            fill: none;
+            stroke: var(--text-muted);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .eye-icon:hover {
+            stroke: var(--cyan-neon);
+        }
+
+        .form-control {
+            width: 100%;
+            background: var(--input-bg);
+            border: 0.0625em solid var(--input-border);
+            border-radius: 1em;
+            padding: 1.5em 1.5em 1.5em 4em;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.125em;
+            color: var(--text-white);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--cyan-neon);
+            box-shadow: 0 0 0 0.125em rgba(34, 211, 238, 0.2);
+        }
+
+        .form-control::placeholder {
+            color: #475569;
+        }
+
+        .options-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.125em;
+            margin-bottom: 2.5em;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 0.75em;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .remember-me input {
+            appearance: none;
+            width: 1.5em;
+            height: 1.5em;
+            background: rgba(255, 255, 255, 0.05);
+            border: 0.0625em solid var(--input-border);
+            border-radius: 0.375em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .remember-me input:checked::after {
+            content: '✓';
+            color: var(--cyan-neon);
+            font-size: 1em;
+            font-weight: bold;
+        }
+
+        .forgot-link {
+            color: var(--cyan-neon);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-link:hover {
+            color: #00E5FF;
+            text-decoration: underline;
+        }
+
+        .btn {
+            font-family: 'Inter', sans-serif;
+            width: 100%;
+            padding: 1.5em;
+            border: none;
+            border-radius: 1em;
+            font-size: 1.25em;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1.25em;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--cyan-gradient-start), var(--cyan-gradient-end));
+            box-shadow: 0 0.25em 1.25em rgba(6, 182, 212, 0.4);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0.625em 2.5em rgba(6, 182, 212, 0.6);
+            filter: brightness(1.05);
+            transform: translateY(-0.125em) scale(1.02);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.03);
+            border: 0.0625em solid var(--input-border);
+            color: var(--text-muted);
+            margin-bottom: 0;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-white);
+        }
+
+        .footer {
+            margin-top: 3.75em;
+            margin-bottom: 2.5em;
+            text-align: center;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .security-badge {
+            background: rgba(11, 15, 26, 0.6);
+            border: 0.0625em solid rgba(34, 211, 238, 0.15);
+            border-radius: 1em;
+            padding: 1.5em 2em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75em;
+            font-size: 1.125em;
+            color: #9CA3AF;
+        }
+
+        .security-badge svg {
+            width: 1.5em;
+            height: 1.5em;
+            fill: #F59E0B;
+        }
+
+        .error-message {
+            color: #EF4444;
+            background: rgba(239, 68, 68, 0.1);
+            border: 0.0625em solid rgba(239, 68, 68, 0.2);
+            padding: 0.75em;
+            border-radius: 0.5em;
+            font-size: 0.875em;
+            text-align: center;
+            display: none;
+            margin-bottom: 1.25em;
+        }
+
+        @media (max-width: 37.5em) {
+            .main-wrapper {
+                padding: 2.5em 1.25em;
+            }
+
+            .top-back-btn {
+                top: 1em;
+                right: 1em;
+                width: 5em;
+                height: 2.2em;
+                font-size: 0.95em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <button type="button" class="top-back-btn" id="topBackBtn" aria-label="Go back">Back</button>
+
+    <div class="main-wrapper">
+        <div class="header">
+            <div class="logo-wrapper">
+                <img src="diagnostic-icon.png" class="main-logo" alt="Diagnostic Logo" style="width: 5em; margin-bottom: 0.5em;" />
+            </div>
+            <h1 class="main-title">Diagnostic Center</h1>
+            <p class="subtitle">Secure access to TORUS system</p>
+        </div>
+
+        <div class="auth-container">
+            <div class="card">
+                <div class="error-message" id="errorMsg"></div>
+please 
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <div class="input-wrapper">
+                            <svg class="input-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            <input type="email" class="form-control" id="email" placeholder="center@hospital.com" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="input-wrapper">
+                            <svg class="input-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            <input type="password" class="form-control" id="password" placeholder="••••••••" style="padding-right: 2.5em;" required>
+                            <svg class="eye-icon" id="togglePassword" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </div>
+                    </div>
+
+                    <div class="options-row">
+                        <label class="remember-me">
+                            <input type="checkbox" id="rememberMe"> Remember me
+                        </label>
+                        <a href="diagnostic-forgot-password.html" class="forgot-link">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="loginBtn">Continue to Authentication</button>
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='diagnostic-center-signup.html'">Sign Up</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="security-badge">
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M12 2C9.243 2 7 4.243 7 7v3H6c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-8c0-1.103-.897-2-2-2h-1V7c0-2.757-2.243-5-5-5zm-3 5c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9V7zm9 13H6v-8h12v8z">
+                    </path>
+                </svg>
+                Secured with 256-bit encryption
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000';
+
+        document.getElementById('topBackBtn').addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedEmail = localStorage.getItem("rememberUser");
+            if (savedEmail) {
+                document.getElementById('email').value = savedEmail;
+                document.getElementById('rememberMe').checked = true;
+            }
+        });
+
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const pwd = document.getElementById('password');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                this.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+            } else {
+                pwd.type = 'password';
+                this.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            const errorMsg = document.getElementById('errorMsg');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+
+            errorMsg.style.display = 'none';
+            btn.innerHTML = 'Authenticating...';
+            btn.disabled = true;
+
+            try {
+                const requestUrl = `${API_BASE_URL}/api/auth/login`;
+                console.log('[FRONTEND] Sending API request to:', requestUrl);
+
+                const res = await fetch(requestUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+                console.log('[FRONTEND] login response:', data);
+
+                if (res.ok) {
+                    if (rememberMe) {
+                        localStorage.setItem("rememberUser", email);
+                    } else {
+                        localStorage.removeItem("rememberUser");
+                    }
+                    const emailPrefix = (email || '').split('@')[0] || '';
+                    const normalizedName = emailPrefix
+                        .replace(/[._-]+/g, ' ')
+                        .trim()
+                        .replace(/\s+/g, ' ')
+                        .toLowerCase()
+                        .replace(/\b\w/g, (char) => char.toUpperCase());
+                    const formattedName = `Dr. ${normalizedName || 'User'}`;
+                    const initials = (normalizedName || 'User')
+                        .split(' ')
+                        .filter(Boolean)
+                        .map((word) => word[0])
+                        .join('')
+                        .toUpperCase();
+                    const role = email.toLowerCase().includes('admin') ? 'admin' : 'doctor';
+                    const session = {
+                        name: formattedName,
+                        initials,email,
+                        role
+                    };
+
+                    localStorage.setItem('userSession', JSON.stringify(session));
+                    localStorage.setItem('userEmail', email);
+                    localStorage.setItem('userName', formattedName);
+                    localStorage.setItem('userInitials', initials);
+                    localStorage.setItem('userRole', role);
+                    localStorage.setItem('token', data.token || 'demo-auth-token');
+                    
+                    // Show success message and redirect
+                    btn.innerHTML = data.message || 'Authentication Successful';
+                    btn.style.background = '#22C55E'; // Success green background
+                    setTimeout(() => {
+                        window.location.href = 'diagnostic-biometric-auth.html';
+                    }, 1000);
+                } else {
+                    errorMsg.innerText = data.message || 'Invalid email or password';
+                    errorMsg.style.display = 'block';
+                    btn.innerHTML = 'Continue to Authentication';
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error('[FRONTEND] API connection error:', err);
+                errorMsg.innerText = 'Unable to connect. Please try again.';
+                errorMsg.style.display = 'block';
+                btn.innerHTML = 'Continue to Authentication';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>

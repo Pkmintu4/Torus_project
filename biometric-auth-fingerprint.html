@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PlebC - Fingerprint Authentication</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --text-white: #FFFFFF;
+            --text-muted: #94A3B8;
+            --purple-neon: #A855F7;
+            --purple-gradient-start: #7C3AED;
+            --purple-gradient-end: #9333EA;
+            --cyan-neon: #22D3EE;
+            --card-bg: rgba(15, 23, 42, 0.62);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --input-bg: rgba(15, 23, 42, 0.82);
+            --input-border: rgba(255, 255, 255, 0.12);
+            --success-color: #10b981;
+            --error-color: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050816;
+            background-image: radial-gradient(circle at top, #1a0033 0%, #050816 60%, #02030a 100%);
+            background-size: cover;
+            background-attachment: fixed;
+            color: var(--text-white);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1.25em;
+            position: relative;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: -9.375em;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 75em;
+            height: 37.5em;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.16) 0%, transparent 70%);
+            filter: blur(3.75em);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 35em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5em;
+        }
+
+        .main-title {
+            font-size: 2.375em;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 0.9375em;
+            color: var(--text-muted);
+        }
+
+        .card {
+            width: 100%;
+            padding: 2.75em;
+            border-radius: 1.125em;
+            background: var(--card-bg);
+            border: 0.0625em solid var(--card-border);
+            backdrop-filter: blur(0.625em);
+            box-shadow: 0 0.625em 2.5em rgba(0, 0, 0, 0.4);
+        }
+
+        .profile-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1.5em;
+            width: 100%;
+        }
+
+        .avatar {
+            width: 4.5em;
+            height: 4.5em;
+            border-radius: 50%;
+            background: rgba(124, 58, 237, 0.12);
+            border: 0.0625em solid #7C3AED;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #A855F7;
+            font-weight: 700;
+            font-size: 1.375em;
+            margin-bottom: 1em;
+            box-shadow: 0 0 0 0.0625em rgba(124, 58, 237, 0.14), 0 0 1.5em rgba(124, 58, 237, 0.14);
+        }
+
+        .doctor-name {
+            font-size: 1.125em;
+            font-weight: 600;
+            margin-bottom: 0.25em;
+            text-align: center;
+        }
+
+        .doctor-email {
+            font-size: 0.9375em;
+            color: #94A3B8;
+            text-decoration: none;
+            margin-bottom: 1em;
+        }
+
+        .divider {
+            width: 100%;
+            height: 0.0625em;
+            background: rgba(255, 255, 255, 0.08);
+            margin-bottom: 1.5em;
+        }
+
+        .fingerprint-box {
+            width: 100%;
+            background: #070911;
+            border: 0.0625em solid rgba(255, 255, 255, 0.05);
+            border-radius: 1em;
+            min-height: 20em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2em;
+            padding: 2em;
+        }
+
+        .fingerprint-circle {
+            width: 8.75em;
+            height: 8.75em;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 0.0625em solid rgba(34, 211, 238, 0.25);
+            box-shadow: 0 0 0.9375em rgba(34, 211, 238, 0.2);
+            margin-bottom: 1.5em;
+            position: relative;
+            transition: all 0.3s ease;
+            background: rgba(6, 10, 24, 0.9);
+        }
+
+        .fingerprint-circle.scanning {
+            animation: pulseScan 1.5s infinite ease-in-out;
+        }
+
+        .fingerprint-circle.success {
+            border: 0.0625em solid #22c55e;
+            box-shadow: 0 0 1.25em rgba(34, 197, 94, 0.4);
+            animation: successPop 0.4s ease;
+        }
+
+        @keyframes pulseScan {
+            0% { box-shadow: 0 0 0.625em rgba(34,211,238,0.15); }
+            50% { box-shadow: 0 0 1.25em rgba(34,211,238,0.25); }
+            100% { box-shadow: 0 0 0.625em rgba(34,211,238,0.15); }
+        }
+
+        @keyframes successPop {
+            0% {  }
+            100% {  }
+        }
+
+        .fingerprint-icon {
+            width: 4.75em;
+            height: 4.75em;
+            color: #22D3EE;
+            stroke-width: 1.5;
+            fill: none;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .fingerprint-circle.success #fingerprintIcon {
+            display: none;
+        }
+
+        .fingerprint-circle.success #checkIcon {
+            display: block;
+        }
+
+        #checkIcon {
+            display: none;
+            width: 4em;
+            height: 4em;
+            stroke: #22c55e;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 0 0.1875em rgba(34, 197, 94, 0.4));
+        }
+
+        .fp-title {
+            font-size: 1.125em;
+            font-weight: 600;
+            margin-bottom: 0.75em;
+            text-align: center;
+        }
+
+        .fp-subtitle {
+            font-size: 0.9375em;
+            color: #94A3B8;
+            text-align: center;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1.125em;
+            border: none;
+            border-radius: 0.75em;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            margin-bottom: 1em;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--cyan-neon), #06B6D4);
+            color: #071018;
+            box-shadow: 0 0.25em 0.9375em rgba(34, 211, 238, 0.3);
+            margin-bottom: 0.875em;
+            margin-top: 0.25em;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-0.0625em);
+            box-shadow: 0 0.375em 1.25em rgba(34, 211, 238, 0.5);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .back-btn {
+            width: 100%;
+            padding: 1em;
+            border-radius: 0.75em;
+            border: 0.0625em solid rgba(255,255,255,0.1);
+            background: transparent;
+            color: #9CA3AF;
+            font-size: 0.875em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .back-btn:hover {
+            border-color: #22D3EE;
+            color: #22D3EE;
+            background: rgba(34, 211, 238, 0.05);
+        }
+
+        .footer {
+            margin-top: 1.25em;
+            margin-bottom: 1.25em;
+            text-align: center;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .security-badge {
+            background: rgba(11, 15, 26, 0.6);
+            border: 0.0625em solid rgba(34, 211, 238, 0.15);
+            border-radius: 0.75em;
+            padding: 1.125em 1.75em;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.625em;
+            font-size: 0.875em;
+            color: #9CA3AF;
+            margin-top: 1.5em;
+            width: 100%;
+            max-width: 35em;
+        }
+
+        .security-badge svg {
+            width: 1.125em;
+            height: 1.125em;
+            fill: #F59E0B;
+        }
+
+        .loading-dot {
+            width: 0.625em;
+            height: 0.625em;
+            border-radius: 50%;
+            background: #22D3EE;
+            box-shadow: 0 0 1.125em rgba(34, 211, 238, 0.5);
+            animation: blink 1s infinite ease-in-out;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 0.35;  }
+            50% { opacity: 1;  }
+        }
+
+        .scan-message {
+            min-height: 1.375em;
+            font-size: 0.8125em;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 0.25em;
+        }
+
+        .scan-message.success {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        .scan-message.error {
+            color: var(--error-color);
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 40em) {
+            .card {
+                padding: 1.75em 1.375em;
+            }
+
+            .main-title {
+                font-size: 1.875em;
+            }
+
+            .fingerprint-box {
+                padding: 1.5em 1.125em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="main-title">Fingerprint Verification</h1>
+            <p class="subtitle">Complete biometric authentication to access your account</p>
+        </div>
+
+        <div class="card">
+            <div class="profile-section">
+                <div class="avatar" id="avatarCircle">DA</div>
+                <div class="doctor-name" id="doctorName">Dr. Anderson</div>
+                <a href="mailto:doctor@hospital.com" class="doctor-email" id="doctorEmail">doctor@hospital.com</a>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="fingerprint-box">
+                <div class="fingerprint-circle" id="fpCircle">
+                    <i data-lucide="fingerprint" id="fingerprintIcon" class="fingerprint-icon"></i>
+                    <svg id="checkIcon" viewBox="0 0 24 24">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <h3 class="fp-title" id="fpTitle">Place your finger on the scanner</h3>
+                <p class="fp-subtitle" id="fpSubtitle">Click the button below to start scanning</p>
+                <div class="scan-message" id="scanMessage"></div>
+            </div>
+
+            <button class="btn btn-primary" id="scanBtn" type="button">Start Fingerprint Scan</button>
+            <button class="back-btn" type="button" onclick="window.location.href='doctor-portal.html'">
+                &larr; Back to Login
+            </button>
+        </div>
+
+        <div class="footer">
+            <div class="security-badge">
+                <svg viewBox="0 0 24 24">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                Secure Biometric Authentication
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loginPage = 'doctor-portal.html';
+        const dashboardPage = 'doctor-dashboard.html';
+
+        function getUserSession() {
+            const stored = localStorage.getItem('userSession');
+            if (stored) {
+                try {
+                    return JSON.parse(stored);
+                } catch (error) {
+                    console.warn('Invalid userSession payload');
+                }
+            }
+
+            const email = localStorage.getItem('userEmail');
+            const name = localStorage.getItem('userName');
+            const initials = localStorage.getItem('userInitials');
+            const role = localStorage.getItem('userRole') || 'doctor';
+
+            if (!email || !name) {
+                return null;
+            }
+
+            return { email, name, initials, role };
+        }
+
+        function formatInitials(name) {
+            return String(name || '')
+                .replace(/^Dr\.\s*/i, '')
+                .split(' ')
+                .filter(Boolean)
+                .map((word) => word[0])
+                .join('')
+                .toUpperCase();
+        }
+
+        function renderUserData() {
+            const session = getUserSession();
+            if (!session) {
+                const fallbackSession = {email: 'doctor@hospital.com',
+                    name: 'Dr. User',
+                    initials: 'DU',
+                    role: 'doctor'
+                };
+
+                localStorage.setItem('userSession', JSON.stringify(fallbackSession));
+                localStorage.setItem('userEmail', fallbackSession.email);
+                localStorage.setItem('userName', fallbackSession.name);
+                localStorage.setItem('userInitials', fallbackSession.initials);
+                localStorage.setItem('userRole', fallbackSession.role);
+
+                document.getElementById('avatarCircle').textContent = fallbackSession.initials;
+                document.getElementById('doctorName').textContent = fallbackSession.name;
+                document.getElementById('doctorEmail').textContent = fallbackSession.email;
+                document.getElementById('doctorEmail').href = `mailto:${fallbackSession.email}`;
+                return fallbackSession;
+            }
+
+            const displayName = session.name || 'Dr. User';
+            const initials = session.initials || formatInitials(displayName) || 'DA';
+
+            document.getElementById('avatarCircle').textContent = initials;
+            document.getElementById('doctorName').textContent = displayName;
+            document.getElementById('doctorEmail').textContent = session.email;
+            document.getElementById('doctorEmail').href = `mailto:${session.email}`;
+
+            return session;
+        }
+
+        function setScanState(state, text) {
+            const fpCircle = document.getElementById('fpCircle');
+            const fpTitle = document.getElementById('fpTitle');
+            const fpSubtitle = document.getElementById('fpSubtitle');
+            const scanMessage = document.getElementById('scanMessage');
+
+            fpCircle.classList.remove('scanning', 'success');
+            scanMessage.className = 'scan-message';
+
+            if (state === 'scanning') {
+                fpCircle.classList.add('scanning');
+                fpTitle.textContent = 'Scanning fingerprint...';
+                fpSubtitle.textContent = 'Please keep your finger on the scanner';
+                scanMessage.innerHTML = '<span class="loading-dot"></span> Verifying identity';
+            }
+
+            if (state === 'success') {
+                fpCircle.classList.add('success');
+                fpTitle.textContent = 'Authentication Complete';
+                fpSubtitle.textContent = 'Identity verified successfully';
+                scanMessage.textContent = text || 'Authentication Successful';
+                scanMessage.classList.add('success');
+            }
+
+            if (state === 'error') {
+                scanMessage.textContent = text || 'Verification failed';
+                scanMessage.classList.add('error');
+            }
+        }
+
+        function startFingerprintScan() {
+            const scanBtn = document.getElementById('scanBtn');
+            scanBtn.disabled = true;
+            scanBtn.textContent = 'Scanning...';
+            setScanState('scanning');
+
+            window.setTimeout(() => {
+                setScanState('success', 'Authentication Successful');
+                scanBtn.textContent = 'Verified';
+
+                window.setTimeout(() => {
+                    window.location.href = dashboardPage;
+                }, 1200);
+            }, 2000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const session = renderUserData();
+            if (!session) {
+                return;
+            }
+
+            document.getElementById('scanBtn').addEventListener('click', startFingerprintScan);
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+</html>

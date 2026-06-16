@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Signaling Connection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .status.info { background: #e3f2fd; color: #1976d2; border: 1px solid #1976d2; }
+        .status.success { background: #e8f5e9; color: #388e3c; border: 1px solid #388e3c; }
+        .status.error { background: #ffebee; color: #d32f2f; border: 1px solid #d32f2f; }
+        .status.warning { background: #fff3e0; color: #f57c00; border: 1px solid #f57c00; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover { background: #1565c0; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .logs {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 5px;
+        }
+        .log-entry.debug { color: #666; }
+        .log-entry.info { color: #0066cc; }
+        .log-entry.warn { color: #ff9900; }
+        .log-entry.error { color: #cc0000; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Torus WebSocket Signaling Test</h1>
+        
+        <div>
+            <h3>Configuration</h3>
+            <div class="status info">
+Signal Server URL: <input type="text" id="signalUrl" value="http://127.0.0.1:5002" style="width: 300px;">
+Room ID: <input type="text" id="roomId" value="TEST-ROOM-001" style="width: 200px;">
+Role: <select id="role">
+                    <option value="doctor">Doctor</option>
+                    <option value="patient">Patient</option>
+                </select>
+            </div>
+        </div>
+
+        <div>
+            <h3>Actions</h3>
+            <button onclick="testHttpHealth()">✓ Test HTTP Health</button>
+            <button onclick="testWebSocket()">✓ Test WebSocket</button>
+            <button onclick="testSocketIO()">✓ Test Socket.IO</button>
+            <button onclick="clearLogs()">🗑 Clear Logs</button>
+        </div>
+
+        <h3>Results</h3>
+        <div id="status" class="status info">Waiting for test...</div>
+
+        <h3>Console Logs</h3>
+        <div class="logs" id="logs"></div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <script>
+        function log(level, ...args) {
+            const msg = args.map(arg => typeof arg === 'string' ? arg : JSON.stringify(arg, null, 2)).join(' ');
+            const logsDiv = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${level}`;
+            entry.textContent = `[${level.toUpperCase()}] ${new Date().toLocaleTimeString()} - ${msg}`;
+            logsDiv.appendChild(entry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            console.log(`[${level}]`, ...args);
+        }
+
+        function setStatus(type, msg) {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.textContent = msg;
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        async function testHttpHealth() {
+            log('info', 'Testing HTTP health...');
+            const signalUrl = document.getElementById('signalUrl').value;
+            const healthUrl = signalUrl.replace(/\/$/, '');
+
+            try {
+                const resp = await fetch(healthUrl, { method: 'GET' });
+                const data = await resp.json();
+                log('success', 'HTTP response:', JSON.stringify(data, null, 2));
+                setStatus('success', `HTTP Health: ${resp.status} OK\n\nResponse:\n${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log('error', 'HTTP test failed:', error.message);
+                setStatus('error', `HTTP Health Failed:\n${error.message}`);
+            }
+        }
+
+        async function testWebSocket() {
+            log('info', 'Testing native WebSocket...');
+            const signalUrl = document.getElementById('signalUrl').value;
+            const roomId = document.getElementById('roomId').value;
+            const role = document.getElementById('role').value;
+
+            // Convert HTTP to WS
+            let wsUrl = signalUrl.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
+            if (!wsUrl.endsWith('/ws')) {
+                wsUrl += '/ws';
+            }
+
+            log('info', `Connecting to: ${wsUrl}`);
+
+            return new Promise((resolve) => {
+                const socket = new WebSocket(wsUrl);
+                let resolved = false;
+
+                const timeout = setTimeout(() => {
+                    if (!resolved) {
+                        log('error', 'WebSocket connection timeout (10s)');
+                        setStatus('error', 'WebSocket timeout - no response after 10 seconds');
+                        socket.close();
+                        resolved = true;
+                        resolve(false);
+                    }
+                }, 10000);
+
+                socket.onopen = () => {
+                    if (resolved) return;
+                    clearTimeout(timeout);
+                    log('success', '✓ WebSocket connected!');
+                    log('info', `Sending join message: room=${roomId}, role=${role}`);
+                    
+                    socket.send(JSON.stringify({
+                        type: 'join',
+                        room: roomId,
+                        role: role
+                    }));
+                };
+
+                socket.onmessage = (event) => {
+                    if (resolved) return;
+                    const data = JSON.parse(event.data);
+                    log('success', 'Message from server:', JSON.stringify(data, null, 2));
+                    setStatus('success', `WebSocket Connected!\n\nReceived:\n${JSON.stringify(data, null, 2)}`);
+                    socket.close();
+                    resolved = true;
+                    resolve(true);
+                };
+
+                socket.onerror = (error) => {
+                    if (resolved) return;
+                    clearTimeout(timeout);
+                    log('error', 'WebSocket error:', error);
+                    setStatus('error', `WebSocket Error:\n${error.message || 'Unknown error'}`);
+                    resolved = true;
+                    resolve(false);
+                };
+
+                socket.onclose = () => {
+                    if (!resolved) {
+                        clearTimeout(timeout);
+                        log('warn', 'WebSocket closed without message');
+                        setStatus('error', 'WebSocket closed without receiving a response');
+                        resolved = true;
+                        resolve(false);
+                    }
+                };
+            });
+        }
+
+        async function testSocketIO() {
+            log('info', 'Testing Socket.IO...');
+            const signalUrl = document.getElementById('signalUrl').value;
+            const roomId = document.getElementById('roomId').value;
+            const role = document.getElementById('role').value;
+
+            log('info', `Connecting to: ${signalUrl}`);
+
+            return new Promise((resolve) => {
+                let resolved = false;
+
+                const socket = window.io(signalUrl, {
+                    path: '/socket.io',
+                    transports: ['websocket', 'polling']
+                });
+
+                const timeout = setTimeout(() => {
+                    if (!resolved) {
+                        log('error', 'Socket.IO connection timeout (10s)');
+                        setStatus('error', 'Socket.IO timeout - no response after 10 seconds');
+                        socket.disconnect();
+                        resolved = true;
+                        resolve(false);
+                    }
+                }, 10000);
+
+                socket.on('connect', () => {
+                    if (resolved) return;
+                    clearTimeout(timeout);
+                    log('success', '✓ Socket.IO connected!');
+                    log('info', `Socket ID: ${socket.id}`);
+                    log('info', `Emitting join-room: ${roomId}`);
+                    
+                    socket.emit('join-room', roomId);
+                });
+
+                socket.on('joined-room', (data) => {
+                    if (resolved) return;
+                    log('success', 'Event: joined-room', JSON.stringify(data, null, 2));
+                    setStatus('success', `Socket.IO Connected!\n\nReceived:\n${JSON.stringify(data, null, 2)}`);
+                    socket.disconnect();
+                    resolved = true;
+                    resolve(true);
+                });
+
+                socket.on('connect_error', (error) => {
+                    if (resolved) return;
+                    clearTimeout(timeout);
+                    log('error', 'Socket.IO connect_error:', error?.message || error);
+                    setStatus('error', `Socket.IO Error:\n${error?.message || 'Unknown error'}`);
+                    resolved = true;
+                    resolve(false);
+                });
+
+                socket.on('error', (error) => {
+                    if (resolved) return;
+                    clearTimeout(timeout);
+                    log('error', 'Socket.IO error:', error?.message || error);
+                    setStatus('error', `Socket.IO Error:\n${error?.message || 'Unknown error'}`);
+                    socket.disconnect();
+                    resolved = true;
+                    resolve(false);
+                });
+
+                socket.on('disconnect', () => {
+                    if (!resolved) {
+                        clearTimeout(timeout);
+                        log('warn', 'Socket.IO disconnected without message');
+                        setStatus('error', 'Socket.IO disconnected without receiving a response');
+                        resolved = true;
+                        resolve(false);
+                    }
+                });
+            });
+        }
+
+        // Intercept console for logging
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        console.log = function(...args) {
+            log('debug', ...args);
+            originalLog.apply(console, args);
+        };
+
+        console.error = function(...args) {
+            log('error', ...args);
+            originalError.apply(console, args);
+        };
+
+        console.warn = function(...args) {
+            log('warn', ...args);
+            originalWarn.apply(console, args);
+        };
+
+        log('info', 'Test page loaded - Ready to run tests');
+    </script>
+</body>
+</html>

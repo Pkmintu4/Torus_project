@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Biometric Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --text-white: #FFFFFF;
+            --text-muted: #94A3B8;
+            --cyan-neon: #22D3EE;
+            --success: #10B981;
+            --error: #EF4444;
+            --warning: #F59E0B;
+            --card-bg: rgba(15, 23, 42, 0.62);
+            --card-border: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050816;
+            background-image: radial-gradient(circle at top, #1a0033 0%, #050816 60%, #02030a 100%);
+            background-size: cover;
+            background-attachment: fixed;
+            color: var(--text-white);
+            min-height: 100vh;
+            padding: 2em;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 60em;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3em;
+        }
+
+        .main-title {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 0.5em;
+        }
+
+        .subtitle {
+            font-size: 1em;
+            color: var(--text-muted);
+        }
+
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1em;
+            margin-bottom: 2em;
+        }
+
+        .status-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 1em;
+            padding: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 1em;
+        }
+
+        .status-icon {
+            width: 3em;
+            height: 3em;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .status-icon.healthy {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--success);
+        }
+
+        .status-icon.error {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--error);
+        }
+
+        .status-icon.pending {
+            background: rgba(245, 158, 11, 0.12);
+            color: var(--warning);
+        }
+
+        .status-content h3 {
+            font-size: 0.875em;
+            color: var(--text-muted);
+            margin-bottom: 0.25em;
+        }
+
+        .status-content p {
+            font-size: 1.125em;
+            font-weight: 600;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 1.125em;
+            padding: 2em;
+            margin-bottom: 2em;
+        }
+
+        .card-title {
+            font-size: 1.25em;
+            font-weight: 600;
+            margin-bottom: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 0.75em;
+        }
+
+        .card-title svg {
+            width: 1.25em;
+            height: 1.25em;
+        }
+
+        .form-group {
+            margin-bottom: 1.5em;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875em;
+            font-weight: 500;
+            margin-bottom: 0.5em;
+            color: var(--text-muted);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.875em;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            border-radius: 0.75em;
+            color: var(--text-white);
+            font-size: 1em;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--cyan-neon);
+            background: rgba(34, 211, 238, 0.08);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1em;
+        }
+
+        .btn {
+            padding: 0.875em;
+            border: none;
+            border-radius: 0.75em;
+            font-size: 0.875em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5em;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--cyan-neon), #06B6D4);
+            color: #071018;
+            box-shadow: 0 0.25em 0.9375em rgba(34, 211, 238, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 0.375em 1.25em rgba(34, 211, 238, 0.5);
+        }
+
+        .btn-danger {
+            background: linear-gradient(90deg, var(--error), #DC2626);
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 0.375em 1.25em rgba(239, 68, 68, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 1em;
+            border-radius: 0.75em;
+            margin-bottom: 1em;
+            font-size: 0.875em;
+            display: flex;
+            align-items: center;
+            gap: 0.75em;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            color: var(--success);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: var(--error);
+        }
+
+        .alert-info {
+            background: rgba(34, 211, 238, 0.12);
+            border: 1px solid rgba(34, 211, 238, 0.25);
+            color: var(--cyan-neon);
+        }
+
+        .log-container {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            border-radius: 0.75em;
+            padding: 1.5em;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75em;
+            max-height: 15em;
+            overflow-y: auto;
+            color: #4ade80;
+        }
+
+        .log-entry {
+            padding: 0.25em 0;
+            line-height: 1.5;
+        }
+
+        .log-entry.error {
+            color: #ef4444;
+        }
+
+        .log-entry.warning {
+            color: #f59e0b;
+        }
+
+        .log-entry.success {
+            color: #10b981;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 0;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+
+            .status-bar {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="main-title">🔬 Biometric Admin Panel</h1>
+            <p class="subtitle">Manage fingerprint registrations and verify Arduino connection</p>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-card">
+                <div class="status-icon pending">
+                    <i data-lucide="circle-dot-dashed"></i>
+                </div>
+                <div class="status-content">
+                    <h3>Backend Status</h3>
+                    <p id="backendStatus">Checking...</p>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <div class="status-icon pending">
+                    <i data-lucide="usb"></i>
+                </div>
+                <div class="status-content">
+                    <h3>Arduino Connection</h3>
+                    <p id="arduinoStatus">Checking...</p>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <div class="status-icon">
+                    <i data-lucide="fingerprint"></i>
+                </div>
+                <div class="status-content">
+                    <h3>COM Port</h3>
+                    <p id="comPort">COM6</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Messages -->
+        <div id="alertContainer"></div>
+
+        <!-- Register Fingerprint Card -->
+        <div class="card">
+            <div class="card-title">
+                <i data-lucide="plus-circle"></i>
+                Register New Fingerprint
+            </div>
+
+            <div class="form-group">
+                <label for="registerId">User ID</label>
+                <input type="number" id="registerId" placeholder="Enter user ID (e.g., 1, 2, 3)" value="1" min="1" />
+            </div>
+
+            <button class="btn btn-primary" onclick="registerFingerprint()" style="width: 100%;">
+                <i data-lucide="plus"></i>
+                Register Fingerprint
+            </button>
+        </div>
+
+        <!-- Verify Fingerprint Card -->
+        <div class="card">
+            <div class="card-title">
+                <i data-lucide="check-circle-2"></i>
+                Verify Fingerprint
+            </div>
+
+            <p style="margin-bottom: 1em; color: var(--text-muted); font-size: 0.9em;">
+                Test fingerprint verification by sending a find command to Arduino.
+            </p>
+
+            <button class="btn btn-primary" onclick="verifyFingerprint()" style="width: 100%;">
+                <i data-lucide="check"></i>
+                Start Verification
+            </button>
+        </div>
+
+        <!-- Delete Fingerprint Card -->
+        <div class="card">
+            <div class="card-title">
+                <i data-lucide="trash-2"></i>
+                Delete Fingerprints
+            </div>
+
+            <div class="form-group">
+                <label for="deleteId">User ID</label>
+                <input type="number" id="deleteId" placeholder="Enter user ID to delete" value="1" min="1" />
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="deleteFingerprint()">
+                    <i data-lucide="trash"></i>
+                    Delete Specific
+                </button>
+                <button class="btn btn-danger" onclick="deleteAllFingerprints()">
+                    <i data-lucide="alert-triangle"></i>
+                    Delete ALL
+                </button>
+            </div>
+        </div>
+
+        <!-- Test Connection Card -->
+        <div class="card">
+            <div class="card-title">
+                <i data-lucide="zap"></i>
+                System Diagnostics
+            </div>
+
+            <p style="margin-bottom: 1em; color: var(--text-muted); font-size: 0.9em;">
+                Check backend and Arduino connection status.
+            </p>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="checkHealth()">
+                    <i data-lucide="activity"></i>
+                    Check Backend
+                </button>
+                <button class="btn btn-primary" onclick="testArduino()">
+                    <i data-lucide="usb"></i>
+                    Test Arduino
+                </button>
+            </div>
+        </div>
+
+        <!-- Logs Card -->
+        <div class="card">
+            <div class="card-title">
+                <i data-lucide="terminal"></i>
+                Operation Log
+            </div>
+
+            <div class="log-container" id="logContainer">
+                <div class="log-entry">System initialized. Waiting for commands...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'http://127.0.0.1:5001';
+        const logs = [];
+
+        function lucideReady() {
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        }
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const log = `[${timestamp}] ${message}`;
+            logs.push({ message: log, type });
+
+            const logContainer = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = log;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            
+            const icon = type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ';
+            alert.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+            
+            alertContainer.appendChild(alert);
+            addLog(message, type);
+
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        async function checkHealth() {
+            try {
+                addLog('Checking backend health...');
+                const response = await fetch(`${BACKEND_URL}/health`);
+                const data = await response.json();
+
+                if (data.status === 'healthy') {
+                    showAlert(`✓ Backend healthy | Arduino: ${data.arduino} | Port: ${data.port}`, 'success');
+                    updateStatus('backendStatus', 'Connected', 'healthy');
+                    updateStatus('arduinoStatus', data.arduino === 'connected' ? 'Connected' : 'Disconnected', 
+                        data.arduino === 'connected' ? 'healthy' : 'error');
+                } else {
+                    showAlert('Backend unhealthy or Arduino disconnected', 'error');
+                    updateStatus('backendStatus', 'Error', 'error');
+                }
+            } catch (error) {
+                showAlert(`Backend connection failed: ${error.message}`, 'error');
+                updateStatus('backendStatus', 'Offline', 'error');
+                addLog(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testArduino() {
+            try {
+                addLog('Testing Arduino connection...');
+                const response = await fetch(`${BACKEND_URL}/test`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showAlert('✓ Arduino test passed! Response: ' + (data.response || 'OK'), 'success');
+                    updateStatus('arduinoStatus', 'Connected', 'healthy');
+                } else {
+                    showAlert('Arduino test failed: ' + data.message, 'error');
+                    updateStatus('arduinoStatus', 'Error', 'error');
+                }
+            } catch (error) {
+                showAlert(`Arduino test failed: ${error.message}`, 'error');
+                updateStatus('arduinoStatus', 'Offline', 'error');
+                addLog(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function registerFingerprint() {
+            const userId = document.getElementById('registerId').value;
+
+            if (!userId || userId < 1) {
+                showAlert('Please enter a valid User ID', 'error');
+                return;
+            }
+
+            try {
+                addLog(`Registering fingerprint with ID: ${userId}`);
+                const response = await fetch(`${BACKEND_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: parseInt(userId) })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showAlert(`✓ Fingerprint ${userId} registered successfully`, 'success');
+                } else {
+                    showAlert(`✗ Registration failed: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`Registration error: ${error.message}`, 'error');
+                addLog(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function verifyFingerprint() {
+            try {
+                addLog('Verifying fingerprint...');
+                const response = await fetch(`${BACKEND_URL}/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showAlert(`✓ Fingerprint verified successfully!`, 'success');
+                } else {
+                    showAlert(`✗ Verification failed: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`Verification error: ${error.message}`, 'error');
+                addLog(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function deleteFingerprint() {
+            const userId = document.getElementById('deleteId').value;
+
+            if (!userId || userId < 1) {
+                showAlert('Please enter a valid User ID', 'error');
+                return;
+            }
+
+            if (!confirm(`Delete fingerprint ID ${userId}? This cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                addLog(`Deleting fingerprint with ID: ${userId}`);
+                const response = await fetch(`${BACKEND_URL}/delete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: parseInt(userId) })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showAlert(`✓ Fingerprint ${userId} deleted successfully`, 'success');
+                } else {
+                    showAlert(`✗ Deletion failed: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`Deletion error: ${error.message}`, 'error');
+                addLog(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function deleteAllFingerprints() {
+            if (!confirm('⚠️ Delete ALL fingerprints? This cannot be undone!')) {
+                return;
+            }
+
+            try {
+                addLog('Deleting ALL fingerprints');
+                const response = await fetch(`${BACKEND_URL}/delete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ delete_all: true })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showAlert(`✓ All fingerprints deleted successfully`, 'success');
+                } else {
+                    showAlert(`✗ Deletion failed: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`Deletion error: ${error.message}`, 'error');
+                addLog(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        function updateStatus(elementId, text, type) {
+            const element = document.getElementById(elementId);
+            const parentStatusIcon = element.closest('.status-card').querySelector('.status-icon');
+            
+            element.textContent = text;
+            parentStatusIcon.className = `status-icon ${type}`;
+            
+            lucideReady();
+        }
+
+        // Auto-check on load
+        document.addEventListener('DOMContentLoaded', () => {
+            lucideReady();
+            setTimeout(() => {
+                checkHealth();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

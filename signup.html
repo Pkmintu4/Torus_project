@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlebC - Sign Up</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --text-white: #ffffff;
+            --text-muted: #94a3b8;
+            --purple-neon: #a855f7;
+            --purple-gradient-start: #7c3aed;
+            --purple-gradient-end: #9333ea;
+            --cyan-neon: #22d3ee;
+            --card-bg: rgba(15, 23, 42, 0.62);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(15, 23, 42, 0.82);
+            --input-border: rgba(255, 255, 255, 0.12);
+            --error: #f87171;
+            --success: #34d399;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-y: auto;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050816;
+            background-image: radial-gradient(circle at top, #1a0033 0%, #050816 60%, #02030a 100%);
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: var(--text-white);
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            position: relative;
+            color: var(--text-white);
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: -9.375em;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 75em;
+            height: 37.5em;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%);
+            filter: blur(3.75em);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .main-wrapper {
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2em 1.25em;
+        }
+
+        .signup-card {
+            width: 100%;
+            max-width: 56em;
+            background: var(--card-bg);
+            border: 0.0625em solid var(--card-border);
+            border-radius: 1.4em;
+            padding: 2.2em;
+            box-shadow: 0 1em 3.5em rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(0.8em);
+            -webkit-backdrop-filter: blur(0.8em);
+            animation: riseIn 0.45s ease;
+        }
+
+        .title {
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 0.35em;
+            letter-spacing: 0.01em;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #cbd5e1;
+            margin-bottom: 1.8em;
+            font-size: 1em;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1.1em;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45em;
+        }
+
+        .field.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .field label {
+            color: #cbd5e1;
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+
+        .input-wrap {
+            display: flex;
+            gap: 0.55em;
+            align-items: center;
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--input-bg);
+            border: 0.0625em solid var(--input-border);
+            border-radius: 0.85em;
+            color: var(--text-white);
+            padding: 0.82em 0.95em;
+            font-size: 0.98em;
+            outline: none;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+        }
+
+        .form-input::placeholder {
+            color: #64748b;
+        }
+
+        .form-input:focus {
+            border-color: var(--purple-neon);
+            box-shadow: 0 0 0 0.15em rgba(168, 85, 247, 0.2);
+            transform: translateY(-0.03em);
+        }
+
+        .mini-btn {
+            border: none;
+            border-radius: 0.85em;
+            padding: 0.78em 0.95em;
+            font-weight: 600;
+            background: linear-gradient(90deg, var(--purple-gradient-start), var(--purple-gradient-end));
+            color: #ffffff;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: filter 0.25s ease, transform 0.2s ease;
+        }
+
+        .mini-btn:hover {
+            filter: brightness(1.08);
+            transform: translateY(-0.04em);
+        }
+
+        .mini-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .field-error {
+            min-height: 1.2em;
+            font-size: 0.82em;
+            color: var(--error);
+        }
+
+        .field-success {
+            min-height: 1.2em;
+            font-size: 0.82em;
+            color: var(--success);
+        }
+
+        .otp-row {
+            display: none;
+            margin-top: 0.2em;
+        }
+
+        .otp-row.show {
+            display: block;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .submit-row {
+            margin-top: 1em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.95em;
+        }
+
+        .signup-btn {
+            width: 100%;
+            border: none;
+            border-radius: 0.95em;
+            padding: 0.9em 1em;
+            font-size: 1.03em;
+            font-weight: 700;
+            color: #ffffff;
+            background: linear-gradient(90deg, var(--purple-gradient-start), var(--purple-gradient-end));
+            box-shadow: 0 0.3em 1.3em rgba(124, 58, 237, 0.35);
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+        }
+
+        .signup-btn:hover:not(:disabled) {
+            transform: translateY(-0.05em);
+            box-shadow: 0 0.55em 1.9em rgba(124, 58, 237, 0.52);
+            filter: brightness(1.05);
+        }
+
+        .signup-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+            box-shadow: none;
+        }
+
+        .login-link {
+            color: #cbd5e1;
+            font-size: 0.95em;
+        }
+
+        .login-link a {
+            color: var(--cyan-neon);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .status-msg {
+            min-height: 1.1em;
+            font-size: 0.85em;
+            color: #cbd5e1;
+            text-align: center;
+        }
+
+        .top-back-btn {
+            position: fixed;
+            top: 1.25em;
+            right: 1.25em;
+            background: rgba(255, 255, 255, 0.03);
+            border: 0.0625em solid rgba(255, 255, 255, 0.12);
+            color: #94a3b8;
+            border-radius: 999px;
+            width: 7.50em;
+            height: 3.59em;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.7em;
+            font-weight: 600;
+            line-height: 1;
+            cursor: pointer;
+            z-index: 30;
+            box-shadow: 0 0 0.9em rgba(34, 211, 238, 0.12);
+            transition: all 0.25s ease;
+        }
+
+        .top-back-btn:hover {
+            color: var(--text-white);
+            border-color: rgba(34, 211, 238, 0.45);
+            background: rgba(34, 211, 238, 0.08);
+            box-shadow: 0 0 1.05em rgba(34, 211, 238, 0.25);
+            transform: translateY(-0.0625em);
+        }
+
+        @media (max-width: 48em) {
+            .signup-card {
+                padding: 1.4em;
+            }
+
+            .title {
+                font-size: 1.65em;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 0.9em;
+            }
+
+            .top-back-btn {
+                top: 1em;
+                right: 1em;
+                width: 2.25em;
+                height: 1.2em;
+                font-size: 0.25em;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-0.2em);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes riseIn {
+            from {
+                opacity: 0;
+                transform: translateY(0.7em);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <button type="button" class="top-back-btn" id="topBackBtn" aria-label="Go back">Back</button>
+    <main class="main-wrapper">
+        <section class="signup-card" aria-label="Create account form">
+            <h1 class="title">Create Account</h1>
+            <p class="subtitle">Register to access TORUS system</p>
+
+            <form id="signupForm" novalidate>
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="firstName">First Name</label>
+                        <input class="form-input" type="text" id="firstName" placeholder="Enter first name" required>
+                        <p class="field-error" id="firstNameError"></p>
+                    </div>
+
+                    <div class="field">
+                        <label for="lastName">Last Name</label>
+                        <input class="form-input" type="text" id="lastName" placeholder="Enter last name" required>
+                        <p class="field-error" id="lastNameError"></p>
+                    </div>
+
+                    <div class="field">
+                        <label for="age">Age</label>
+                        <input class="form-input" type="number" id="age" placeholder="Enter age" min="21" max="100" required>
+                        <p class="field-error" id="ageError"></p>
+                    </div>
+
+                    <div class="field">
+                        <label for="dob">Date of Birth</label>
+                        <input class="form-input" type="date" id="dob" required>
+                        <p class="field-error" id="dobError"></p>
+                    </div>
+
+                    <div class="field">
+                        <label for="phone">Phone Number</label>
+                        <div class="input-wrap">
+                            <input class="form-input" type="tel" id="phone" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" required>
+                            <button class="mini-btn" id="sendOtpBtn" type="button">Send OTP</button>
+                        </div>
+                        <p class="field-error" id="phoneError"></p>
+                        <div class="otp-row" id="otpRow">
+                            <div class="input-wrap">
+                                <input class="form-input" type="text" id="otpInput" inputmode="numeric" maxlength="6" placeholder="Enter OTP">
+                                <button class="mini-btn" id="verifyOtpBtn" type="button">Verify OTP</button>
+                            </div>
+                            <p class="field-error" id="otpError"></p>
+                            <p class="field-success" id="otpSuccess"></p>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="aadhaar">Aadhaar Number</label>
+                        <input class="form-input" type="text" id="aadhaar" inputmode="numeric" maxlength="12" placeholder="12-digit Aadhaar number" required>
+                        <p class="field-error" id="aadhaarError"></p>
+                        <p class="field-success" id="aadhaarSuccess"></p>
+                    </div>
+
+                    <div class="field full-width">
+                        <label for="doctorId">Doctor ID</label>
+                        <input class="form-input" type="text" id="doctorId" placeholder="e.g. DOC1001" required>
+                        <p class="field-error" id="doctorIdError"></p>
+                        <p class="field-success" id="doctorIdSuccess"></p>
+                    </div>
+                </div>
+
+                <div class="submit-row">
+                    <p class="status-msg" id="statusMsg"></p>
+                    <button type="submit" class="signup-btn" id="signupBtn" disabled>Confirm</button>
+                    <p class="login-link">Already have an account? <a href="doctor-portal.html">Login</a></p>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        document.getElementById('topBackBtn').addEventListener('click', () => {
+            window.location.href = 'doctor-portal.html';
+        });
+
+        const signupForm = document.getElementById('signupForm');
+        const signupBtn = document.getElementById('signupBtn');
+        const sendOtpBtn = document.getElementById('sendOtpBtn');
+        const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+        const otpRow = document.getElementById('otpRow');
+
+        const phoneInput = document.getElementById('phone');
+        const otpInput = document.getElementById('otpInput');
+        const aadhaarInput = document.getElementById('aadhaar');
+        const doctorIdInput = document.getElementById('doctorId');
+
+        const phoneError = document.getElementById('phoneError');
+        const otpError = document.getElementById('otpError');
+        const otpSuccess = document.getElementById('otpSuccess');
+        const aadhaarError = document.getElementById('aadhaarError');
+        const aadhaarSuccess = document.getElementById('aadhaarSuccess');
+        const doctorIdError = document.getElementById('doctorIdError');
+        const doctorIdSuccess = document.getElementById('doctorIdSuccess');
+        const statusMsg = document.getElementById('statusMsg');
+
+        const validDoctorIds = new Set(['DOC1001', 'DOC1002']);
+        const aadhaarMatchNumber = '123412341234';
+        const mockOtp = '123456';
+
+        let otpSent = false;
+        let otpVerified = false;
+        let aadhaarValid = false;
+        let doctorIdValid = false;
+
+        function isPhoneValid() {
+            return /^\d{10}$/.test(phoneInput.value.trim());
+        }
+
+        function validateAadhaar(showMessage = true) {
+            const value = aadhaarInput.value.replace(/\D/g, '').slice(0, 12);
+            aadhaarInput.value = value;
+
+            aadhaarValid = false;
+            aadhaarSuccess.textContent = '';
+
+            if (value.length !== 12) {
+                aadhaarError.textContent = showMessage ? 'Aadhaar must be exactly 12 digits.' : '';
+            } else if (value !== aadhaarMatchNumber) {
+                aadhaarError.textContent = showMessage ? 'Aadhaar not matched in records.' : '';
+            } else {
+                aadhaarError.textContent = '';
+                aadhaarSuccess.textContent = 'Aadhaar verified successfully.';
+                aadhaarValid = true;
+            }
+        }
+
+        function validateDoctorId(showMessage = true) {
+            const doctorId = doctorIdInput.value.trim().toUpperCase();
+            doctorIdInput.value = doctorId;
+
+            doctorIdValid = false;
+            doctorIdSuccess.textContent = '';
+
+            if (!doctorId) {
+                doctorIdError.textContent = showMessage ? 'Doctor ID is required.' : '';
+            } else if (!validDoctorIds.has(doctorId)) {
+                doctorIdError.textContent = showMessage ? 'Invalid Doctor ID.' : '';
+            } else {
+                doctorIdError.textContent = '';
+                doctorIdSuccess.textContent = 'Doctor ID verified.';
+                doctorIdValid = true;
+            }
+        }
+
+        function validateRequiredText(fieldId, errorId, message) {
+            const field = document.getElementById(fieldId);
+            const error = document.getElementById(errorId);
+            const isValid = field.value.trim().length > 0;
+            error.textContent = isValid ? '' : message;
+            return isValid;
+        }
+
+        function validateAge() {
+            const age = Number(document.getElementById('age').value);
+            const error = document.getElementById('ageError');
+            const valid = Number.isFinite(age) && age >= 21 && age <= 100;
+            error.textContent = valid ? '' : 'Age must be between 21 and 100.';
+            return valid;
+        }
+
+        function validateDob() {
+            const dobValue = document.getElementById('dob').value;
+            const error = document.getElementById('dobError');
+            const valid = Boolean(dobValue);
+            error.textContent = valid ? '' : 'Date of birth is required.';
+            return valid;
+        }
+
+        function updateSignUpState() {
+            const allRequiredValid =
+                validateRequiredText('firstName', 'firstNameError', 'First name is required.') &&
+                validateRequiredText('lastName', 'lastNameError', 'Last name is required.') &&
+                validateAge() &&
+                validateDob() &&
+                isPhoneValid();
+
+            signupBtn.disabled = !(otpVerified && aadhaarValid && doctorIdValid && allRequiredValid);
+
+            if (signupBtn.disabled) {
+                statusMsg.textContent = 'Complete OTP, Aadhaar, and Doctor ID verification to continue.';
+            } else {
+                statusMsg.textContent = 'All checks passed. You can proceed to Sign Up.';
+            }
+        }
+
+        sendOtpBtn.addEventListener('click', () => {
+            otpSuccess.textContent = '';
+            otpError.textContent = '';
+
+            if (!isPhoneValid()) {
+                phoneError.textContent = 'Enter a valid 10-digit phone number.';
+                otpRow.classList.remove('show');
+                otpSent = false;
+                otpVerified = false;
+                updateSignUpState();
+                return;
+            }
+
+            phoneError.textContent = '';
+            otpSent = true;
+            otpVerified = false;
+            otpRow.classList.add('show');
+            otpInput.value = '';
+            otpSuccess.textContent = 'OTP sent successfully. Use 123456 for testing.';
+            updateSignUpState();
+        });
+
+        verifyOtpBtn.addEventListener('click', () => {
+            if (!otpSent) {
+                otpError.textContent = 'Please send OTP first.';
+                otpVerified = false;
+                updateSignUpState();
+                return;
+            }
+
+            const enteredOtp = otpInput.value.trim();
+            if (enteredOtp !== mockOtp) {
+                otpError.textContent = 'Invalid OTP. Try again.';
+                otpSuccess.textContent = '';
+                otpVerified = false;
+            } else {
+                otpError.textContent = '';
+                otpSuccess.textContent = 'Phone number verified successfully.';
+                otpVerified = true;
+            }
+
+            updateSignUpState();
+        });
+
+        phoneInput.addEventListener('input', () => {
+            phoneInput.value = phoneInput.value.replace(/\D/g, '').slice(0, 10);
+            phoneError.textContent = '';
+            if (otpSent) {
+                otpVerified = false;
+                otpError.textContent = 'Phone number changed. Verify OTP again.';
+                otpSuccess.textContent = '';
+            }
+            updateSignUpState();
+        });
+
+        aadhaarInput.addEventListener('input', () => {
+            validateAadhaar(false);
+            aadhaarError.textContent = '';
+            updateSignUpState();
+        });
+
+        aadhaarInput.addEventListener('blur', () => {
+            validateAadhaar(true);
+            updateSignUpState();
+        });
+
+        doctorIdInput.addEventListener('input', () => {
+            validateDoctorId(false);
+            doctorIdError.textContent = '';
+            updateSignUpState();
+        });
+
+        doctorIdInput.addEventListener('blur', () => {
+            validateDoctorId(true);
+            updateSignUpState();
+        });
+
+        ['firstName', 'lastName', 'age', 'dob'].forEach((id) => {
+            const field = document.getElementById(id);
+            field.addEventListener('input', updateSignUpState);
+            field.addEventListener('blur', updateSignUpState);
+        });
+
+        signupForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            validateAadhaar(true);
+            validateDoctorId(true);
+            updateSignUpState();
+
+            if (signupBtn.disabled) {
+                return;
+            }
+
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const displayName = `Dr. ${firstName} ${lastName}`.replace(/\s+/g, ' ').trim();
+            const initials = `${(firstName[0] || 'D')}${(lastName[0] || 'U')}`.toUpperCase();
+            const storedEmail = localStorage.getItem('userEmail') || 'doctor@hospital.com';
+
+            localStorage.setItem('userSession', JSON.stringify({
+                name: displayName,
+                initials,
+                email: storedEmail,
+                role: 'doctor'
+            }));
+            localStorage.setItem('userName', displayName);
+            localStorage.setItem('userInitials', initials);
+            localStorage.setItem('userEmail', storedEmail);
+
+            signupBtn.textContent = 'Signing Up...';
+            signupBtn.disabled = true;
+            window.location.href = 'biometric-register.html';
+        });
+
+        updateSignUpState();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Fingerprint Registration</title>
+    <style>
+        body {
+            font-family: monospace;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        .container {
+            background: #0a0a0a;
+            border: 1px solid #00ff00;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        h1 {
+            color: #00ff00;
+            border-bottom: 2px solid #00ff00;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px 10px 0;
+        }
+        button:hover {
+            background: #00dd00;
+        }
+        .output {
+            background: #000;
+            border: 1px solid #00ff00;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            max-height: 600px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success {
+            color: #00ff00;
+        }
+        .error {
+            color: #ff0000;
+        }
+        .warning {
+            color: #ffff00;
+        }
+        .info {
+            color: #00ffff;
+        }
+        .section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 DEBUG: Fingerprint Registration</h1>
+        
+        <div>
+            <button onclick="testRegister()">❶ Test Register (Click Once)</button>
+            <button onclick="testVerify()">❷ Test Verify (Click After Register)</button>
+            <button onclick="clearOutput()">Clear Output</button>
+        </div>
+
+        <div class="section">
+            <h3>📋 What This Does:</h3>
+            <p><span class="info">❶ Register</span>: Place → Remove → Place → Should see "Stored" response</p>
+            <p><span class="info">❷ Verify</span>: Place finger → Should see "Matched" response</p>
+        </div>
+
+        <div class="section">
+            <h3>📊 Raw Backend Response:</h3>
+            <div class="output" id="output">Waiting for test...</div>
+        </div>
+
+        <div class="section">
+            <h3>✅ Success Detection:</h3>
+            <div class="output" id="detection">No data yet</div>
+        </div>
+    </div>
+
+    <script>
+        function log(text, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const output = document.getElementById('output');
+            const line = `[${timestamp}] <span class="${type}">${text}</span>\n`;
+            output.innerHTML += line;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function detection(text, type = 'info') {
+            const detection_div = document.getElementById('detection');
+            const timestamp = new Date().toLocaleTimeString();
+            const line = `[${timestamp}] <span class="${type}">${text}</span>\n`;
+            detection_div.innerHTML += line;
+            detection_div.scrollTop = detection_div.scrollHeight;
+        }
+
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+            document.getElementById('detection').innerHTML = '';
+        }
+
+        async function testRegister() {
+            log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+            log('TEST: Register Fingerprint', 'warning');
+            log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+            
+            log('📤 Sending POST /register...', 'info');
+            log('Body: {"id": 1, "mode": "sync"}', 'info');
+            log('Waiting for Arduino (15 seconds max)...', 'warning');
+            
+            try {
+                const res = await fetch('http://127.0.0.1:5001/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: 1, mode: 'sync' })
+                });
+
+                log(`\n📥 Backend Response Status: ${res.status}`, res.ok ? 'success' : 'error');
+                
+                const data = await res.json();
+                
+                log('\n┌─ FULL JSON RESPONSE:', 'info');
+                log(JSON.stringify(data, null, 2), 'info');
+                log('└─ END JSON', 'info');
+
+                // Analyze responses
+                detection('┌─ ANALYZING RESPONSES:', 'warning');
+                
+                const responses = data.responses || data.raw || [];
+                detection(`\nTotal lines received: ${responses.length}`, 'info');
+                
+                if (Array.isArray(responses)) {
+                    responses.forEach((line, idx) => {
+                        detection(`  [${idx}] "${line}"`, 'info');
+                    });
+                } else if (typeof responses === 'string') {
+                    detection(`Raw string: "${responses}"`, 'warning');
+                    const lines = responses.split('\n');
+                    lines.forEach((line, idx) => {
+                        detection(`  [${idx}] "${line}"`, 'info');
+                    });
+                }
+
+                // Check for success markers
+                detection('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'warning');
+                detection('SUCCESS MARKER DETECTION:', 'warning');
+                detection('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'warning');
+                
+                const responseStr = JSON.stringify(responses).toUpperCase();
+                const markers = ['STORED', 'SAVED', 'ENROLLED', 'REGISTERED', 'MATCHED', 'NOT MATCHED'];
+                
+                markers.forEach(marker => {
+                    if (responseStr.includes(marker)) {
+                        detection(`✅ Found: ${marker}`, 'success');
+                    }
+                });
+
+                if (!markers.some(m => responseStr.includes(m))) {
+                    detection('❌ NO SUCCESS MARKERS FOUND!', 'error');
+                    detection('Expected one of: ' + markers.join(', '), 'warning');
+                }
+
+                detection('└─ END ANALYSIS', 'info');
+
+            } catch (err) {
+                log(`❌ ERROR: ${err.message}`, 'error');
+                detection(`❌ Exception: ${err.message}`, 'error');
+            }
+        }
+
+        async function testVerify() {
+            log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+            log('TEST: Verify Fingerprint', 'warning');
+            log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+            
+            log('📤 Sending POST /verify...', 'info');
+            log('Waiting for Arduino (15 seconds max)...', 'warning');
+            
+            try {
+                const res = await fetch('http://127.0.0.1:5001/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                log(`\n📥 Backend Response Status: ${res.status}`, res.ok ? 'success' : 'error');
+                
+                const data = await res.json();
+                
+                log('\n┌─ FULL JSON RESPONSE:', 'info');
+                log(JSON.stringify(data, null, 2), 'info');
+                log('└─ END JSON', 'info');
+
+                // Analyze responses
+                detection('┌─ ANALYZING RESPONSES:', 'warning');
+                
+                const responses = data.responses || data.raw || [];
+                detection(`\nTotal lines received: ${responses.length}`, 'info');
+                
+                if (Array.isArray(responses)) {
+                    responses.forEach((line, idx) => {
+                        detection(`  [${idx}] "${line}"`, 'info');
+                    });
+                } else if (typeof responses === 'string') {
+                    detection(`Raw string: "${responses}"`, 'warning');
+                    const lines = responses.split('\n');
+                    lines.forEach((line, idx) => {
+                        detection(`  [${idx}] "${line}"`, 'info');
+                    });
+                }
+
+                // Check for success markers
+                detection('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'warning');
+                detection('SUCCESS MARKER DETECTION:', 'warning');
+                detection('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'warning');
+                
+                const responseStr = JSON.stringify(responses).toUpperCase();
+                const markers = ['MATCHED', 'NOT MATCHED'];
+                
+                markers.forEach(marker => {
+                    if (responseStr.includes(marker)) {
+                        detection(`✅ Found: ${marker}`, 'success');
+                    }
+                });
+
+                if (!markers.some(m => responseStr.includes(m))) {
+                    detection('❌ NO MATCH MARKERS FOUND!', 'error');
+                    detection('Expected: MATCHED or NOT MATCHED', 'warning');
+                }
+
+                detection('└─ END ANALYSIS', 'info');
+
+            } catch (err) {
+                log(`❌ ERROR: ${err.message}`, 'error');
+                detection(`❌ Exception: ${err.message}`, 'error');
+            }
+        }
+
+        log('✅ Debug page loaded', 'success');
+        log('Ready for testing. Click buttons above.', 'info');
+    </script>
+</body>
+</html>

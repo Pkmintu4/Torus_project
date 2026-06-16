@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TORUS - Doctor Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="script.js?v=20260521_01" defer></script>
+</head>
+
+<body class="dashboard-page">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <aside class="sidebar" id="sidebar" aria-label="Dashboard navigation">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="brand-logo-wrap">
+          <img src="logo.png" alt="TORUS Logo" class="brand-logo" />
+        </div>
+        <div class="brand-copy">
+          <strong>TORUS</strong>
+          <span>Doctor Portal</span>
+        </div>
+      </div>
+      <button class="close-sidebar" id="closeSidebar" type="button" aria-label="Close sidebar">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="sidebar-link active" type="button" data-nav-target="dashboard">
+        <i data-lucide="layout-dashboard" class="link-icon"></i>
+        <span>Dashboard</span>
+      </button>
+      <button class="sidebar-link" type="button" data-nav-target="doctor-profile">
+        <i data-lucide="users" class="link-icon"></i>
+        <span>Doctor Profile</span>
+      </button>
+      <button class="sidebar-link" type="button" data-nav-target="activity-log">
+        <i data-lucide="activity" class="link-icon"></i>
+        <span>Activity Log</span>
+      </button>
+      <button class="sidebar-link" type="button" data-nav-target="insights">
+        <i data-lucide="bar-chart-3" class="link-icon"></i>
+        <span>Insights</span>
+      </button>
+      <button class="sidebar-link" type="button" data-nav-target="patient-reports">
+        <i data-lucide="file-text" class="link-icon"></i>
+        <span>Patient Reports</span>
+      </button>
+      <button class="sidebar-link" type="button" data-nav-target="history">
+        <i data-lucide="history" class="link-icon"></i>
+        <span>History</span>
+      </button>
+      <button class="sidebar-link logout" type="button" data-action="logout">
+        <i data-lucide="log-out" class="link-icon"></i>
+        <span>Logout</span>
+      </button>
+    </nav>
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-footer">
+      <div class="user-summary">
+        <strong data-user-name>Dr. User</strong>
+        <span data-user-email>user@example.com</span>
+        <span>Role: <span data-user-role>doctor</span></span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="dashboard-shell">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-icon-btn" id="menuToggle" type="button" aria-label="Open sidebar">
+          <i data-lucide="menu"></i>
+        </button>
+        <div class="brand-inline">
+          <div class="brand-logo-wrap">
+            <img src="logo.png" alt="TORUS Logo" class="brand-logo" />
+          </div>
+          <div class="brand-wordmark">TORUS</div>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="haptic-status-stack">
+          <div class="haptic-chip haptic-chip--connecting" id="hapticStatusChip" role="status" aria-live="polite"
+            aria-atomic="true" data-haptic-status="connecting">
+            <span class="haptic-chip-alert" aria-hidden="true">⚠</span>
+            <span class="haptic-chip-label">Haptic Pad</span>
+            <span class="haptic-chip-separator" aria-hidden="true">•</span>
+            <span class="haptic-chip-state" id="hapticChipStateText">Connecting...</span>
+            <span class="haptic-chip-indicator" id="hapticChipIndicator" aria-hidden="true"></span>
+          </div>
+          <!-- Per-axis status removed per request; only main haptic chip remains -->
+        </div>
+        <button class="top-pill gradient" id="adhocScanBtn" type="button">Adhoc Scan</button>
+        <button class="icon-btn" type="button" aria-label="Notifications">
+          <i data-lucide="bell"></i>
+        </button>
+        <div class="avatar-chip" data-user-initials>DA</div>
+      </div>
+    </header>
+
+    <main class="dashboard-content">
+      <div class="dashboard-grid">
+        <section class="section-view active" data-section-view="dashboard">
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Active Sessions</h2>
+              <span class="live-badge">1 Live</span>
+            </div>
+            <div class="table-head">
+              <span>Patient / Device</span>
+              <span>Scan Type</span>
+              <span>Duration</span>
+              <span>Status</span>
+              <span style="text-align:right;">Action</span>
+            </div>
+            <div class="session-list" id="activeSessionsList"></div>
+          </div>
+
+          <div class="panel upcoming-sessions-panel" style="margin-top: 24px;">
+            <div class="panel-header">
+              <h2 class="panel-title">Upcoming Sessions</h2>
+              <span class="schedule-badge">3 Scheduled</span>
+            </div>
+            <div class="table-head">
+              <span>Patient / Device</span>
+              <span>Scan Type</span>
+              <span>Center</span>
+              <span>Time</span>
+              <span style="text-align:right;">Action</span>
+            </div>
+            <div class="session-list" id="upcomingSessionsList"></div>
+          </div>
+        </section>
+
+        <section class="section-view" data-section-view="doctor-profile">
+          <div class="panel" style="background: transparent; border: none; box-shadow: none; padding: 0;">
+            <div class="section-title-row">
+              <h2 class="panel-title"
+                style="font-size: 2em; background: linear-gradient(90deg, #00E5FF, #00C8FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(0,229,255,0.3);">
+                Doctor Profile
+              </h2>
+              <span class="section-note">AI-Powered Physician Insights</span>
+            </div>
+
+            <div class="ai-profile-grid">
+              <!-- Upgraded Identity Card -->
+              <div class="ai-card">
+                <div class="ai-card-header">
+                  <h3 class="ai-card-title"><i data-lucide="user"></i> Identity</h3>
+                </div>
+                <div class="ai-doc-identity">
+                  <div class="ai-doc-avatar" data-user-initials>DA</div>
+                  <div class="ai-doc-info">
+                    <h3 data-user-name>Dr. User</h3>
+                    <div class="ai-doc-meta" style="color: var(--text-0);">Email: <span
+                        data-user-email>doctor@hospital.com</span></div>
+                    <div class="ai-doc-meta" style="color: var(--text-0);">Role: <span data-user-role>doctor</span>
+                    </div>
+                    <div class="ai-doc-meta">ID: DOC-2026-X8</div>
+                    <div class="ai-doc-meta">Senior Radiologist • 12 Years Experience</div>
+                    <div class="ai-doc-meta" style="color: var(--cyan); margin-top: 0.5em;"><i data-lucide="clock"
+                        style="width:1em; height:1em; display:inline; vertical-align:text-bottom;"></i> Last Login:
+                      Today, 08:45 AM</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Upgraded Biometric Access Card -->
+              <div class="ai-card">
+                <div class="ai-card-header">
+                  <h3 class="ai-card-title"><i data-lucide="fingerprint"></i> Biometric Access</h3>
+                </div>
+                <p class="section-body" style="margin-bottom:1.5em; color: var(--text-1);">Fingerprint verification is
+                  enabled for this session.</p>
+                <div class="ai-status-list">
+                  <div class="ai-status-item">
+                    <div>
+                      <div style="font-weight: 600; font-size: 0.95em;">Biometric Status</div>
+                      <div style="font-size: 0.8em; color: var(--text-2);">Verified & Active</div>
+                    </div>
+                    <i data-lucide="check-circle" style="color: var(--green);"></i>
+                  </div>
+                  <div class="ai-status-item">
+                    <div>
+                      <div style="font-weight: 600; font-size: 0.95em;">Session Status</div>
+                      <div style="font-size: 0.8em; color: var(--text-2);">Secure Connection (Haptic Pad Link OK)</div>
+                    </div>
+                    <i data-lucide="lock" style="color: var(--green);"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Today's Activity & AI Metrics -->
+              <div class="ai-card">
+                <div class="ai-card-header">
+                  <h3 class="ai-card-title"><i data-lucide="activity"></i> Today's Activity</h3>
+                </div>
+                <div class="ai-stats-row">
+                  <div class="ai-stat-box">
+                    <div class="ai-stat-value">14</div>
+                    <div class="ai-stat-label">Consultations</div>
+                  </div>
+                  <div class="ai-stat-box">
+                    <div class="ai-stat-value" style="color: var(--cyan);">1</div>
+                    <div class="ai-stat-label">Active Session</div>
+                  </div>
+                </div>
+
+                <div class="ai-progress-container"
+                  style="margin-top: 1.5em; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1.5em;">
+                  <div class="ai-progress-ring" style="width: 4.5em; height: 4.5em;">
+                    <div class="ai-progress-text" style="font-size: 1.1em;">94%</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 1em; font-weight: 600;">AI Health Score</div>
+                    <div style="display: flex; align-items: center; gap: 0.5em; font-size: 0.9em; margin-top: 0.3em;">
+                      <i data-lucide="trending-up" class="trend-up" style="width: 1.2em; height: 1.2em;"></i>
+                      <span>Consultation Efficiency: <strong class="trend-up">+8%</strong></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Smart Recommendations -->
+              <div class="ai-card" style="grid-column: span 3;">
+                <div class="ai-card-header">
+                  <h3 class="ai-card-title"><i data-lucide="zap"></i> Smart Insights</h3>
+                </div>
+                <ul class="ai-insight-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1em;">
+                  <li>
+                    <i data-lucide="check-square"></i>
+                    <div><strong>Performance Trend:</strong> Consultation completion rate increased by 12% over the last
+                      7 days.</div>
+                  </li>
+                  <li>
+                    <i data-lucide="clock"></i>
+                    <div><strong>Time Optimization:</strong> Average consultation time reduced by 8% due to AI
+                      reporting.</div>
+                  </li>
+                  <li>
+                    <i data-lucide="smile"></i>
+                    <div><strong>Patient Feedback:</strong> Patient satisfaction trend is improving (96% positive
+                      today).</div>
+                  </li>
+                  <li>
+                    <i data-lucide="shield"></i>
+                    <div><strong>System Security:</strong> No biometric authentication issues detected.</div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-view" data-section-view="activity-log">
+          <div class="activity-shell">
+            <button class="activity-back-btn" type="button" data-nav-target="dashboard">
+              <i data-lucide="arrow-left"></i>
+              <span>Back to Dashboard</span>
+            </button>
+
+            <h2 class="activity-main-title">Activity Log</h2>
+            <p class="activity-main-subtitle">Track all your recent activities and actions</p>
+
+            <div class="activity-filter-row">
+              <button class="activity-filter-btn active" type="button" data-activity-filter="all">All
+                Activities</button>
+              <button class="activity-filter-btn" type="button" data-activity-filter="scan">Scans</button>
+              <button class="activity-filter-btn" type="button" data-activity-filter="report">Reports</button>
+              <button class="activity-filter-btn" type="button"
+                data-activity-filter="consultation">Consultations</button>
+            </div>
+
+            <div class="activity-cards-list">
+              <article class="activity-card-item" data-activity-type="scan">
+                <div class="activity-card-icon cyan"><i data-lucide="activity"></i></div>
+                <div class="activity-card-body">
+                  <h3 class="activity-card-title">Ultrasound Scan Completed</h3>
+                  <p class="activity-card-desc">Abdominal ultrasound scan successfully completed</p>
+                  <div class="activity-card-meta">
+                    <span><i data-lucide="activity"></i>Patient: <strong>John Doe</strong></span>
+                    <span><i data-lucide="activity"></i>Device: <strong>TORUS-A12</strong></span>
+                    <span><i data-lucide="clock-3"></i>2026-03-28 09:15 AM</span>
+                  </div>
+                </div>
+                <span class="activity-status completed">Completed</span>
+              </article>
+
+              <article class="activity-card-item" data-activity-type="report">
+                <div class="activity-card-icon purple"><i data-lucide="file-text"></i></div>
+                <div class="activity-card-body">
+                  <h3 class="activity-card-title">Report Generated</h3>
+                  <p class="activity-card-desc">Diagnostic report generated and signed digitally</p>
+                  <div class="activity-card-meta">
+                    <span><i data-lucide="activity"></i>Patient: <strong>Emma Taylor</strong></span>
+                    <span><i data-lucide="activity"></i>Device: <strong>TORUS-C15</strong></span>
+                    <span><i data-lucide="clock-3"></i>2026-03-28 08:45 AM</span>
+                  </div>
+                </div>
+                <span class="activity-status completed">Completed</span>
+              </article>
+
+              <article class="activity-card-item" data-activity-type="consultation">
+                <div class="activity-card-icon purple"><i data-lucide="video"></i></div>
+                <div class="activity-card-body">
+                  <h3 class="activity-card-title">Video Consultation Started</h3>
+                  <p class="activity-card-desc">Remote consultation session initiated</p>
+                  <div class="activity-card-meta">
+                    <span><i data-lucide="activity"></i>Patient: <strong>Michael Johnson</strong></span>
+                    <span><i data-lucide="activity"></i>Device: <strong>TORUS-B08</strong></span>
+                    <span><i data-lucide="clock-3"></i>2026-03-28 08:00 AM</span>
+                  </div>
+                </div>
+                <span class="activity-status progress">In Progress</span>
+              </article>
+
+              <article class="activity-card-item" data-activity-type="scan">
+                <div class="activity-card-icon cyan"><i data-lucide="activity"></i></div>
+                <div class="activity-card-body">
+                  <h3 class="activity-card-title">Scan Scheduled</h3>
+                  <p class="activity-card-desc">Cardiac ultrasound scheduled for 10:30 AM</p>
+                  <div class="activity-card-meta">
+                    <span><i data-lucide="activity"></i>Patient: <strong>Sophia Wilson</strong></span>
+                    <span><i data-lucide="activity"></i>Device: <strong>TORUS-A12</strong></span>
+                    <span><i data-lucide="clock-3"></i>2026-03-28 07:30 AM</span>
+                  </div>
+                </div>
+                <span class="activity-status scheduled">Scheduled</span>
+              </article>
+
+              <article class="activity-card-item" data-activity-type="report">
+                <div class="activity-card-icon purple"><i data-lucide="file-text"></i></div>
+                <div class="activity-card-body">
+                  <h3 class="activity-card-title">Report Reviewed</h3>
+                  <p class="activity-card-desc">Reviewed and approved diagnostic findings</p>
+                  <div class="activity-card-meta">
+                    <span><i data-lucide="activity"></i>Patient: <strong>James Smith</strong></span>
+                    <span><i data-lucide="activity"></i>Device: <strong>TORUS-D22</strong></span>
+                    <span><i data-lucide="clock-3"></i>2026-03-27 04:15 PM</span>
+                  </div>
+                </div>
+                <span class="activity-status completed">Completed</span>
+              </article>
+
+              <article class="activity-card-item" data-activity-type="consultation">
+                <div class="activity-card-icon purple"><i data-lucide="video"></i></div>
+                <div class="activity-card-body">
+                  <h3 class="activity-card-title">Video Consultation Completed</h3>
+                  <p class="activity-card-desc">45-minute consultation session concluded</p>
+                  <div class="activity-card-meta">
+                    <span><i data-lucide="activity"></i>Patient: <strong>Robert Brown</strong></span>
+                    <span><i data-lucide="activity"></i>Device: <strong>TORUS-E18</strong></span>
+                    <span><i data-lucide="clock-3"></i>2026-03-27 03:00 PM</span>
+                  </div>
+                </div>
+                <span class="activity-status completed">Completed</span>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-view" data-section-view="insights">
+          <div class="panel" style="background: transparent; border: none; box-shadow: none; padding: 0;">
+            <div class="section-title-row">
+              <h2 class="panel-title"
+                style="font-size: 2em; background: linear-gradient(90deg, #a855f7, #6a00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(106,0,255,0.3);">
+                AI Insights
+              </h2>
+              <span class="section-note">Advanced Healthcare Analytics</span>
+            </div>
+
+            <!-- Top KPI Row -->
+            <div class="kpi-row">
+              <div class="kpi-card">
+                <div class="kpi-icon cyan"><i data-lucide="clock"></i></div>
+                <div class="kpi-info">
+                  <h4>Avg Duration</h4>
+                  <div class="kpi-value">14m 30s</div>
+                  <div class="kpi-trend up"><i data-lucide="arrow-down-right" style="width:1em;height:1em;"></i> 8%
+                  </div>
+                </div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-icon purple"><i data-lucide="cpu"></i></div>
+                <div class="kpi-info">
+                  <h4>AI Performance</h4>
+                  <div class="kpi-value">94.2%</div>
+                  <div class="kpi-trend up"><i data-lucide="arrow-up-right" style="width:1em;height:1em;"></i> Optimal
+                  </div>
+                </div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-icon green"><i data-lucide="shield-check"></i></div>
+                <div class="kpi-info">
+                  <h4>Device Health</h4>
+                  <div class="kpi-value">100%</div>
+                  <div class="kpi-trend up"><i data-lucide="check" style="width:1em;height:1em;"></i> All Systems Go
+                  </div>
+                </div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-icon"><i data-lucide="fingerprint"></i></div>
+                <div class="kpi-info">
+                  <h4>Biometric Auth</h4>
+                  <div class="kpi-value">24/24</div>
+                  <div class="kpi-trend up"><i data-lucide="check" style="width:1em;height:1em;"></i> Zero Failures
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="ai-insights-grid">
+
+              <!-- Weekly Consultations Trend -->
+              <div class="ai-widget-card col-span-8">
+                <div class="ai-widget-header">
+                  <h3 class="ai-widget-title"><i data-lucide="activity"></i> Weekly Consultations Trend</h3>
+                  <button class="top-pill" style="height: 2em; padding: 0 1em; font-size: 0.8em;">This Week</button>
+                </div>
+                <div class="chart-container">
+                  <canvas id="weeklyScansChart"></canvas>
+                </div>
+              </div>
+
+              <!-- Consultation Success Rate -->
+              <div class="ai-widget-card col-span-4">
+                <div class="ai-widget-header">
+                  <h3 class="ai-widget-title"><i data-lucide="pie-chart"></i> Success Rate</h3>
+                </div>
+                <div class="chart-container-donut">
+                  <canvas id="successRateChart"></canvas>
+                  <div class="donut-center-label">
+                    <div class="donut-center-value">96%</div>
+                    <div class="donut-center-text">Success</div>
+                  </div>
+                </div>
+                <p style="text-align: center; color: var(--text-2); font-size: 0.85em; margin-top: 1em;">Breakdown by
+                  consultation category</p>
+              </div>
+
+              <!-- Monthly Patient Growth -->
+              <div class="ai-widget-card col-span-6">
+                <div class="ai-widget-header">
+                  <h3 class="ai-widget-title"><i data-lucide="trending-up"></i> Monthly Patient Growth</h3>
+                </div>
+                <div class="chart-container">
+                  <canvas id="patientGrowthChart"></canvas>
+                </div>
+              </div>
+
+              <!-- Active vs Completed Sessions -->
+              <div class="ai-widget-card col-span-6">
+                <div class="ai-widget-header">
+                  <h3 class="ai-widget-title"><i data-lucide="bar-chart-2"></i> Session Status Analysis</h3>
+                </div>
+                <div class="chart-container">
+                  <canvas id="sessionStatusChart"></canvas>
+                </div>
+              </div>
+
+              <!-- AI Insights Panel -->
+              <div class="ai-widget-card col-span-12">
+                <div class="ai-widget-header">
+                  <h3 class="ai-widget-title"><i data-lucide="brain"></i> Smart AI Insights & Recommendations</h3>
+                  <button class="top-pill gradient"
+                    style="height: 2em; padding: 0 1em; font-size: 0.8em; min-width: auto;">Generate Report</button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(20em, 1fr)); gap: 2em;">
+                  <div>
+                    <ul class="insights-bullet-list">
+                      <li class="insights-bullet-item">
+                        <i data-lucide="target" class="insights-bullet-icon"></i>
+                        <div class="insights-bullet-content">
+                          <h4>Completion Rate Peak</h4>
+                          <p>Consultation completion rate increased by 14% over the last 7 days compared to the monthly
+                            average.</p>
+                        </div>
+                      </li>
+                      <li class="insights-bullet-item">
+                        <i data-lucide="zap" class="insights-bullet-icon"></i>
+                        <div class="insights-bullet-content">
+                          <h4>Haptic Pad Optimization</h4>
+                          <p>Connection analytics show a stable 12ms latency across all sessions today. No signal drops
+                            detected.</p>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                  <div>
+                    <ul class="insights-bullet-list">
+                      <li class="insights-bullet-item">
+                        <i data-lucide="users" class="insights-bullet-icon"></i>
+                        <div class="insights-bullet-content">
+                          <h4>Patient Satisfaction</h4>
+                          <p>Satisfaction trend is upward. 92% of post-consultation surveys received a 5-star rating
+                            this week.</p>
+                        </div>
+                      </li>
+                      <li class="insights-bullet-item">
+                        <i data-lucide="lightbulb" class="insights-bullet-icon"></i>
+                        <div class="insights-bullet-content">
+                          <h4>AI Recommendation</h4>
+                          <p>Consider scheduling complex diagnostic scans in the morning block where historical success
+                            rate is 4% higher.</p>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <section class="section-view" data-section-view="patient-reports">
+          <div class="panel" style="background: transparent; border: none; box-shadow: none; padding: 0;">
+            <div class="records-container" style="margin: 0 auto; width: 100%; max-width: none;">
+              <div class="reg-header">
+                <div class="reg-title">
+                  <i data-lucide="file-text" style="color:#A855F7"></i>
+                  <h2>Patient Reports</h2>
+                </div>
+              </div>
+
+              <div class="controls-row">
+                <div class="search-box">
+                  <i data-lucide="search"></i>
+                  <input type="text" id="searchInput" placeholder="Search by Report ID, Patient Name, or Patient ID..." onkeyup="fetchReports()" />
+                </div>
+                <div class="filter-group">
+                  <select id="filterStatus" class="filter-select" onchange="fetchReports()">
+                    <option value="">All Statuses</option>
+                    <option value="Generated">Generated</option>
+                    <option value="Digitally Signed">Digitally Signed</option>
+                    <option value="Sent to Patient">Sent to Patient</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="records-table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Report ID</th>
+                      <th>Patient Name</th>
+                      <th>Patient ID</th>
+                      <th>Scan Type</th>
+                      <th>Generated Date</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reportsBody">
+                    <tr><td colspan="7" style="text-align:center; padding: 2em; color: #94A3B8;">Loading reports...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-view" data-section-view="history" id="historySectionRoot">
+          <div class="history-shell">
+            <button class="history-back-btn" type="button" data-nav-target="dashboard">
+              <i data-lucide="arrow-left"></i>
+              <span>Back to Dashboard</span>
+            </button>
+
+            <h2 class="history-main-title">Scan History</h2>
+            <p class="history-main-subtitle">Complete timeline of all past scans and consultations</p>
+
+            <label class="history-search-wrap" aria-label="Search history">
+              <i data-lucide="search"></i>
+              <input id="historySearchInput" type="text" placeholder="Search by patient, scan type, or device..." />
+            </label>
+
+            <section class="history-date-group" data-history-group>
+              <div class="history-date-row">
+                <span class="history-date-pill">2026-03-28</span>
+                <span class="history-date-line"></span>
+              </div>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Abdominal Ultrasound</h3>
+                      <p class="history-session-id">Session #0001</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>John Doe</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>09:15 AM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>28 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">Normal findings, no intervention required</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-A12</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Cardiac Ultrasound</h3>
+                      <p class="history-session-id">Session #0002</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>Emma Taylor</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>08:45 AM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>35 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">Regular cardiac rhythm detected</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-C15</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </section>
+
+            <section class="history-date-group" data-history-group>
+              <div class="history-date-row">
+                <span class="history-date-pill">2026-03-27</span>
+                <span class="history-date-line"></span>
+              </div>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Thyroid Ultrasound</h3>
+                      <p class="history-session-id">Session #0003</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>Michael Johnson</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>04:30 PM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>22 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">No abnormalities found</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-B08</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Pelvic Ultrasound</h3>
+                      <p class="history-session-id">Session #0004</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>Sophia Wilson</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>03:15 PM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>30 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">Normal examination results</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-A12</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </section>
+
+            <section class="history-date-group" data-history-group>
+              <div class="history-date-row">
+                <span class="history-date-pill">2026-03-26</span>
+                <span class="history-date-line"></span>
+              </div>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Vascular Ultrasound</h3>
+                      <p class="history-session-id">Session #0005</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>James Smith</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>02:00 PM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>40 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">Good blood flow, no stenosis</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-D22</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Abdominal Ultrasound</h3>
+                      <p class="history-session-id">Session #0006</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>Robert Brown</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>01:30 PM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>32 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">Follow-up recommended</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-E18</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </section>
+
+            <section class="history-date-group" data-history-group>
+              <div class="history-date-row">
+                <span class="history-date-pill">2026-03-25</span>
+                <span class="history-date-line"></span>
+              </div>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Renal Ultrasound</h3>
+                      <p class="history-session-id">Session #0007</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>Emily Davis</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>11:00 AM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>25 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">Both kidneys functioning normally</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-F09</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Thyroid Ultrasound</h3>
+                      <p class="history-session-id">Session #0008</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>Michael Wilson</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>10:15 AM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>27 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">Small benign cyst identified</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-A12</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Cardiac Ultrasound</h3>
+                      <p class="history-session-id">Session #0009</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>Sarah Johnson</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>03:45 PM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>38 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">Normal heart function</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-C15</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <article class="history-entry-card" data-history-item>
+                <div class="history-dot"></div>
+                <div class="history-card-main">
+                  <div class="history-left">
+                    <div class="history-icon"><i data-lucide="activity"></i></div>
+                    <div>
+                      <h3 class="history-scan-title">Abdominal Ultrasound</h3>
+                      <p class="history-session-id">Session #0010</p>
+                      <div class="history-meta">
+                        <p><i data-lucide="user"></i>Patient: <strong>David Lee</strong></p>
+                        <p><i data-lucide="clock-3"></i>Time: <strong>02:30 PM</strong></p>
+                        <p><i data-lucide="activity"></i>Duration: <strong>29 mins</strong></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="history-right">
+                    <div class="history-outcome-box">
+                      <p class="history-label">Outcome:</p>
+                      <p class="history-outcome-text">No significant findings</p>
+                    </div>
+                    <div class="history-device-row">
+                      <div>
+                        <p class="history-label">Device:</p>
+                        <p class="history-device-id">TORUS-B08</p>
+                      </div>
+                      <span class="history-status">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </section>
+          </div>
+        </section>
+
+        <section class="section-view hidden" id="adminPanel" data-section-view="admin"></section>
+        <section class="section-view hidden" id="dashboardEmptyState" data-section-view="empty"></section>
+      </div>
+    </main>
+  </div>
+
+  <div class="device-modal-overlay" id="deviceModalOverlay" hidden>
+    <div class="device-modal" role="dialog" aria-modal="true" aria-labelledby="deviceModalTitle">
+      <div class="device-modal-header">
+        <h2 class="device-modal-title" id="deviceModalTitle">Search TORUS Device</h2>
+        <button class="device-modal-close" id="deviceModalClose" type="button" aria-label="Close device search">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="device-modal-filters">
+        <label class="device-filter-input-wrap" aria-label="Search devices">
+          <i data-lucide="search"></i>
+          <input id="deviceSearchInput" class="device-filter-input" type="text"
+            placeholder="Search by ID, hospital, city..." />
+        </label>
+        <label class="device-filter-input-wrap cyan" aria-label="Filter devices by location">
+          <i data-lucide="map-pin"></i>
+          <input id="deviceLocationInput" class="device-filter-input" type="text"
+            placeholder="Filter by country or city..." />
+        </label>
+      </div>
+
+      <div class="device-results-scroll" id="deviceResultsScroll">
+        <div class="device-results-grid" id="deviceResultsGrid"></div>
+      </div>
+
+      <div class="device-modal-footer">
+        <button class="device-primary-btn" id="connectDeviceBtn" type="button">Connect Device</button>
+        <button class="device-secondary-btn" id="deviceInfoBtn" type="button">Device Info</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="haptic-modal-overlay" id="hapticModalOverlay" hidden>
+    <div class="haptic-modal" id="hapticModal" role="dialog" aria-modal="true" aria-labelledby="hapticModalTitle">
+      <div class="haptic-modal-icon" id="hapticModalIcon" aria-hidden="true">⚠</div>
+      <h2 class="haptic-modal-title" id="hapticModalTitle">Connecting...</h2>
+      <p class="haptic-modal-subtitle" id="hapticModalSubtitle">Attempting to connect the haptic pad device.</p>
+      <button class="haptic-modal-btn" id="hapticModalAction" type="button">OK</button>
+    </div>
+  </div>
+  </div>
+
+  <script>
+    let allReports = [];
+
+    async function fetchReports() {
+      try {
+        const response = await fetch('http://127.0.0.1:5002/api/reports');
+        const resData = await response.json();
+        
+        if (response.ok && resData.data) {
+          allReports = resData.data;
+          renderTable();
+        }
+      } catch (err) {
+        console.error(err);
+        document.getElementById('reportsBody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 2em; color: #ff4545;">Error fetching reports.</td></tr>';
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('reportsBody');
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('filterStatus').value;
+      
+      let filtered = allReports.filter(r => {
+        const matchSearch = !search || 
+          (r.report_id && r.report_id.toLowerCase().includes(search)) || 
+          (r.patient_name && r.patient_name.toLowerCase().includes(search)) || 
+          (r.patient_id && r.patient_id.toLowerCase().includes(search));
+          
+        const matchStatus = !statusFilter || r.status === statusFilter;
+        
+        return matchSearch && matchStatus;
+      });
+
+      tbody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 2em; color: #94A3B8;">No reports found.</td></tr>';
+        return;
+      }
+
+      filtered.forEach(r => {
+        const tr = document.createElement('tr');
+        
+        let badgeClass = 'status-badge';
+        if(r.status === 'Sent to Patient') badgeClass += ' sent';
+        
+        tr.innerHTML = `
+          <td style="color:#A855F7; font-weight:600;">${r.report_id}</td>
+          <td style="color:#fff; font-weight:500;">${r.patient_name}</td>
+          <td>${r.patient_id}</td>
+          <td>${r.scan_type}</td>
+          <td>${r.generated_date}</td>
+          <td><span class="${badgeClass}">${r.status}</span></td>
+          <td>
+            <div class="action-btns">
+              <button class="action-btn" title="View Report"><i data-lucide="eye"></i></button>
+              <button class="action-btn" title="Download PDF"><i data-lucide="download"></i></button>
+              <button class="action-btn" title="Print Report"><i data-lucide="printer"></i></button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      lucide.createIcons();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Common dark theme options for Chart.js
+      if (typeof Chart !== 'undefined') {
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = 'Inter, sans-serif';
+
+        const commonOptions = {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false } }
+          }
+        };
+
+        // 1. Weekly Consultations Trend (Line Chart)
+        const ctxWeekly = document.getElementById('weeklyScansChart');
+        if (ctxWeekly) {
+          new Chart(ctxWeekly, {
+            type: 'line',
+            data: {
+              labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+              datasets: [{
+                label: 'Consultations',
+                data: [12, 19, 15, 22, 18, 25, 20],
+                borderColor: '#00e5ff',
+                backgroundColor: 'rgba(0,229,255,0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#0f1117',
+                pointBorderColor: '#00e5ff',
+                pointBorderWidth: 2,
+                pointRadius: 4
+              }]
+            },
+            options: commonOptions
+          });
+        }
+
+        // 2. Consultation Success Rate (Donut Chart)
+        const ctxSuccess = document.getElementById('successRateChart');
+        if (ctxSuccess) {
+          new Chart(ctxSuccess, {
+            type: 'doughnut',
+            data: {
+              labels: ['Successful', 'Needs Review', 'Incomplete'],
+              datasets: [{
+                data: [85, 10, 5],
+                backgroundColor: ['#00e5ff', '#a855f7', '#3f3f46'],
+                borderWidth: 0,
+                hoverOffset: 4
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              cutout: '80%'
+            }
+          });
+        }
+
+        // 3. Monthly Patient Growth (Area/Line Chart)
+        const ctxGrowth = document.getElementById('patientGrowthChart');
+        if (ctxGrowth) {
+          new Chart(ctxGrowth, {
+            type: 'line',
+            data: {
+              labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
+              datasets: [{
+                label: 'New Patients',
+                data: [45, 62, 85, 110, 135, 160],
+                borderColor: '#a855f7',
+                backgroundColor: 'rgba(168,85,247,0.15)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0
+              }]
+            },
+            options: commonOptions
+          });
+        }
+
+        // 4. Active vs Completed Sessions (Bar Chart)
+        const ctxSession = document.getElementById('sessionStatusChart');
+        if (ctxSession) {
+          new Chart(ctxSession, {
+            type: 'bar',
+            data: {
+              labels: ['Cardiology', 'Neurology', 'Orthopedics', 'General', 'Pediatrics'],
+              datasets: [
+                {
+                  label: 'Completed',
+                  data: [42, 28, 35, 60, 25],
+                  backgroundColor: '#00e5ff',
+                  borderRadius: 4
+                },
+                {
+                  label: 'Active/Scheduled',
+                  data: [8, 12, 5, 15, 10],
+                  backgroundColor: '#3f3f46',
+                  borderRadius: 4
+                }
+              ]
+            },
+            options: {
+              ...commonOptions,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  align: 'end',
+                  labels: { color: '#94a3b8', boxWidth: 12, usePointStyle: true }
+                }
+              },
+              scales: {
+                x: { stacked: true, grid: { display: false } },
+                y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' } }
+              }
+            }
+          });
+        }
+      }
+
+      fetchReports();
+    });
+  </script>
+</body>
+
+</html>
