@@ -11,6 +11,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="styles.css" />
+  <script src="config.js"></script>
   <script src="script.js?v=20260521_01" defer></script>
 </head>
 
@@ -971,7 +972,8 @@
 
     async function fetchReports() {
       try {
-        const response = await fetch('http://127.0.0.1:5002/api/reports');
+        const apiBase = (window && window.__API_BASE__) || 'http://127.0.0.1:5002';
+        const response = await fetch(`${apiBase}/api/reports`);
         const resData = await response.json();
         
         if (response.ok && resData.data) {

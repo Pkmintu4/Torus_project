@@ -335,6 +335,7 @@
             }
         }
     </style>
+    <script src="config.js"></script>
 </head>
 
 <body>
@@ -458,8 +459,6 @@
 
             if (value.length !== 12) {
                 aadhaarError.textContent = showMessage ? 'Aadhaar must be exactly 12 digits.' : '';
-            } else if (value !== aadhaarMatchNumber) {
-                aadhaarError.textContent = showMessage ? 'Aadhaar not matched in records.' : '';
             } else {
                 aadhaarError.textContent = '';
                 aadhaarSuccess.textContent = 'Aadhaar verified successfully.';
@@ -476,8 +475,6 @@
 
             if (!doctorId) {
                 centerIdError.textContent = showMessage ? 'Diagnostic Center ID is required.' : '';
-            } else if (!validCenterIds.has(doctorId)) {
-                centerIdError.textContent = showMessage ? 'Invalid Diagnostic Center ID.' : '';
             } else {
                 centerIdError.textContent = '';
                 centerIdSuccess.textContent = 'Diagnostic Center ID verified.';
@@ -557,8 +554,8 @@
             }
 
             const enteredOtp = otpInput.value.trim();
-            if (enteredOtp !== mockOtp) {
-                otpError.textContent = 'Invalid OTP. Try again.';
+            if (enteredOtp.length !== 6 || !/^\d{6}$/.test(enteredOtp)) {
+                otpError.textContent = 'Invalid OTP. Must be 6 digits.';
                 otpSuccess.textContent = '';
                 otpVerified = false;
             } else {
@@ -638,7 +635,7 @@
 
             signupBtn.textContent = 'Signing Up...';
             signupBtn.disabled = true;
-            window.location.href = 'diagnostic-center-bio-registration.html';
+            window.location.href = 'diagnostic-dashboard.html';
         });
 
         updateSignUpState();

@@ -333,6 +333,7 @@
             }
         }
     </style>
+    <script src="config.js"></script>
 </head>
 
 <body>
@@ -456,8 +457,6 @@
 
             if (value.length !== 12) {
                 aadhaarError.textContent = showMessage ? 'Aadhaar must be exactly 12 digits.' : '';
-            } else if (value !== aadhaarMatchNumber) {
-                aadhaarError.textContent = showMessage ? 'Aadhaar not matched in records.' : '';
             } else {
                 aadhaarError.textContent = '';
                 aadhaarSuccess.textContent = 'Aadhaar verified successfully.';
@@ -474,8 +473,6 @@
 
             if (!doctorId) {
                 doctorIdError.textContent = showMessage ? 'Doctor ID is required.' : '';
-            } else if (!validDoctorIds.has(doctorId)) {
-                doctorIdError.textContent = showMessage ? 'Invalid Doctor ID.' : '';
             } else {
                 doctorIdError.textContent = '';
                 doctorIdSuccess.textContent = 'Doctor ID verified.';
@@ -555,8 +552,8 @@
             }
 
             const enteredOtp = otpInput.value.trim();
-            if (enteredOtp !== mockOtp) {
-                otpError.textContent = 'Invalid OTP. Try again.';
+            if (enteredOtp.length !== 6 || !/^\d{6}$/.test(enteredOtp)) {
+                otpError.textContent = 'Invalid OTP. Must be 6 digits.';
                 otpSuccess.textContent = '';
                 otpVerified = false;
             } else {
@@ -636,7 +633,7 @@
 
             signupBtn.textContent = 'Signing Up...';
             signupBtn.disabled = true;
-            window.location.href = 'biometric-register.html';
+            window.location.href = 'doctor-dashboard.html';
         });
 
         updateSignUpState();

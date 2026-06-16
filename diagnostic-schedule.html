@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="styles.css" />
+  <script src="config.js"></script>
   
   <style>
     /* Premium Background Ambient Glow */
@@ -374,6 +375,8 @@
   <script>
     lucide.createIcons();
 
+    const apiBase = (window && window.__API_BASE__) || 'http://127.0.0.1:5002';
+
     let allSchedules = [];
     let currentFilter = 'All';
 
@@ -408,7 +411,7 @@
 
     async function fetchSchedules() {
       try {
-        const res = await fetch('http://127.0.0.1:5002/api/schedules');
+        const res = await fetch(`${apiBase}/api/schedules`);
         const json = await res.json();
         if (json.data && json.data.length > 0) {
           allSchedules = json.data.map(checkAutoCompletion);
@@ -595,7 +598,7 @@
       closeCancelModal();
 
       try {
-        const res = await fetch(`http://127.0.0.1:5002/api/schedule/${id}/status`, {
+        const res = await fetch(`${apiBase}/api/schedule/${id}/status`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: 'Cancelled' })
@@ -644,7 +647,7 @@
       closeRescheduleModal();
 
       try {
-        const res = await fetch(`http://127.0.0.1:5002/api/schedule/${id}/reschedule`, {
+        const res = await fetch(`${apiBase}/api/schedule/${id}/reschedule`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ appointment_date: newDate, appointment_time: newTime })

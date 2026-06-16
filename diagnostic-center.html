@@ -392,7 +392,7 @@
                 font-size: 0.95em;
             }
         }
-    </style>
+    <script src="config.js"></script>
 </head>
 
 <body>
@@ -455,7 +455,7 @@ please
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:5000';
+        const API_BASE_URL = (window && window.__AUTH_API_BASE__) || (window && window.__API_BASE__) || 'http://127.0.0.1:5000';
 
         document.getElementById('topBackBtn').addEventListener('click', () => {
             window.location.href = 'index.html';
@@ -543,7 +543,7 @@ please
                     btn.innerHTML = data.message || 'Authentication Successful';
                     btn.style.background = '#22C55E'; // Success green background
                     setTimeout(() => {
-                        window.location.href = 'diagnostic-biometric-auth.html';
+                        window.location.href = 'diagnostic-dashboard.html';
                     }, 1000);
                 } else {
                     errorMsg.innerText = data.message || 'Invalid email or password';

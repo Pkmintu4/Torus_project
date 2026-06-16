@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="styles.css" />
+  <script src="config.js"></script>
   <style>
     body.reports-page {
       background-color: #02040a !important;
@@ -404,7 +405,8 @@
 
     async function fetchReports() {
       try {
-        const response = await fetch('http://127.0.0.1:5002/api/reports');
+        const apiBase = (window && window.__API_BASE__) || 'http://127.0.0.1:5002';
+        const response = await fetch(`${apiBase}/api/reports`);
         const resData = await response.json();
         
         if (response.ok && resData.data) {

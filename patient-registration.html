@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="styles.css" />
+  <script src="config.js"></script>
   <style>
     /* Premium Background Ambient Glow */
     body.registration-page {
@@ -718,7 +719,8 @@
       };
 
       try {
-        const response = await fetch('http://127.0.0.1:5002/api/patients', {
+        const apiBase = (window && window.__API_BASE__) || 'http://127.0.0.1:5002';
+        const response = await fetch(`${apiBase}/api/patients`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -728,7 +730,7 @@
 
         if (response.ok) {
           // Log activity
-          await fetch('http://127.0.0.1:5002/api/activities', {
+          await fetch(`${apiBase}/api/activities`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

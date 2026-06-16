@@ -86,13 +86,20 @@ const HAPTIC_STATUS = {
   DISCONNECTED: 'disconnected'
 };
 
-const HAPTIC_BACKEND_CONFIG = {
-  enableWebSocket: false,
-  enableApiPolling: true,
-  webSocketUrl: 'ws://127.0.0.1:5000',
-  apiEndpoint: 'http://127.0.0.1:5000/haptic-status',
-  apiPollIntervalMs: 5000
-};
+const HAPTIC_BACKEND_CONFIG = (function () {
+  const apiBase = (window && window.__AUTH_API_BASE__) || (window && window.__API_BASE__) || 'http://127.0.0.1:5000';
+  const signaling = (window && window.__SIGNALING_BASE__) || apiBase;
+  const wsProtocol = signaling.startsWith('https') ? 'wss://' : 'ws://';
+  const signalingHost = signaling.replace(/^https?:\/\//, '');
+
+  return {
+    enableWebSocket: false,
+    enableApiPolling: true,
+    webSocketUrl: (window && window.__WEB_SOCKET_URL__) || (wsProtocol + signalingHost.replace(/\/$/, '')),
+    apiEndpoint: (window && window.__buildApiUrl) ? window.__buildApiUrl('/haptic-status', apiBase) : (apiBase.replace(/\/$/, '') + '/haptic-status'),
+    apiPollIntervalMs: 5000
+  };
+})();
 
 // Grace period (ms) on initial load before showing Not Connected (4 seconds)
 const HAPTIC_CONNECT_GRACE_MS = 4000;

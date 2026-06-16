@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="styles.css" />
+  <script src="config.js"></script>
   <style>
     body.records-page {
       background-color: #02040a !important;
@@ -566,7 +567,8 @@
 
     async function fetchPatients() {
       const search = document.getElementById('searchInput').value;
-      const url = `http://127.0.0.1:5002/api/patients?search=${encodeURIComponent(search)}`;
+      const apiBase = (window && window.__API_BASE__) || 'http://127.0.0.1:5002';
+      const url = `${apiBase}/api/patients?search=${encodeURIComponent(search)}`;
       
       try {
         const response = await fetch(url);

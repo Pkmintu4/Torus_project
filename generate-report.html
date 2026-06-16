@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest?v=20260521_01"></script>
+  <script src="config.js"></script>
   <script>
     console.log('BUILD VERSION:', Date.now());
     console.log('Capture Handler Loaded');
@@ -3909,7 +3910,7 @@
         iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
       };
 
-      const DEFAULT_SIGNAL_SERVER = "http://127.0.0.1:5002";
+      const DEFAULT_SIGNAL_SERVER = (window && window.__SIGNALING_BASE__) || (window && window.__API_BASE__) || "http://127.0.0.1:5002";
 
       let peerConnection = null;
       let localStream = null;
