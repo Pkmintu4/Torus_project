@@ -5,7 +5,7 @@
   };
 
   // Prefer the local signaling server on port 3000 (matches server.js default)
-  const DEFAULT_SIGNAL_SERVER = "http://127.0.0.1:3000";
+  const DEFAULT_SIGNAL_SERVER = (window && window.__SIGNALING_BASE__) || (window && window.__API_BASE__) || "http://127.0.0.1:3000";
   const RTC_CONFIG = {
     iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
   };
@@ -183,6 +183,13 @@
     addFromRaw(signalFromQuery);
     addFromRaw(stored);
     addFromRaw(DEFAULT_SIGNAL_SERVER);
+
+    const isLocal = host === "localhost" || host === "127.0.0.1";
+    if (!isLocal) {
+      pushUnique(socketIoCandidates, `${pageProtocol}//${host}`);
+      pushUnique(webSocketCandidates, `${wsProtocol}//${host}`);
+      pushUnique(webSocketCandidates, `${wsProtocol}//${host}/ws`);
+    }
 
     [5002, 3000].forEach((port) => {
       pushUnique(socketIoCandidates, `${pageProtocol}//127.0.0.1:${port}`);
