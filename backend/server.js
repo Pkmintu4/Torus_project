@@ -61,6 +61,21 @@ const otpStore = {};         // OTP storage: email -> {otp, expiresAt, verified,
 const rateLimitStore = {};   // Rate limiting: email -> [timestamp1, timestamp2, ...]
 const users = {};            // Users will be created during password reset - email -> {password: hash, createdAt}
 
+// Seed default sample credentials for testing (using bcryptjs)
+(async () => {
+    try {
+        const hashedDefaultPwd = await bcrypt.hash('Password@123', 10);
+        users['doctor@torus.com'] = { password: hashedDefaultPwd, createdAt: Date.now() };
+        users['doctor@hospital.com'] = { password: hashedDefaultPwd, createdAt: Date.now() };
+        users['diagnostic@torus.com'] = { password: hashedDefaultPwd, createdAt: Date.now() };
+        users['center@hospital.com'] = { password: hashedDefaultPwd, createdAt: Date.now() };
+        users['admin@torus.com'] = { password: hashedDefaultPwd, createdAt: Date.now() };
+        console.log('[AUTH] Seeded default credentials: doctor@torus.com / diagnostic@torus.com / admin@torus.com with default password: Password@123');
+    } catch (err) {
+        console.error('[AUTH] Failed to seed default credentials:', err.message);
+    }
+})();
+
 // ============ CONFIGURATION ============
 const RATE_LIMIT_OTP = { requests: 5, windowMs: 60 * 60 * 1000 }; // 5 requests per hour
 const OTP_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
