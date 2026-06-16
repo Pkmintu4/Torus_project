@@ -1,0 +1,21 @@
+node_modules/
+npm-debug.log
+.env
+.DS_Store
+dist/
+build/
+.vscode/
+.idea/
+*.sqlite
+*.sqlite3
+torus_database.sqlite
+# Python
+__pycache__/
+*.py[cod]
+venv/
+# Logs
+logs/
+*.log
+# OS
+Thumbs.db
+desktop.ini
