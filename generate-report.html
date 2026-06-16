@@ -3897,7 +3897,13 @@
         }
       });
 
-      window.addEventListener('load', startCamera);
+      window.addEventListener('load', () => {
+        if (typeof window.startCamera === 'function') {
+          window.startCamera();
+        } else {
+          startCamera();
+        }
+      });
     })();
   </script>
 

@@ -4546,7 +4546,13 @@
       });
 
       if (!window.__torusUltrasoundViewerMode) {
-        window.addEventListener('load', startCamera);
+        window.addEventListener('load', () => {
+          if (typeof window.startCamera === 'function') {
+            window.startCamera();
+          } else {
+            startCamera();
+          }
+        });
       }
 
       const ultrasoundFullscreenBtn = document.getElementById('ultrasoundFullscreenBtn');
